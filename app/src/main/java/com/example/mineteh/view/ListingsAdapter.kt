@@ -7,6 +7,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.mineteh.R
 import com.example.mineteh.models.Listing
 import java.text.SimpleDateFormat
@@ -48,27 +49,16 @@ class ListingsAdapter(
         private val itemAuctionTimer: TextView = itemView.findViewById(R.id.itemAuctionTimer)
 
         fun bind(listing: Listing) {
-            // Set price
             itemPrice.text = "₱${listing.price}"
-
-            // Set name
             itemName.text = listing.title
-
-            // Set location
             itemLocation.text = "📍 ${listing.location}"
 
-            // Set type badge
             if (listing.listingType == "BID") {
                 itemTypeBadge.text = "BID"
                 itemTypeBadge.setBackgroundResource(R.drawable.badge_background_bid)
-
-                // Show auction timer
                 auctionTimerLayout.visibility = View.VISIBLE
-
-                // Calculate remaining time
                 listing.endTime?.let { endTime ->
-                    val remainingTime = calculateRemainingTime(endTime)
-                    itemAuctionTimer.text = remainingTime
+                    itemAuctionTimer.text = calculateRemainingTime(endTime)
                 }
             } else {
                 itemTypeBadge.text = "FIXED"
@@ -76,40 +66,34 @@ class ListingsAdapter(
                 auctionTimerLayout.visibility = View.GONE
             }
 
-            // Load image (use Glide or Picasso)
-            listing.image?.let { imageUrl ->
-                // TODO: Add Glide dependency and uncomment:
-                // Glide.with(itemView.context).load(imageUrl).into(itemImage)
-            }
+            // Load image using Glide
+            // Construct full URL if needed. Assuming the server returns relative path.
+            val baseUrl = "http://192.168.18.4/MineTeh/" // Base URL for images
+            val imageUrl = listing.image?.let { if (it.startsWith("http")) it else baseUrl + it }
+            
+            Glide.with(itemView.context)
+                .load(imageUrl)
+                .placeholder(R.drawable.dummyphoto)
+                .error(R.drawable.dummyphoto)
+                .into(itemImage)
 
-            // Set favorite icon
             itemHeart.setImageResource(
                 if (listing.isFavorited) R.drawable.heart_red else R.drawable.heart
             )
 
-            // Click listeners
             itemView.setOnClickListener { onItemClick(listing) }
-
-            itemHeart.setOnClickListener {
-                // TODO: Handle favorite toggle
-            }
         }
 
         private fun calculateRemainingTime(endTime: String): String {
             try {
                 val endDate = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).parse(endTime)
                 val now = Date()
-
                 if (endDate == null) return "N/A"
-
                 val diff = endDate.time - now.time
-
                 if (diff <= 0) return "Ended"
-
                 val days = TimeUnit.MILLISECONDS.toDays(diff)
                 val hours = TimeUnit.MILLISECONDS.toHours(diff) % 24
                 val minutes = TimeUnit.MILLISECONDS.toMinutes(diff) % 60
-
                 return when {
                     days > 0 -> "${days}d ${hours}h"
                     hours > 0 -> "${hours}h ${minutes}m"

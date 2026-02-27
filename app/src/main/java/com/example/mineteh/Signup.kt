@@ -3,9 +3,11 @@ package com.example.mineteh
 import android.content.Intent
 import android.os.Bundle
 import android.text.InputFilter
-import android.util.Patterns
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import com.example.mineteh.utils.Resource
+import com.example.mineteh.viewmodel.SignupViewModel
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 
@@ -19,6 +21,9 @@ class Signup : AppCompatActivity() {
     private lateinit var confirmPasswordEditText: TextInputEditText
     private lateinit var createAccountButton: MaterialButton
     private lateinit var backButton: MaterialButton
+
+    // ViewModel
+    private val viewModel: SignupViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,12 +50,25 @@ class Signup : AppCompatActivity() {
         firstNameEditText.filters = arrayOf(nameFilter)
         lastNameEditText.filters = arrayOf(nameFilter)
 
+        // Observe signup status
+        observeSignupStatus()
+
         createAccountButton.setOnClickListener {
-            if (validateInputs()) {
-                Toast.makeText(this, "Account created successfully!", Toast.LENGTH_SHORT).show()
-                startActivity(Intent(this, Login::class.java))
-                finish()
-            }
+            val username = usernameEditText.text.toString().trim()
+            val firstName = firstNameEditText.text.toString().trim()
+            val lastName = lastNameEditText.text.toString().trim()
+            val email = emailEditText.text.toString().trim()
+            val password = passwordEditText.text.toString()
+            val confirmPass = confirmPasswordEditText.text.toString()
+
+            viewModel.onSignupClicked(
+                username = username,
+                firstName = firstName,
+                lastName = lastName,
+                email = email,
+                password = password,
+                confirmPass = confirmPass
+            )
         }
 
         backButton.setOnClickListener {
@@ -59,89 +77,37 @@ class Signup : AppCompatActivity() {
         }
     }
 
-    private fun validateInputs(): Boolean {
-
-        val username = usernameEditText.text.toString().trim()
-        val firstName = firstNameEditText.text.toString().trim()
-        val lastName = lastNameEditText.text.toString().trim()
-        val email = emailEditText.text.toString().trim()
-        val password = passwordEditText.text.toString()
-        val confirmPassword = confirmPasswordEditText.text.toString()
-
-        var isValid = true
-
-        // Username validation
-        val usernamePattern = Regex("^[a-zA-Z0-9]{6,12}$")
-        if (!usernamePattern.matches(username)) {
-            usernameEditText.error = "Username must be 6–12 letters or numbers"
-            isValid = false
-        } else {
-            usernameEditText.error = null
+    private fun observeSignupStatus() {
+        viewModel.signupStatus.observe(this) { resource ->
+            when (resource) {
+                is Resource.Loading -> {
+                    setLoading(true)
+                }
+                is Resource.Success -> {
+                    setLoading(false)
+                    Toast.makeText(this, "Account created successfully!", Toast.LENGTH_SHORT).show()
+                    startActivity(Intent(this, Login::class.java))
+                    finish()
+                }
+                is Resource.Error -> {
+                    setLoading(false)
+                    Toast.makeText(this, resource.message, Toast.LENGTH_LONG).show()
+                }
+                null -> {
+                    // Initial state
+                }
+            }
         }
-
-        // First Name validation
-        if (firstName.isEmpty()) {
-            firstNameEditText.error = "First name is required"
-            isValid = false
-        } else if (firstName.length < 2) {
-            firstNameEditText.error = "Minimum 2 characters"
-            isValid = false
-        } else if (!Regex("^[a-zA-Z.\\-\\' ]+$").matches(firstName)) {
-            firstNameEditText.error = "Only letters and . - ' allowed"
-            isValid = false
-        } else {
-            firstNameEditText.error = null
-        }
-
-        // Last Name validation
-        if (lastName.isEmpty()) {
-            lastNameEditText.error = "Last name is required"
-            isValid = false
-        } else if (lastName.length < 2) {
-            lastNameEditText.error = "Minimum 2 characters"
-            isValid = false
-        } else if (!Regex("^[a-zA-Z.\\-\\' ]+$").matches(lastName)) {
-            lastNameEditText.error = "Only letters and . - ' allowed"
-            isValid = false
-        } else {
-            lastNameEditText.error = null
-        }
-
-        // Email validation
-        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            emailEditText.error = "Enter a valid email address"
-            isValid = false
-        } else {
-            emailEditText.error = null
-        }
-
-        // Improved Password validation
-        val errorMsg = getPasswordError(password)
-        if (errorMsg != null) {
-            passwordEditText.error = errorMsg
-            isValid = false
-        } else {
-            passwordEditText.error = null
-        }
-
-        // Confirm password
-        if (confirmPassword != password) {
-            confirmPasswordEditText.error = "Passwords do not match"
-            isValid = false
-        } else {
-            confirmPasswordEditText.error = null
-        }
-
-        return isValid
     }
 
-    private fun getPasswordError(password: String): String? {
-        if (password.length < 8 || password.length > 16) return "8–16 characters required"
-        if (!password.any { it.isUpperCase() }) return "At least one uppercase letter required"
-        if (!password.any { it.isLowerCase() }) return "At least one lowercase letter required"
-        if (!password.any { it.isDigit() }) return "At least one number required"
-        if (!password.any { "!@#$%^&*()_=+{}|;:',.<>/?~`".contains(it) }) return "At least one special character required"
-        if (password.contains(" ")) return "Spaces are not allowed"
-        return null
+    private fun setLoading(loading: Boolean) {
+        createAccountButton.isEnabled = !loading
+        backButton.isEnabled = !loading
+        createAccountButton.text = if (loading) "Creating..." else "Create Account"
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        viewModel.resetStatus()
     }
 }

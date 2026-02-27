@@ -1,7 +1,6 @@
 package com.example.mineteh.network
 
 import android.content.Context
-import com.example.mineteh.model.ApiService
 import com.example.mineteh.utils.TokenManager
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -28,7 +27,7 @@ object ApiClient {
     }
 
     private val authInterceptor = Interceptor { chain ->
-        val token = context?.let { TokenManager.getToken(it) }
+        val token = context?.let { TokenManager(it).getToken() }
         val request = if (token != null) {
             chain.request().newBuilder()
                 .addHeader("Authorization", "Bearer $token")
@@ -53,5 +52,5 @@ object ApiClient {
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
-    val apiService: ApiService = retrofit.create(ApiService::class.java)
+    val apiService: com.example.mineteh.network.ApiService = retrofit.create(com.example.mineteh.network.ApiService::class.java)
 }

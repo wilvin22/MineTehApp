@@ -1,19 +1,20 @@
 package com.example.mineteh.viewmodel
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.mineteh.model.repositories.AuthRepository
-import com.example.mineteh.models.LoginData
+import com.example.mineteh.model.repository.AuthRepository
+import com.example.mineteh.models.LoginResponse
 import com.example.mineteh.utils.Resource
 import kotlinx.coroutines.launch
 
-class LoginViewModel : ViewModel() {
-    private val repository = AuthRepository()
+class LoginViewModel(application: Application) : AndroidViewModel(application) {
+    private val repository = AuthRepository(application.applicationContext)
 
-    private val _loginState = MutableLiveData<Resource<LoginData>>()
-    val loginState: LiveData<Resource<LoginData>> = _loginState
+    private val _loginState = MutableLiveData<Resource<LoginResponse>?>()
+    val loginState: LiveData<Resource<LoginResponse>?> = _loginState
 
     fun login(identifier: String, password: String) {
         // Validate input

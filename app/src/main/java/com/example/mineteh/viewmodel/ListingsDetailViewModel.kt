@@ -1,31 +1,32 @@
-package com.example.mineteh.viewmodels
+package com.example.mineteh.viewmodel
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mineteh.models.BidData
 import com.example.mineteh.models.FavoriteData
 import com.example.mineteh.models.Listing
-import com.example.mineteh.model.repositories.BidsRepository
-import com.example.mineteh.model.repositories.FavoritesRepository
-import com.example.mineteh.model.repositories.ListingsRepository
+import com.example.mineteh.model.repository.BidsRepository
+import com.example.mineteh.model.repository.FavoritesRepository
+import com.example.mineteh.model.repository.ListingsRepository
 import com.example.mineteh.utils.Resource
 import kotlinx.coroutines.launch
 
-class ListingDetailViewModel : ViewModel() {
-    private val listingsRepository = ListingsRepository()
-    private val bidsRepository = BidsRepository()
-    private val favoritesRepository = FavoritesRepository()
+class ListingDetailViewModel(application: Application) : AndroidViewModel(application) {
+    private val listingsRepository = ListingsRepository(application.applicationContext)
+    private val bidsRepository = BidsRepository(application.applicationContext)
+    private val favoritesRepository = FavoritesRepository(application.applicationContext)
 
     private val _listing = MutableLiveData<Resource<Listing>>()
     val listing: LiveData<Resource<Listing>> = _listing
 
-    private val _bidResult = MutableLiveData<Resource<BidData>>()
-    val bidResult: LiveData<Resource<BidData>> = _bidResult
+    private val _bidResult = MutableLiveData<Resource<BidData>?>()
+    val bidResult: LiveData<Resource<BidData>?> = _bidResult
 
-    private val _favoriteResult = MutableLiveData<Resource<FavoriteData>>()
-    val favoriteResult: LiveData<Resource<FavoriteData>> = _favoriteResult
+    private val _favoriteResult = MutableLiveData<Resource<FavoriteData>?>()
+    val favoriteResult: LiveData<Resource<FavoriteData>?> = _favoriteResult
 
     fun loadListing(listingId: Int) {
         _listing.value = Resource.Loading()

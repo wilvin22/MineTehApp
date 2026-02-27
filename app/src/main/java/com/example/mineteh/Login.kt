@@ -24,12 +24,18 @@ class Login : AppCompatActivity() {
     // ViewModel
     private val viewModel: LoginViewModel by viewModels()
 
+    // TokenManager
+    private lateinit var tokenManager: TokenManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.login)
 
+        // Initialize TokenManager
+        tokenManager = TokenManager(this)
+
         // Check if already logged in
-        if (TokenManager.isLoggedIn(this)) {
+        if (tokenManager.isLoggedIn()) {
             navigateToHome()
             return
         }
@@ -72,12 +78,10 @@ class Login : AppCompatActivity() {
                     setLoading(false)
                     resource.data?.let { loginData ->
                         // Save token and user info
-                        TokenManager.saveToken(this, loginData.token)
-                        TokenManager.saveUser(
-                            this,
-                            loginData.user.accountId,
-                            loginData.user.username
-                        )
+                        tokenManager.saveToken(loginData.token)
+                        tokenManager.saveUserId(loginData.user.accountId)
+                        tokenManager.saveUserName(loginData.user.username)
+                        tokenManager.saveUserEmail(loginData.user.email)
 
                         Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show()
                         navigateToHome()

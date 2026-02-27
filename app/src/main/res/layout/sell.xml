@@ -89,18 +89,46 @@
             android:background="@color/white">
 
             <!-- ADD PHOTO -->
-            <Button
-                android:id="@+id/btnAddPhoto"
+            <!-- Photo Upload Section -->
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:text="Add Photos"
-                android:textColor="@color/white"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:backgroundTint="@color/purple"
-                android:layout_marginBottom="24dp"
-                style="@style/Widget.MaterialComponents.Button"
-                android:elevation="4dp"/>
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Photos *"
+                    android:textStyle="bold"
+                    android:textSize="14sp"
+                    android:layout_marginBottom="8dp"/>
+
+                <!-- Photo Preview Grid -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerPhotos"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"/>
+
+                <!-- Add Photo Button -->
+                <Button
+                    android:id="@+id/btnAddPhoto"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="+ Add Photos"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="You can upload up to 5 photos"
+                    android:textSize="12sp"
+                    android:textColor="@color/text_secondary"
+                    android:layout_marginTop="4dp"/>
+
+            </LinearLayout>
+
 
             <!-- TITLE SECTION -->
             <LinearLayout
@@ -184,6 +212,7 @@
                 android:orientation="vertical">
 
                 <TextView
+                    android:id="@+id/tvPriceLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Price *"
@@ -275,14 +304,14 @@
                     android:id="@+id/radioListingType"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="20dp">
+                    android:orientation="horizontal">
 
                     <RadioButton
                         android:id="@+id/rbFixed"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Fixed Price"
+                        android:checked="true"
                         android:textSize="14sp" />
 
                     <RadioButton
@@ -293,6 +322,86 @@
                         android:layout_marginStart="32dp"
                         android:textSize="14sp"/>
                 </RadioGroup>
+            </LinearLayout>
+
+            <!-- AUCTION DURATION SECTION -->
+            <LinearLayout
+                android:id="@+id/layoutAuctionDuration"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone"
+                android:layout_marginBottom="24dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Auction Duration *"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="12dp" />
+
+                <RadioGroup
+                    android:id="@+id/radioDuration"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <RadioButton
+                        android:id="@+id/rb1Day"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="1 day"
+                        android:textSize="14sp" />
+
+                    <RadioButton
+                        android:id="@+id/rb3Days"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="3 days"
+                        android:textSize="14sp" />
+
+                    <RadioButton
+                        android:id="@+id/rb7Days"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="7 days"
+                        android:textSize="14sp" />
+
+                    <RadioButton
+                        android:id="@+id/rbCustom"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Custom"
+                        android:textSize="14sp" />
+                </RadioGroup>
+
+                <!-- Custom Date Picker Trigger -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/layoutCustomDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:visibility="gone"
+                    app:boxBackgroundMode="outline"
+                    app:boxStrokeColor="@color/purple"
+                    app:boxCornerRadiusBottomEnd="12dp"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusTopEnd="12dp"
+                    app:boxCornerRadiusTopStart="12dp">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etCustomDate"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:hint="Select end date"
+                        android:focusable="false"
+                        android:clickable="true"
+                        android:textSize="14sp"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"/>
+                </com.google.android.material.textfield.TextInputLayout>
             </LinearLayout>
 
             <!-- LOCATION SECTION -->
@@ -337,7 +446,7 @@
                 android:id="@+id/btnSubmit"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
-                android:text="Post Item"
+                android:text="Publish Listing"
                 android:textColor="@color/white"
                 android:textSize="16sp"
                 android:textStyle="bold"
@@ -479,4 +588,15 @@
         </LinearLayout>
 
     </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,20 +1,21 @@
 package com.example.mineteh.viewmodel
 
+import android.app.Application
 import android.util.Patterns
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.mineteh.model.repositories.AuthRepository
-import com.example.mineteh.models.LoginData
+import com.example.mineteh.model.repository.AuthRepository
+import com.example.mineteh.models.RegisterResponse
 import com.example.mineteh.utils.Resource
 import kotlinx.coroutines.launch
 
-class SignupViewModel : ViewModel() {
-    private val repository = AuthRepository()
+class SignupViewModel(application: Application) : AndroidViewModel(application) {
+    private val repository = AuthRepository(application.applicationContext)
 
-    private val _signupStatus = MutableLiveData<Resource<LoginData>?>()
-    val signupStatus: LiveData<Resource<LoginData>?> = _signupStatus
+    private val _signupStatus = MutableLiveData<Resource<RegisterResponse>?>()
+    val signupStatus: LiveData<Resource<RegisterResponse>?> = _signupStatus
 
     fun onSignupClicked(
         username: String,
