@@ -54,7 +54,8 @@ class ItemAdapter(
             .load(imageUrl)
             .placeholder(R.drawable.dummyphoto)
             .error(R.drawable.dummyphoto)
-            .skipMemoryCache(true) // Disable memory cache to ensure fresh images
+            .skipMemoryCache(true) // Skip memory cache
+            .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.NONE) // Skip disk cache
             .into(holder.itemImage)
 
         updateHeartIcon(holder.itemHeart, item.isFavorited)
