@@ -2,6 +2,7 @@ package com.example.mineteh
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.CheckBox
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -20,6 +21,7 @@ class Login : AppCompatActivity() {
     private lateinit var loginButton: MaterialButton
     private lateinit var signupButton: MaterialButton
     private lateinit var forgotPasswordText: TextView
+    private lateinit var rememberMeCheckbox: CheckBox
 
     // ViewModel
     private val viewModel: LoginViewModel by viewModels()
@@ -34,18 +36,25 @@ class Login : AppCompatActivity() {
         // Initialize TokenManager
         tokenManager = TokenManager(this)
 
-        // Check if already logged in
-        if (tokenManager.isLoggedIn()) {
-            navigateToHome()
-            return
-        }
-
         // Initialize views
         emailEditText = findViewById(R.id.email_login)
         passwordEditText = findViewById(R.id.password_login)
         loginButton = findViewById(R.id.login_btn)
         signupButton = findViewById(R.id.signup_btn)
         forgotPasswordText = findViewById(R.id.forgotPassword)
+        rememberMeCheckbox = findViewById(R.id.rememberMeCheckbox)
+
+        // Check if already logged in (Auto-login)
+        if (tokenManager.isLoggedIn()) {
+            navigateToHome()
+            return
+        }
+
+        // Load saved email if Remember Me was previously checked
+        if (tokenManager.isRememberMeEnabled()) {
+            emailEditText.setText(tokenManager.getSavedEmail())
+            rememberMeCheckbox.isChecked = true
+        }
 
         // Observe login state
         observeLoginState()
@@ -54,6 +63,13 @@ class Login : AppCompatActivity() {
         loginButton.setOnClickListener {
             val identifier = emailEditText.text.toString().trim()
             val password = passwordEditText.text.toString().trim()
+            
+            // Save Remember Me state
+            tokenManager.setRememberMe(rememberMeCheckbox.isChecked)
+            if (rememberMeCheckbox.isChecked) {
+                tokenManager.saveSavedEmail(identifier)
+            }
+
             viewModel.login(identifier, password)
         }
 
@@ -103,6 +119,7 @@ class Login : AppCompatActivity() {
         signupButton.isEnabled = !loading
         emailEditText.isEnabled = !loading
         passwordEditText.isEnabled = !loading
+        rememberMeCheckbox.isEnabled = !loading
 
         loginButton.text = if (loading) "Logging in..." else "Login"
     }
