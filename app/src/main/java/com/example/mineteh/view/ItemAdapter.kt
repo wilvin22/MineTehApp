@@ -40,14 +40,21 @@ class ItemAdapter(
         holder.itemLocation?.text = "📍 ${item.location ?: "Unknown"}"
         holder.itemTypeBadge.text = item.listingType ?: "FIXED"
 
-        // Use Glide to load the image from URL
+        // Construct the full image URL
         val baseUrl = "http://192.168.18.4/MineTeh/"
-        val imageUrl = item.image?.let { if (it.startsWith("http")) it else baseUrl + it }
+        val imageUrl = item.image?.let { 
+            when {
+                it.startsWith("http") -> it
+                it.startsWith("../") -> baseUrl + it.removePrefix("../")
+                else -> baseUrl + it
+            }
+        }
 
         Glide.with(holder.itemView.context)
             .load(imageUrl)
             .placeholder(R.drawable.dummyphoto)
             .error(R.drawable.dummyphoto)
+            .skipMemoryCache(true) // Disable memory cache to ensure fresh images
             .into(holder.itemImage)
 
         updateHeartIcon(holder.itemHeart, item.isFavorited)
