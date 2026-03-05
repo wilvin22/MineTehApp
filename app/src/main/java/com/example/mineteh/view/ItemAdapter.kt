@@ -35,15 +35,18 @@ class ItemAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = itemList[position]
-        holder.itemName.text = item.title
+        holder.itemName.text = item.title ?: "No Title"
         holder.itemPrice.text = "₱ ${String.format("%.2f", item.price)}"
-        holder.itemLocation?.text = "📍 ${item.location}"
-        holder.itemTypeBadge.text = item.listingType
+        holder.itemLocation?.text = "📍 ${item.location ?: "Unknown"}"
+        holder.itemTypeBadge.text = item.listingType ?: "FIXED"
 
         // Use Glide to load the image from URL
+        val baseUrl = "http://192.168.18.4/MineTeh/"
+        val imageUrl = item.image?.let { if (it.startsWith("http")) it else baseUrl + it }
+
         Glide.with(holder.itemView.context)
-            .load(item.image) // Assuming item.image is the URL
-            .placeholder(R.drawable.dummyphoto) // Add a placeholder
+            .load(imageUrl)
+            .placeholder(R.drawable.dummyphoto)
             .error(R.drawable.dummyphoto)
             .into(holder.itemImage)
 

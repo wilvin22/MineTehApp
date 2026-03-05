@@ -1,7 +1,11 @@
 package com.example.mineteh.network
 
 import android.content.Context
+import com.example.mineteh.models.ApiResponse
+import com.example.mineteh.models.Listing
 import com.example.mineteh.utils.TokenManager
+import com.google.gson.GsonBuilder
+import com.google.gson.reflect.TypeToken
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -10,10 +14,6 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object ApiClient {
-    // IMPORTANT: Change this to your actual server URL
-    // For emulator: http://10.0.2.2/MineTeh/api/v1/
-    // For physical device on same WiFi: http://YOUR_PC_IP/MineTeh/api/v1/
-    // For production: https://yourdomain.com/api/v1/
     private const val BASE_URL = "http://192.168.18.4/MineTeh/api/v1/"
 
     private var context: Context? = null
@@ -46,11 +46,18 @@ object ApiClient {
         .writeTimeout(30, TimeUnit.SECONDS)
         .build()
 
+    private val gson = GsonBuilder()
+        .registerTypeAdapter(
+            object : TypeToken<ApiResponse<List<Listing>>>() {}.type,
+            ApiResponseDeserializer()
+        )
+        .create()
+
     private val retrofit: Retrofit = Retrofit.Builder()
         .baseUrl(BASE_URL)
         .client(okHttpClient)
-        .addConverterFactory(GsonConverterFactory.create())
+        .addConverterFactory(GsonConverterFactory.create(gson))
         .build()
 
-    val apiService: com.example.mineteh.network.ApiService = retrofit.create(com.example.mineteh.network.ApiService::class.java)
+    val apiService: ApiService = retrofit.create(ApiService::class.java)
 }
