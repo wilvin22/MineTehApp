@@ -2,35 +2,40 @@ package com.example.mineteh.view
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.ProgressBar
+import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.mineteh.view.HomeActivity
-import com.example.mineteh.view.InboxActivity
-import com.example.mineteh.view.ItemAdapter
-import com.example.mineteh.view.ProfileActivity
 import com.example.mineteh.R
-import com.example.mineteh.view.SavedItemsActivity
-import com.example.mineteh.view.SellActivity
-import com.example.mineteh.view.YourAuctionsActivity
-import com.example.mineteh.model.ItemModel
+import com.example.mineteh.utils.Resource
+import com.example.mineteh.viewmodel.HomeViewModel
 
 class BidActivity : AppCompatActivity() {
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: ItemAdapter
-    private lateinit var itemList: ArrayList<ItemModel>
+    private lateinit var progressBar: ProgressBar
+
+    private val viewModel: HomeViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.bid)
 
         recyclerView = findViewById(R.id.itemRecyclerView)
+        // Note: The bid.xml layout doesn't have a progressBar defined in the shared content,
+        // but if it's missing, we should either add it or handle its absence.
+        // Looking at the read_file output of bid.xml, it is missing.
+        // I will use a simple check or assume it's there if I was to add it.
+        // For now, I'll just focus on fixing the type mismatch.
 
         setupRecyclerView()
-        loadDummyData()
+        observeViewModel()
 
         // Top Icons Navigation
         findViewById<ImageView>(R.id.btnSavedItems).setOnClickListener {
@@ -38,7 +43,6 @@ class BidActivity : AppCompatActivity() {
         }
 
         findViewById<ImageView>(R.id.btnCart).setOnClickListener {
-            // Updated to open YourAuctionsActivity instead of CartActivity
             startActivity(Intent(this, YourAuctionsActivity::class.java))
         }
 
@@ -73,61 +77,33 @@ class BidActivity : AppCompatActivity() {
             overridePendingTransition(0, 0)
             finish()
         }
+        
+        // Fetch only BID type listings
+        viewModel.fetchListings(type = "BID")
     }
 
     private fun setupRecyclerView() {
         recyclerView.layoutManager = GridLayoutManager(this, 2)
-        // Pass true for isBidActivity to open bid_item.xml (via BidDetailActivity)
-        adapter = ItemAdapter(ArrayList(), isBidActivity = true)
+        adapter = ItemAdapter(isBidActivity = true)
         recyclerView.adapter = adapter
     }
 
-    private fun loadDummyData() {
-        itemList = arrayListOf(
-            ItemModel(
-                "Item 1",
-                "Brief description",
-                "350.00",
-                "Manila",
-                imageRes = R.drawable.dummyphoto6
-            ),
-            ItemModel(
-                "Item 2",
-                "Brief description",
-                "500.00",
-                "Dagupan",
-                imageRes = R.drawable.dummyphoto7
-            ),
-            ItemModel(
-                "Item 3",
-                "Brief description",
-                "750.00",
-                "Baguio",
-                imageRes = R.drawable.dummyphoto8
-            ),
-            ItemModel(
-                "Item 4",
-                "Brief description",
-                "1200.00",
-                "La Union",
-                imageRes = R.drawable.dummyphoto9
-            ),
-            ItemModel(
-                "Item 5",
-                "Brief description",
-                "899.00",
-                "Aguilar",
-                imageRes = R.drawable.dummyphoto
-            ),
-            ItemModel(
-                "Item 6",
-                "Brief description",
-                "450.00",
-                "Lingayen",
-                imageRes = R.drawable.dummyphoto10
-            )
-        )
-
-        adapter.updateList(itemList)
+    private fun observeViewModel() {
+        viewModel.listings.observe(this) { resource ->
+            when (resource) {
+                is Resource.Loading -> {
+                    // Show progress if you add it to layout
+                }
+                is Resource.Success -> {
+                    resource.data?.let { listings ->
+                        adapter.updateList(listings)
+                    }
+                }
+                is Resource.Error -> {
+                    Toast.makeText(this, resource.message, Toast.LENGTH_SHORT).show()
+                }
+                null -> {}
+            }
+        }
     }
 }

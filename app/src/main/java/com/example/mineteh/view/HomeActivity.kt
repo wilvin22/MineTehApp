@@ -2,33 +2,36 @@ package com.example.mineteh.view
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.ProgressBar
+import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.mineteh.view.InboxActivity
-import com.example.mineteh.view.ItemAdapter
-import com.example.mineteh.view.ProfileActivity
 import com.example.mineteh.R
-import com.example.mineteh.view.SavedItemsActivity
-import com.example.mineteh.view.SellActivity
-import com.example.mineteh.model.ItemModel
+import com.example.mineteh.utils.Resource
+import com.example.mineteh.viewmodel.HomeViewModel
 
 class HomeActivity : AppCompatActivity() {
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: ItemAdapter
-    private lateinit var itemList: ArrayList<ItemModel>
+    private lateinit var progressBar: ProgressBar
+    
+    private val viewModel: HomeViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.homepage)
 
         recyclerView = findViewById(R.id.itemRecyclerView)
+        progressBar = findViewById(R.id.progressBar)
 
         setupRecyclerView()
-        loadDummyData()
+        observeViewModel()
 
         // Top Icons Navigation
         findViewById<ImageView>(R.id.btnSavedItems).setOnClickListener {
@@ -40,88 +43,68 @@ class HomeActivity : AppCompatActivity() {
         }
 
         // Bottom Navigation
-        val navBid = findViewById<LinearLayout>(R.id.nav_bid)
-        val navSell = findViewById<LinearLayout>(R.id.nav_sell)
-        val navInbox = findViewById<LinearLayout>(R.id.nav_inbox)
-        val navMe = findViewById<LinearLayout>(R.id.nav_profile)
+        findViewById<LinearLayout>(R.id.nav_home).setOnClickListener {
+            // Already here
+        }
 
-        navBid.setOnClickListener {
+        findViewById<LinearLayout>(R.id.nav_bid).setOnClickListener {
             startActivity(Intent(this, BidActivity::class.java))
             overridePendingTransition(0, 0)
-            finish()
         }
 
-        navSell.setOnClickListener {
+        findViewById<LinearLayout>(R.id.nav_sell).setOnClickListener {
             startActivity(Intent(this, SellActivity::class.java))
             overridePendingTransition(0, 0)
-            finish()
         }
 
-        navInbox.setOnClickListener {
+        findViewById<LinearLayout>(R.id.nav_inbox).setOnClickListener {
             startActivity(Intent(this, InboxActivity::class.java))
             overridePendingTransition(0, 0)
-            finish()
         }
 
-        navMe.setOnClickListener {
+        findViewById<LinearLayout>(R.id.nav_profile).setOnClickListener {
             startActivity(Intent(this, ProfileActivity::class.java))
             overridePendingTransition(0, 0)
-            finish()
         }
+        
+        // Category filters
+        setupCategoryFilters()
     }
 
     private fun setupRecyclerView() {
         recyclerView.layoutManager = GridLayoutManager(this, 2)
-        adapter = ItemAdapter(ArrayList())
+        adapter = ItemAdapter()
         recyclerView.adapter = adapter
     }
 
-    private fun loadDummyData() {
-        itemList = arrayListOf(
-            ItemModel(
-                "Item 1",
-                "Brief description",
-                "350.00",
-                "Manila",
-                imageRes = R.drawable.dummyphoto
-            ),
-            ItemModel(
-                "Item 2",
-                "Brief description",
-                "500.00",
-                "Dagupan",
-                imageRes = R.drawable.dummyphoto2
-            ),
-            ItemModel(
-                "Item 3",
-                "Brief description",
-                "750.00",
-                "Baguio",
-                imageRes = R.drawable.dummyphoto3
-            ),
-            ItemModel(
-                "Item 4",
-                "Brief description",
-                "1200.00",
-                "La Union",
-                imageRes = R.drawable.dummyphoto4
-            ),
-            ItemModel(
-                "Item 5",
-                "Brief description",
-                "899.00",
-                "Aguilar",
-                imageRes = R.drawable.dummyphoto5
-            ),
-            ItemModel(
-                "Item 6",
-                "Brief description",
-                "450.00",
-                "Lingayen",
-                imageRes = R.drawable.dummyphoto6
-            )
-        )
+    private fun observeViewModel() {
+        viewModel.listings.observe(this) { resource ->
+            when (resource) {
+                is Resource.Loading -> {
+                    progressBar.visibility = View.VISIBLE
+                }
+                is Resource.Success -> {
+                    progressBar.visibility = View.GONE
+                    resource.data?.let { listings ->
+                        adapter.updateList(listings)
+                    }
+                }
+                is Resource.Error -> {
+                    progressBar.visibility = View.GONE
+                    Toast.makeText(this, resource.message, Toast.LENGTH_SHORT).show()
+                }
+                null -> {}
+            }
+        }
+    }
 
-        adapter.updateList(itemList)
+    private fun setupCategoryFilters() {
+        // Simple filter implementation - can be expanded
+        // Assuming the buttons in homepage.xml have IDs or we can find them in the layout
+        // For now, it just demonstrates how to trigger the ViewModel
+        
+        // Example: If you had IDs for category buttons
+        // findViewById<Button>(R.id.btn_all).setOnClickListener { viewModel.fetchListings() }
+        // findViewById<Button>(R.id.btn_items).setOnClickListener { viewModel.fetchListings(category = "Items") }
     }
 }

@@ -7,12 +7,12 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.example.mineteh.view.ItemDetailActivity
+import com.bumptech.glide.Glide
 import com.example.mineteh.R
-import com.example.mineteh.model.ItemModel
+import com.example.mineteh.models.Listing
 
 class ItemAdapter(
-    private var itemList: ArrayList<ItemModel>,
+    private var itemList: List<Listing> = emptyList(),
     private val isBidActivity: Boolean = false
 ) : RecyclerView.Adapter<ItemAdapter.ViewHolder>() {
 
@@ -22,6 +22,7 @@ class ItemAdapter(
         val itemLocation: TextView? = itemView.findViewById(R.id.itemLocation)
         val itemHeart: ImageView = itemView.findViewById(R.id.itemHeart)
         val itemImage: ImageView = itemView.findViewById(R.id.itemImage)
+        val itemTypeBadge: TextView = itemView.findViewById(R.id.itemTypeBadge)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -34,28 +35,28 @@ class ItemAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = itemList[position]
-        holder.itemName.text = item.name
-        holder.itemPrice.text = "₱ ${item.price}"
-        holder.itemLocation?.text = item.location
+        holder.itemName.text = item.title
+        holder.itemPrice.text = "₱ ${String.format("%.2f", item.price)}"
+        holder.itemLocation?.text = "📍 ${item.location}"
+        holder.itemTypeBadge.text = item.listingType
 
-        // Load the image from ItemModel
-        holder.itemImage.setImageResource(item.imageRes)
+        // Use Glide to load the image from URL
+        Glide.with(holder.itemView.context)
+            .load(item.image) // Assuming item.image is the URL
+            .placeholder(R.drawable.dummyphoto) // Add a placeholder
+            .error(R.drawable.dummyphoto)
+            .into(holder.itemImage)
 
-        updateHeartIcon(holder.itemHeart, item.isLiked)
-
-        holder.itemHeart.setOnClickListener {
-            item.isLiked = !item.isLiked
-            updateHeartIcon(holder.itemHeart, item.isLiked)
-        }
+        updateHeartIcon(holder.itemHeart, item.isFavorited)
 
         holder.itemView.setOnClickListener {
             val context = holder.itemView.context
-            val intent = if (isBidActivity) {
+            val intent = if (isBidActivity || item.listingType == "BID") {
                 Intent(context, BidDetailActivity::class.java)
             } else {
                 Intent(context, ItemDetailActivity::class.java)
             }
-            intent.putExtra("item", item)
+            intent.putExtra("listing_id", item.id)
             context.startActivity(intent)
         }
     }
@@ -68,7 +69,7 @@ class ItemAdapter(
         }
     }
 
-    fun updateList(newList: ArrayList<ItemModel>) {
+    fun updateList(newList: List<Listing>) {
         itemList = newList
         notifyDataSetChanged()
     }

@@ -17,6 +17,9 @@ class SignupViewModel(application: Application) : AndroidViewModel(application) 
     private val _signupStatus = MutableLiveData<Resource<RegisterResponse>?>()
     val signupStatus: LiveData<Resource<RegisterResponse>?> = _signupStatus
 
+    private val _validationErrors = MutableLiveData<Map<String, String?>>()
+    val validationErrors: LiveData<Map<String, String?>> = _validationErrors
+
     fun onSignupClicked(
         username: String,
         firstName: String,
@@ -25,9 +28,10 @@ class SignupViewModel(application: Application) : AndroidViewModel(application) 
         password: String,
         confirmPass: String
     ) {
-        val error = validateInputs(username, firstName, lastName, email, password, confirmPass)
-        if (error != null) {
-            _signupStatus.value = Resource.Error(error)
+        val errors = validateInputs(username, firstName, lastName, email, password, confirmPass)
+        _validationErrors.value = errors
+
+        if (errors.isNotEmpty()) {
             return
         }
 
@@ -53,44 +57,49 @@ class SignupViewModel(application: Application) : AndroidViewModel(application) 
         email: String,
         password: String,
         confirmPass: String
-    ): String? {
+    ): Map<String, String?> {
+        val errors = mutableMapOf<String, String?>()
+
         if (!Regex("^[a-zA-Z0-9]{6,12}$").matches(username)) {
-            return "Username must be 6–12 letters or numbers"
+            errors["username"] = "Username must be 6–12 letters or numbers"
         }
 
         if (firstName.length < 2 || !Regex("^[a-zA-Z.\\-\\' ]+$").matches(firstName)) {
-            return "Invalid First Name"
+            errors["firstName"] = "Invalid First Name"
         }
 
         if (lastName.length < 2 || !Regex("^[a-zA-Z.\\-\\' ]+$").matches(lastName)) {
-            return "Invalid Last Name"
+            errors["lastName"] = "Invalid Last Name"
         }
 
         if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            return "Enter a valid email address"
+            errors["email"] = "Enter a valid email address"
         }
 
         val passError = getPasswordError(password)
-        if (passError != null) return passError
-
-        if (password != confirmPass) {
-            return "Passwords do not match"
+        if (passError != null) {
+            errors["password"] = passError
         }
 
-        return null
+        if (password != confirmPass) {
+            errors["confirmPass"] = "Passwords do not match"
+        }
+
+        return errors
     }
 
     private fun getPasswordError(password: String): String? {
-        if (password.length < 8 || password.length > 16) return "Password: 8–16 characters required"
-        if (!password.any { it.isUpperCase() }) return "Password: At least one uppercase letter required"
-        if (!password.any { it.isLowerCase() }) return "Password: At least one lowercase letter required"
-        if (!password.any { it.isDigit() }) return "Password: At least one number required"
-        if (!password.any { "!@#$%^&*()_=+{}|;:',.<>/?~`".contains(it) }) return "Password: At least one special character required"
-        if (password.contains(" ")) return "Password: Spaces are not allowed"
+        if (password.length < 8 || password.length > 16) return "8–16 characters required"
+        if (!password.any { it.isUpperCase() }) return "At least one uppercase letter required"
+        if (!password.any { it.isLowerCase() }) return "At least one lowercase letter required"
+        if (!password.any { it.isDigit() }) return "At least one number required"
+        if (!password.any { "!@#$%^&*()_=+{}|;:',.<>/?~`".contains(it) }) return "At least one special character required"
+        if (password.contains(" ")) return "Spaces are not allowed"
         return null
     }
 
     fun resetStatus() {
         _signupStatus.value = null
+        _validationErrors.value = emptyMap()
     }
 }
