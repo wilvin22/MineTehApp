@@ -51,6 +51,7 @@ object ApiClient {
             object : TypeToken<ApiResponse<List<Listing>>>() {}.type,
             ApiResponseDeserializer()
         )
+        .registerTypeAdapter(Listing::class.java, ListingDeserializer())
         .create()
 
     private val retrofit: Retrofit = Retrofit.Builder()
