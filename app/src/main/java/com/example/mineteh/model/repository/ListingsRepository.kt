@@ -6,6 +6,7 @@ import com.example.mineteh.models.Listing
 import com.example.mineteh.network.ApiClient
 import com.example.mineteh.utils.Resource
 import com.example.mineteh.utils.TokenManager
+import com.google.gson.JsonSyntaxException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -29,11 +30,20 @@ class ListingsRepository(private val context: Context) {
     ) = withContext(Dispatchers.IO) {
         try {
             val response = apiService.getListings(category, type, search, limit, offset)
-            if (response.isSuccessful && response.body()?.success == true) {
-                Resource.Success(response.body()?.data)
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body != null && body.success) {
+                    Resource.Success(body.data)
+                } else {
+                    Resource.Error(body?.message ?: "Failed to load listings")
+                }
             } else {
-                Resource.Error(response.body()?.message ?: "Failed to load listings")
+                Resource.Error("Error: ${response.code()} ${response.message()}")
             }
+        } catch (e: JsonSyntaxException) {
+            Resource.Error("Data format error: The server returned an unexpected response.")
+        } catch (e: IllegalStateException) {
+            Resource.Error("Parsing error: The server response could not be processed.")
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Network error")
         }
@@ -42,11 +52,18 @@ class ListingsRepository(private val context: Context) {
     suspend fun getListing(id: Int) = withContext(Dispatchers.IO) {
         try {
             val response = apiService.getListing(id)
-            if (response.isSuccessful && response.body()?.success == true) {
-                Resource.Success(response.body()?.data)
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body != null && body.success) {
+                    Resource.Success(body.data)
+                } else {
+                    Resource.Error(body?.message ?: "Failed to load listing")
+                }
             } else {
-                Resource.Error(response.body()?.message ?: "Failed to load listing")
+                Resource.Error("Error: ${response.code()} ${response.message()}")
             }
+        } catch (e: JsonSyntaxException) {
+            Resource.Error("Data format error")
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Network error")
         }
@@ -98,10 +115,15 @@ class ListingsRepository(private val context: Context) {
                 imageParts
             )
 
-            if (response.isSuccessful && response.body()?.success == true) {
-                Resource.Success(response.body()?.data)
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body != null && body.success) {
+                    Resource.Success(body.data)
+                } else {
+                    Resource.Error(body?.message ?: "Failed to create listing")
+                }
             } else {
-                Resource.Error(response.body()?.message ?: "Failed to create listing")
+                Resource.Error("Error: ${response.code()}")
             }
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Network error")
