@@ -4,120 +4,81 @@
     
     <!-- Display Styles -->
     <style name="TextAppearance.MineTeh.DisplayLarge" parent="TextAppearance.Material3.DisplayLarge">
-        <item name="android:fontFamily">sans-serif</item>
         <item name="android:textSize">57sp</item>
-        <item name="android:lineHeight">@dimen/line_height_display_large</item>
-        <item name="android:letterSpacing">-0.25sp</item>
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
     
     <style name="TextAppearance.MineTeh.DisplayMedium" parent="TextAppearance.Material3.DisplayMedium">
-        <item name="android:fontFamily">sans-serif</item>
         <item name="android:textSize">45sp</item>
-        <item name="android:lineHeight">@dimen/line_height_display_medium</item>
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
     
     <style name="TextAppearance.MineTeh.DisplaySmall" parent="TextAppearance.Material3.DisplaySmall">
-        <item name="android:fontFamily">sans-serif</item>
         <item name="android:textSize">36sp</item>
-        <item name="android:lineHeight">@dimen/line_height_display_small</item>
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
     
     <!-- Headline Styles -->
     <style name="TextAppearance.MineTeh.HeadlineLarge" parent="TextAppearance.Material3.HeadlineLarge">
-        <item name="android:fontFamily">sans-serif</item>
         <item name="android:textSize">32sp</item>
-        <item name="android:lineHeight">@dimen/line_height_headline_large</item>
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
     
     <style name="TextAppearance.MineTeh.HeadlineMedium" parent="TextAppearance.Material3.HeadlineMedium">
-        <item name="android:fontFamily">sans-serif</item>
         <item name="android:textSize">28sp</item>
-        <item name="android:lineHeight">@dimen/line_height_headline_medium</item>
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
     
     <style name="TextAppearance.MineTeh.HeadlineSmall" parent="TextAppearance.Material3.HeadlineSmall">
-        <item name="android:fontFamily">sans-serif</item>
         <item name="android:textSize">24sp</item>
-        <item name="android:lineHeight">@dimen/line_height_headline_small</item>
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
     
     <!-- Title Styles -->
     <style name="TextAppearance.MineTeh.TitleLarge" parent="TextAppearance.Material3.TitleLarge">
-        <item name="android:fontFamily">sans-serif-medium</item>
         <item name="android:textSize">22sp</item>
-        <item name="android:lineHeight">@dimen/line_height_title_large</item>
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
     
     <style name="TextAppearance.MineTeh.TitleMedium" parent="TextAppearance.Material3.TitleMedium">
-        <item name="android:fontFamily">sans-serif-medium</item>
         <item name="android:textSize">16sp</item>
-        <item name="android:lineHeight">@dimen/line_height_title_medium</item>
-        <item name="android:letterSpacing">0.15sp</item>
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
     
     <style name="TextAppearance.MineTeh.TitleSmall" parent="TextAppearance.Material3.TitleSmall">
-        <item name="android:fontFamily">sans-serif-medium</item>
         <item name="android:textSize">14sp</item>
-        <item name="android:lineHeight">@dimen/line_height_title_small</item>
-        <item name="android:letterSpacing">0.1sp</item>
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
     
     <!-- Body Styles -->
     <style name="TextAppearance.MineTeh.BodyLarge" parent="TextAppearance.Material3.BodyLarge">
-        <item name="android:fontFamily">sans-serif</item>
         <item name="android:textSize">16sp</item>
-        <item name="android:lineHeight">@dimen/line_height_body_large</item>
-        <item name="android:letterSpacing">0.5sp</item>
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
     
     <style name="TextAppearance.MineTeh.BodyMedium" parent="TextAppearance.Material3.BodyMedium">
-        <item name="android:fontFamily">sans-serif</item>
         <item name="android:textSize">14sp</item>
-        <item name="android:lineHeight">@dimen/line_height_body_medium</item>
-        <item name="android:letterSpacing">0.25sp</item>
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
     
     <style name="TextAppearance.MineTeh.BodySmall" parent="TextAppearance.Material3.BodySmall">
-        <item name="android:fontFamily">sans-serif</item>
         <item name="android:textSize">12sp</item>
-        <item name="android:lineHeight">@dimen/line_height_body_small</item>
-        <item name="android:letterSpacing">0.4sp</item>
         <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
     </style>
     
     <!-- Label Styles -->
     <style name="TextAppearance.MineTeh.LabelLarge" parent="TextAppearance.Material3.LabelLarge">
-        <item name="android:fontFamily">sans-serif-medium</item>
         <item name="android:textSize">14sp</item>
-        <item name="android:lineHeight">@dimen/line_height_label_large</item>
-        <item name="android:letterSpacing">0.1sp</item>
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
     
     <style name="TextAppearance.MineTeh.LabelMedium" parent="TextAppearance.Material3.LabelMedium">
-        <item name="android:fontFamily">sans-serif-medium</item>
         <item name="android:textSize">12sp</item>
-        <item name="android:lineHeight">@dimen/line_height_label_medium</item>
-        <item name="android:letterSpacing">0.5sp</item>
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
     
     <style name="TextAppearance.MineTeh.LabelSmall" parent="TextAppearance.Material3.LabelSmall">
-        <item name="android:fontFamily">sans-serif-medium</item>
         <item name="android:textSize">11sp</item>
-        <item name="android:lineHeight">@dimen/line_height_label_small</item>
-        <item name="android:letterSpacing">0.5sp</item>
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
 </resources>

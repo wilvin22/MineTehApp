@@ -127,13 +127,6 @@
         <item name="thumbTint">?attr/colorPrimary</item>
         <item name="trackTint">?attr/colorSurfaceVariant</item>
     </style>
-    
-    <!-- Slider Style -->
-    <style name="Widget.MineTeh.Slider" parent="Widget.Material3.Slider">
-        <item name="activeTrackColor">?attr/colorPrimary</item>
-        <item name="inactiveTrackColor">?attr/colorSurfaceVariant</item>
-        <item name="thumbColor">?attr/colorPrimary</item>
-    </style>
 
     <!-- Theme Overlays for Component Customization -->
     <style name="ThemeOverlay.MineTeh.BottomNavigation" parent="">
