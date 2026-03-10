@@ -105,8 +105,4 @@
     <color name="success">#4CAF50</color>
     <color name="warning">#FF9800</color>
     <color name="info">#2196F3</color>
-    
-    <!-- Bottom Navigation Colors -->
-    <color name="bottom_nav_item_color">@color/md_theme_light_primary</color>
-    <color name="bottom_nav_item_color_dark">@color/md_theme_dark_primary</color>
 </resources>

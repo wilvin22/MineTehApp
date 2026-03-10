@@ -45,7 +45,4 @@
     </style>
 
     <style name="Theme.MineTeh" parent="Base.Theme.MineTeh" />
-    
-    <!-- Bottom Navigation Colors for Dark Theme -->
-    <color name="bottom_nav_item_color">@color/bottom_nav_item_color_dark</color>
 </resources>
