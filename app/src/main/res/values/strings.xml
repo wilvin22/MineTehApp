@@ -1,3 +1,72 @@
 <resources>
     <string name="app_name">MineTeh</string>
+    
+    <!-- Accessibility Strings -->
+    <string name="item_card_description">Item card with product information</string>
+    <string name="item_image_description">Product image</string>
+    <string name="add_to_favorites">Add to favorites</string>
+    <string name="remove_from_favorites">Remove from favorites</string>
+    <string name="place_bid">Place bid</string>
+    <string name="place_bid_description">Place a bid on this auction item</string>
+    
+    <!-- Search Interface -->
+    <string name="search_hint">Search for items…</string>
+    <string name="category">Category</string>
+    <string name="price_range">Price Range</string>
+    <string name="location">Location</string>
+    
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_search">Search</string>
+    <string name="nav_auctions">Auctions</string>
+    <string name="nav_cart">Cart</string>
+    <string name="nav_profile">Profile</string>
+    
+    <!-- Common Actions -->
+    <string name="retry">Retry</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
+    <string name="share">Share</string>
+    
+    <!-- Form Labels -->
+    <string name="required_field">Required field</string>
+    <string name="optional_field">Optional</string>
+    <string name="field_error">Please check this field</string>
+    
+    <!-- Loading States -->
+    <string name="loading">Loading…</string>
+    <string name="loading_items">Loading items…</string>
+    <string name="loading_search_results">Loading search results…</string>
+    
+    <!-- Error States -->
+    <string name="error_network">Network error. Please check your connection.</string>
+    <string name="error_generic">Something went wrong. Please try again.</string>
+    <string name="error_no_results">No results found</string>
+    
+    <!-- Empty States -->
+    <string name="empty_favorites">No favorite items yet</string>
+    <string name="empty_cart">Your cart is empty</string>
+    <string name="empty_search">No items match your search</string>
+    
+    <!-- Content Descriptions for Icons -->
+    <string name="icon_search">Search</string>
+    <string name="icon_filter">Filter</string>
+    <string name="icon_sort">Sort</string>
+    <string name="icon_menu">Menu</string>
+    <string name="icon_back">Back</string>
+    <string name="icon_close">Close</string>
+    <string name="icon_more">More options</string>
+    
+    <!-- Auction Specific -->
+    <string name="time_remaining">Time remaining: %1$s</string>
+    <string name="auction_ended">Auction ended</string>
+    <string name="current_bid">Current bid: %1$s</string>
+    <string name="starting_bid">Starting bid: %1$s</string>
+    
+    <!-- Theme Settings -->
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_system">System default</string>
 </resources>

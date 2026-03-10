@@ -1,111 +1,141 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Widget.MineTeh.Card.Item"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="12dp"
-    android:elevation="8dp"
-    app:cardCornerRadius="16dp"
-    app:cardBackgroundColor="@color/white"
+    android:layout_margin="@dimen/item_card_margin"
+    app:cardCornerRadius="@dimen/corner_radius_md"
+    app:cardElevation="@dimen/elevation_card"
+    app:cardBackgroundColor="?attr/colorSurface"
     android:foreground="?attr/selectableItemBackground"
     android:clickable="true"
-    android:focusable="true">
+    android:focusable="true"
+    android:contentDescription="Item card">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Image Container -->
+        <!-- Image Container with Loading State -->
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="180dp"
-            android:background="@color/gray_medium">
+            android:background="?attr/colorSurfaceVariant">
 
-            <!-- Item Photo -->
+            <!-- Item Photo with proper scaling -->
             <ImageView
                 android:id="@+id/itemImage"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"
-                android:background="#D9D9D9"/>
+                android:background="?attr/colorSurfaceVariant"
+                android:contentDescription="Item image"
+                android:importantForAccessibility="yes"/>
 
-            <!-- Heart Icon Overlay -->
-            <ImageView
+            <!-- Loading Progress Indicator -->
+            <com.google.android.material.progressindicator.CircularProgressIndicator
+                android:id="@+id/imageLoadingIndicator"
+                style="@style/Widget.MineTeh.CircularProgressIndicator"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:visibility="gone"
+                android:indeterminate="true" />
+
+            <!-- Heart Icon Overlay with proper touch target -->
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/itemHeart"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:src="@drawable/heart"
+                style="@style/Widget.MineTeh.Button.IconButton"
+                android:layout_width="@dimen/min_touch_target"
+                android:layout_height="@dimen/min_touch_target"
                 android:layout_gravity="top|end"
-                android:layout_margin="12dp"
-                android:clickable="true"
-                android:focusable="true"
-                android:background="?attr/selectableItemBackgroundBorderless"/>
+                android:layout_margin="@dimen/spacing_sm"
+                app:icon="@drawable/heart"
+                app:iconTint="?attr/colorOnSurface"
+                android:contentDescription="Add to favorites"
+                android:background="@drawable/focus_indicator"
+                app:backgroundTint="@android:color/transparent" />
 
-            <!-- Type Badge (Fixed/Bid) -->
-            <TextView
+            <!-- Type Badge (Fixed/Bid) with Material Design -->
+            <com.google.android.material.chip.Chip
                 android:id="@+id/itemTypeBadge"
+                style="@style/Widget.MineTeh.Chip.Action"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="FIXED"
                 android:textSize="10sp"
                 android:textStyle="bold"
-                android:textColor="@color/white"
-                android:background="@drawable/badge_background"
-                android:paddingStart="10dp"
-                android:paddingEnd="10dp"
-                android:paddingTop="4dp"
-                android:paddingBottom="4dp"
                 android:layout_gravity="bottom|start"
-                android:layout_margin="12dp"/>
+                android:layout_margin="@dimen/spacing_sm"
+                app:chipBackgroundColor="?attr/colorPrimary"
+                android:textColor="?attr/colorOnPrimary"
+                app:chipMinHeight="24dp"
+                android:clickable="false"
+                android:focusable="false" />
         </FrameLayout>
 
-        <!-- Content Section -->
+        <!-- Content Section with proper spacing -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
+            android:padding="@dimen/spacing_md"
             android:orientation="vertical">
 
-            <!-- Price (Top) -->
+            <!-- Price with Material Typography -->
             <TextView
                 android:id="@+id/itemPrice"
-                android:text="₱350"
-                android:textStyle="bold"
-                android:textSize="18sp"
-                android:textColor="@color/purple"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:text="₱350"
+                android:textAppearance="@style/TextAppearance.MineTeh.HeadlineSmall"
+                android:textColor="?attr/colorPrimary"
                 android:lines="1"
-                android:ellipsize="end"/>
+                android:ellipsize="end"
+                android:contentDescription="Item price" />
 
-            <!-- Item Name -->
+            <!-- Item Name with proper hierarchy -->
             <TextView
                 android:id="@+id/itemName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_xs"
                 android:text="Item Name"
-                android:textStyle="bold"
-                android:textSize="14sp"
-                android:textColor="@color/text_primary"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:lines="1"
+                android:textAppearance="@style/TextAppearance.MineTeh.TitleMedium"
+                android:textColor="?attr/colorOnSurface"
+                android:lines="2"
                 android:ellipsize="end"
-                android:layout_marginTop="4dp"/>
+                android:contentDescription="Item name" />
 
-            <!-- Location -->
-            <TextView
-                android:id="@+id/itemLocation"
-                android:text="📍 Manila"
-                android:textSize="12sp"
-                android:textColor="@color/text_secondary"
+            <!-- Location with icon -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:lines="1"
-                android:ellipsize="end"
-                android:layout_marginTop="4dp"/>
+                android:layout_marginTop="@dimen/spacing_xs"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_marginEnd="@dimen/spacing_xs"
+                    android:src="@drawable/ic_location"
+                    app:tint="?attr/colorOnSurfaceVariant"
+                    android:contentDescription="Location icon" />
+
+                <TextView
+                    android:id="@+id/itemLocation"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Manila"
+                    android:textAppearance="@style/TextAppearance.MineTeh.BodySmall"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:lines="1"
+                    android:ellipsize="end"
+                    android:contentDescription="Item location" />
+            </LinearLayout>
 
             <!-- Auction Timer (Only visible for BID type) -->
             <LinearLayout
@@ -114,26 +144,31 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:layout_marginTop="6dp"
-                android:visibility="gone">
+                android:layout_marginTop="@dimen/spacing_sm"
+                android:visibility="gone"
+                android:background="?attr/colorErrorContainer"
+                android:padding="@dimen/spacing_xs"
+                app:cardCornerRadius="@dimen/corner_radius_xs">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="⏰"
-                    android:textSize="12sp"
-                    android:layout_marginEnd="4dp"/>
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_marginEnd="@dimen/spacing_xs"
+                    android:src="@drawable/ic_timer"
+                    app:tint="?attr/colorOnErrorContainer"
+                    android:contentDescription="Timer icon" />
 
                 <TextView
                     android:id="@+id/itemAuctionTimer"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="2d 5h 30m"
-                    android:textSize="12sp"
+                    android:textAppearance="@style/TextAppearance.MineTeh.LabelMedium"
+                    android:textColor="?attr/colorOnErrorContainer"
                     android:textStyle="bold"
-                    android:textColor="@color/purple"/>
+                    android:contentDescription="Time remaining" />
             </LinearLayout>
 
         </LinearLayout>
     </LinearLayout>
-</androidx.cardview.widget.CardView>
+</com.google.android.material.card.MaterialCardView>

@@ -1,55 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     tools:context=".MainActivity">
 
-    <LinearLayout
+    <!-- Main Content Container -->
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/nav_host_fragment"
+        android:name="androidx.navigation.fragment.NavHostFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center"
-        android:orientation="vertical"
-        tools:layout_editor_absoluteX="0dp"
-        tools:layout_editor_absoluteY="0dp">
+        android:layout_marginBottom="@dimen/bottom_navigation_height"
+        app:defaultNavHost="true"
+        app:navGraph="@navigation/nav_graph" />
 
-        <TextView
-            android:id="@+id/header"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="MineTeh"
-            android:textSize="68sp"
-            android:fontFamily="sans-serif-condensed-medium"
-            android:textColor="@color/black"/>
+    <!-- Bottom Navigation with Material Design 3 -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation"
+        style="@style/Widget.MineTeh.BottomNavigationView"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/bottom_navigation_height"
+        android:layout_gravity="bottom"
+        app:menu="@menu/bottom_navigation_menu"
+        app:labelVisibilityMode="labeled"
+        app:itemIconTint="@color/bottom_nav_item_color"
+        app:itemTextColor="@color/bottom_nav_item_color"
+        app:backgroundTint="?attr/colorSurface"
+        app:elevation="@dimen/elevation_card"
+        android:contentDescription="Main navigation"
+        android:importantForAccessibility="yes" />
 
-        <TextView
-            android:id="@+id/description"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="125px"
-            android:gravity="center"
-            android:text="Scroll, Bid, Buy it!"
-            android:textSize="25sp"
-            android:fontFamily="sans-serif-condensed-medium"
-            android:textColor="@color/black"/>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/getStarted"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Get Started"
-            android:textSize="30sp"
-            android:textColor="@color/black"
-            android:background="@drawable/buttons"
-            android:fontFamily="sans-serif-condensed-medium"
-            app:backgroundTint="@null"
-            app:cornerRadius="0dp"
-/>
-
-
-
-    </LinearLayout>
-</androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

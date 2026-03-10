@@ -117,4 +117,3 @@ data class BidRequest(
 data class FavoriteRequest(
     val listing_id: Int
 )
-

@@ -6,40 +6,37 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:background="@color/white"
+    android:background="?attr/colorBackground"
     tools:context=".Login">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="32dp">
+        android:padding="@dimen/spacing_xl">
 
-        <!-- App Name / Header -->
+        <!-- App Name / Header with Material Typography -->
         <TextView
             android:id="@+id/header"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:fontFamily="sans-serif-condensed-medium"
+            android:layout_marginTop="@dimen/spacing_lg"
             android:text="@string/app_name"
-            android:textColor="@color/purple"
-            android:textSize="48sp"
+            android:textAppearance="@style/TextAppearance.MineTeh.DisplayMedium"
+            android:textColor="?attr/colorPrimary"
             android:textStyle="bold"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
-        <!-- Welcome Messages -->
+        <!-- Welcome Messages with Material Typography -->
         <TextView
             android:id="@+id/textView"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:fontFamily="sans-serif"
+            android:layout_marginTop="@dimen/spacing_md"
             android:text="Welcome back to MineTeh!"
-            android:textColor="@color/text_primary"
-            android:textSize="18sp"
-            android:textStyle="bold"
+            android:textAppearance="@style/TextAppearance.MineTeh.HeadlineSmall"
+            android:textColor="?attr/colorOnSurface"
             android:gravity="center"
             app:layout_constraintTop_toBottomOf="@id/header"
             app:layout_constraintStart_toStartOf="parent"
@@ -50,29 +47,30 @@
             android:id="@+id/textView2"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:fontFamily="sans-serif"
+            android:layout_marginTop="@dimen/spacing_xs"
             android:text="Login now to scroll, bid, and buy!"
-            android:textColor="@color/text_secondary"
-            android:textSize="14sp"
+            android:textAppearance="@style/TextAppearance.MineTeh.BodyMedium"
+            android:textColor="?attr/colorOnSurfaceVariant"
             android:gravity="center"
             app:layout_constraintTop_toBottomOf="@id/textView"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintWidth_max="320dp" />
 
-        <!-- Email Input -->
+        <!-- Email Input with Material Design 3 -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/email_layout"
+            style="@style/Widget.MineTeh.TextInputLayout"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            app:boxBackgroundMode="outline"
-            app:boxStrokeColor="@color/purple"
-            app:boxCornerRadiusBottomEnd="12dp"
-            app:boxCornerRadiusBottomStart="12dp"
-            app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusTopStart="12dp"
+            android:layout_marginTop="@dimen/spacing_xl"
+            android:hint="Email Address"
+            app:boxCornerRadiusBottomEnd="@dimen/corner_radius_md"
+            app:boxCornerRadiusBottomStart="@dimen/corner_radius_md"
+            app:boxCornerRadiusTopEnd="@dimen/corner_radius_md"
+            app:boxCornerRadiusTopStart="@dimen/corner_radius_md"
+            app:startIconDrawable="@drawable/ic_person"
+            app:startIconContentDescription="Email icon"
             app:layout_constraintTop_toBottomOf="@id/textView2"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -82,26 +80,26 @@
                 android:id="@+id/email_login"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:fontFamily="sans-serif-condensed-medium"
-                android:hint="Email Address"
                 android:inputType="textEmailAddress"
-                android:textSize="14sp"
-                android:padding="16dp" />
+                android:textAppearance="@style/TextAppearance.MineTeh.BodyLarge"
+                android:minHeight="@dimen/min_touch_target"
+                android:contentDescription="Email address input" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Password Input -->
+        <!-- Password Input with Material Design 3 -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/password_layout"
+            style="@style/Widget.MineTeh.TextInputLayout"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            app:boxBackgroundMode="outline"
-            app:boxStrokeColor="@color/purple"
-            app:boxCornerRadiusBottomEnd="12dp"
-            app:boxCornerRadiusBottomStart="12dp"
-            app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusTopStart="12dp"
+            android:layout_marginTop="@dimen/spacing_md"
+            android:hint="Password"
+            app:boxCornerRadiusBottomEnd="@dimen/corner_radius_md"
+            app:boxCornerRadiusBottomStart="@dimen/corner_radius_md"
+            app:boxCornerRadiusTopEnd="@dimen/corner_radius_md"
+            app:boxCornerRadiusTopStart="@dimen/corner_radius_md"
             app:endIconMode="password_toggle"
+            app:endIconContentDescription="Toggle password visibility"
             app:layout_constraintTop_toBottomOf="@id/email_layout"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -111,84 +109,71 @@
                 android:id="@+id/password_login"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:fontFamily="sans-serif-condensed-medium"
-                android:hint="Password"
                 android:inputType="textPassword"
-                android:textSize="14sp"
-                android:padding="16dp" />
+                android:textAppearance="@style/TextAppearance.MineTeh.BodyLarge"
+                android:minHeight="@dimen/min_touch_target"
+                android:contentDescription="Password input" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Fixed Row: Remember Me & Forgot Password -->
+        <!-- Remember Me & Forgot Password with Material Design -->
         <com.google.android.material.checkbox.MaterialCheckBox
             android:id="@+id/rememberMeCheckbox"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_height="@dimen/min_touch_target"
+            android:layout_marginTop="@dimen/spacing_sm"
             android:text="Remember me"
-            android:textSize="12sp"
-            android:textColor="@color/text_secondary"
-            app:buttonTint="@color/purple"
+            android:textAppearance="@style/TextAppearance.MineTeh.BodySmall"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            app:buttonTint="?attr/colorPrimary"
+            android:contentDescription="Remember login credentials"
             app:layout_constraintTop_toBottomOf="@id/password_layout"
             app:layout_constraintStart_toStartOf="@id/password_layout" />
 
-        <TextView
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/forgotPassword"
+            style="@style/Widget.MineTeh.Button.Tertiary"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:clickable="true"
-            android:focusable="true"
+            android:layout_height="@dimen/min_touch_target"
             android:text="Forgot Password?"
-            android:textColor="@color/purple"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            android:padding="8dp"
+            android:textAppearance="@style/TextAppearance.MineTeh.LabelMedium"
+            android:textColor="?attr/colorPrimary"
+            android:contentDescription="Reset password"
             app:layout_constraintTop_toTopOf="@id/rememberMeCheckbox"
             app:layout_constraintBottom_toBottomOf="@id/rememberMeCheckbox"
             app:layout_constraintEnd_toEndOf="@id/password_layout" />
 
-        <!-- Log In Button -->
+        <!-- Log In Button with Material Design 3 -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/login_btn"
+            style="@style/Widget.MineTeh.Button.Primary"
             android:layout_width="0dp"
-            android:layout_height="56dp"
-            android:layout_marginTop="24dp"
+            android:layout_height="@dimen/recommended_touch_target"
+            android:layout_marginTop="@dimen/spacing_lg"
             android:text="Log in"
-            android:textColor="@color/white"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:fontFamily="sans-serif-condensed-medium"
-            app:backgroundTint="@color/purple"
-            app:cornerRadius="12dp"
-            style="@style/Widget.MaterialComponents.Button"
-            android:elevation="4dp"
+            android:textAppearance="@style/TextAppearance.MineTeh.LabelLarge"
+            android:contentDescription="Log in to account"
             app:layout_constraintTop_toBottomOf="@id/rememberMeCheckbox"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintWidth_max="320dp" />
 
-        <!-- Sign Up Button -->
+        <!-- Sign Up Button with Material Design 3 -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/signup_btn"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            style="@style/Widget.MineTeh.Button.Secondary"
             android:layout_width="0dp"
-            android:layout_height="56dp"
-            android:layout_marginBottom="24dp"
-            android:fontFamily="sans-serif-condensed-medium"
+            android:layout_height="@dimen/recommended_touch_target"
+            android:layout_marginTop="@dimen/spacing_md"
+            android:layout_marginBottom="@dimen/spacing_lg"
             android:text="Sign up"
-            android:textColor="@color/purple"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            app:backgroundTint="@color/white"
-            app:cornerRadius="12dp"
+            android:textAppearance="@style/TextAppearance.MineTeh.LabelLarge"
+            android:contentDescription="Create new account"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.481"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/login_btn"
             app:layout_constraintVertical_bias="0.0"
-            app:layout_constraintWidth_max="320dp"
-            app:strokeColor="@color/purple"
-            app:strokeWidth="2dp" />
+            app:layout_constraintWidth_max="320dp" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

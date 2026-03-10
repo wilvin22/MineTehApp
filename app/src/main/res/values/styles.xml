@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Material Design 3 Component Styles -->
+    
+    <!-- Item Card Styles -->
+    <style name="Widget.MineTeh.Card.Item" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardCornerRadius">@dimen/corner_radius_md</item>
+        <item name="cardElevation">@dimen/elevation_card</item>
+        <item name="android:layout_margin">@dimen/item_card_margin</item>
+        <item name="contentPadding">@dimen/spacing_md</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:foreground">?android:attr/selectableItemBackground</item>
+    </style>
+    
+    <!-- Button Styles -->
+    <style name="Widget.MineTeh.Button.Primary" parent="Widget.Material3.Button">
+        <item name="backgroundTint">?attr/colorPrimary</item>
+        <item name="android:textColor">?attr/colorOnPrimary</item>
+        <item name="cornerRadius">@dimen/corner_radius_lg</item>
+        <item name="android:minHeight">@dimen/min_touch_target</item>
+        <item name="android:textAppearance">@style/TextAppearance.MineTeh.LabelLarge</item>
+    </style>
+    
+    <style name="Widget.MineTeh.Button.Secondary" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="strokeColor">?attr/colorPrimary</item>
+        <item name="android:textColor">?attr/colorPrimary</item>
+        <item name="cornerRadius">@dimen/corner_radius_lg</item>
+        <item name="android:minHeight">@dimen/min_touch_target</item>
+        <item name="android:textAppearance">@style/TextAppearance.MineTeh.LabelLarge</item>
+    </style>
+    
+    <style name="Widget.MineTeh.Button.Tertiary" parent="Widget.Material3.Button.TextButton">
+        <item name="android:textColor">?attr/colorPrimary</item>
+        <item name="cornerRadius">@dimen/corner_radius_lg</item>
+        <item name="android:minHeight">@dimen/min_touch_target</item>
+        <item name="android:textAppearance">@style/TextAppearance.MineTeh.LabelLarge</item>
+    </style>
+    
+    <style name="Widget.MineTeh.Button.IconButton" parent="Widget.Material3.Button.IconButton">
+        <item name="android:minWidth">@dimen/min_touch_target</item>
+        <item name="android:minHeight">@dimen/min_touch_target</item>
+        <item name="iconTint">?attr/colorOnSurface</item>
+    </style>
+    
+    <!-- Text Input Styles -->
+    <style name="Widget.MineTeh.TextInputLayout" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxStrokeColor">?attr/colorPrimary</item>
+        <item name="hintTextColor">?attr/colorOnSurfaceVariant</item>
+        <item name="android:layout_marginBottom">@dimen/text_input_margin_bottom</item>
+        <item name="errorTextColor">?attr/colorError</item>
+        <item name="helperTextTextColor">?attr/colorOnSurfaceVariant</item>
+    </style>
+    
+    <style name="Widget.MineTeh.TextInputLayout.Dense" parent="Widget.MineTeh.TextInputLayout">
+        <item name="materialThemeOverlay">@style/ThemeOverlay.Material3.TextInputEditText.OutlinedBox.Dense</item>
+    </style>
+    
+    <!-- Chip Styles -->
+    <style name="Widget.MineTeh.Chip.Filter" parent="Widget.Material3.Chip.Filter">
+        <item name="chipBackgroundColor">?attr/colorSurfaceVariant</item>
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+        <item name="chipStrokeColor">?attr/colorOutline</item>
+        <item name="chipStrokeWidth">1dp</item>
+        <item name="android:textAppearance">@style/TextAppearance.MineTeh.LabelMedium</item>
+    </style>
+    
+    <style name="Widget.MineTeh.Chip.Action" parent="Widget.Material3.Chip.Assist">
+        <item name="chipBackgroundColor">?attr/colorSecondaryContainer</item>
+        <item name="android:textColor">?attr/colorOnSecondaryContainer</item>
+        <item name="android:textAppearance">@style/TextAppearance.MineTeh.LabelMedium</item>
+    </style>
+    
+    <!-- Bottom Navigation Style -->
+    <style name="Widget.MineTeh.BottomNavigationView" parent="Widget.Material3.BottomNavigationView">
+        <item name="itemIconTint">@color/bottom_nav_item_color</item>
+        <item name="itemTextColor">@color/bottom_nav_item_color</item>
+        <item name="backgroundTint">?attr/colorSurface</item>
+        <item name="elevation">@dimen/elevation_card</item>
+        <item name="labelVisibilityMode">labeled</item>
+    </style>
+    
+    <!-- Search Bar Style -->
+    <style name="Widget.MineTeh.SearchBar" parent="Widget.Material3.SearchBar">
+        <item name="android:layout_margin">@dimen/spacing_md</item>
+        <item name="backgroundTint">?attr/colorSurfaceVariant</item>
+    </style>
+    
+    <!-- FAB Styles -->
+    <style name="Widget.MineTeh.FloatingActionButton" parent="Widget.Material3.FloatingActionButton.Primary">
+        <item name="backgroundTint">?attr/colorPrimary</item>
+        <item name="tint">?attr/colorOnPrimary</item>
+        <item name="elevation">@dimen/elevation_fab</item>
+    </style>
+    
+    <style name="Widget.MineTeh.FloatingActionButton.Small" parent="Widget.Material3.FloatingActionButton.Small.Primary">
+        <item name="backgroundTint">?attr/colorPrimary</item>
+        <item name="tint">?attr/colorOnPrimary</item>
+        <item name="elevation">@dimen/elevation_fab</item>
+    </style>
+    
+    <!-- Badge Styles -->
+    <style name="Widget.MineTeh.Badge" parent="Widget.Material3.Badge">
+        <item name="backgroundColor">?attr/colorError</item>
+        <item name="badgeTextColor">?attr/colorOnError</item>
+    </style>
+    
+    <!-- Progress Indicator Styles -->
+    <style name="Widget.MineTeh.CircularProgressIndicator" parent="Widget.Material3.CircularProgressIndicator">
+        <item name="indicatorColor">?attr/colorPrimary</item>
+        <item name="trackColor">?attr/colorSurfaceVariant</item>
+    </style>
+    
+    <style name="Widget.MineTeh.LinearProgressIndicator" parent="Widget.Material3.LinearProgressIndicator">
+        <item name="indicatorColor">?attr/colorPrimary</item>
+        <item name="trackColor">?attr/colorSurfaceVariant</item>
+    </style>
+    
+    <!-- Divider Style -->
+    <style name="Widget.MineTeh.Divider" parent="Widget.Material3.MaterialDivider">
+        <item name="dividerColor">?attr/colorOutlineVariant</item>
+        <item name="dividerThickness">1dp</item>
+    </style>
+    
+    <!-- Switch Style -->
+    <style name="Widget.MineTeh.Switch" parent="Widget.Material3.CompoundButton.Switch">
+        <item name="thumbTint">?attr/colorPrimary</item>
+        <item name="trackTint">?attr/colorSurfaceVariant</item>
+    </style>
+    
+    <!-- Slider Style -->
+    <style name="Widget.MineTeh.Slider" parent="Widget.Material3.Slider">
+        <item name="activeTrackColor">?attr/colorPrimary</item>
+        <item name="inactiveTrackColor">?attr/colorSurfaceVariant</item>
+        <item name="thumbColor">?attr/colorPrimary</item>
+    </style>
+</resources>
+    <!-- Theme Overlays for Component Customization -->
+    <style name="ThemeOverlay.MineTeh.BottomNavigation" parent="">
+        <item name="colorSurface">?attr/colorSurface</item>
+        <item name="colorOnSurface">?attr/colorOnSurface</item>
+        <item name="colorPrimary">?attr/colorPrimary</item>
+        <item name="elevation">@dimen/elevation_card</item>
+    </style>
+    
+    <style name="ThemeOverlay.MineTeh.Card" parent="">
+        <item name="colorSurface">?attr/colorSurface</item>
+        <item name="colorOnSurface">?attr/colorOnSurface</item>
+        <item name="colorOutline">?attr/colorOutlineVariant</item>
+    </style>
+    
+    <style name="ThemeOverlay.MineTeh.Dialog" parent="ThemeOverlay.Material3.Dialog">
+        <item name="colorSurface">?attr/colorSurface</item>
+        <item name="colorOnSurface">?attr/colorOnSurface</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+    </style>
+    
+    <!-- Accessibility Styles -->
+    <style name="Widget.MineTeh.AccessibleButton" parent="Widget.MineTeh.Button.Primary">
+        <item name="android:minWidth">@dimen/min_touch_target</item>
+        <item name="android:minHeight">@dimen/min_touch_target</item>
+        <item name="android:focusable">true</item>
+        <item name="android:clickable">true</item>
+        <item name="android:background">@drawable/focus_indicator</item>
+    </style>
+    
+    <style name="Widget.MineTeh.AccessibleImageButton" parent="Widget.Material3.Button.IconButton">
+        <item name="android:minWidth">@dimen/min_touch_target</item>
+        <item name="android:minHeight">@dimen/min_touch_target</item>
+        <item name="android:focusable">true</item>
+        <item name="android:clickable">true</item>
+        <item name="android:background">@drawable/focus_indicator</item>
+    </style>
+    
+    <!-- Loading State Styles -->
+    <style name="Widget.MineTeh.LoadingIndicator" parent="Widget.MineTeh.CircularProgressIndicator">
+        <item name="android:layout_centerInParent">true</item>
+        <item name="android:visibility">gone</item>
+    </style>
+    
+    <!-- Error State Styles -->
+    <style name="TextAppearance.MineTeh.Error" parent="TextAppearance.MineTeh.BodyMedium">
+        <item name="android:textColor">?attr/colorError</item>
+    </style>
+    
+    <style name="TextAppearance.MineTeh.Success" parent="TextAppearance.MineTeh.BodyMedium">
+        <item name="android:textColor">@color/success</item>
+    </style>
+    
+    <style name="TextAppearance.MineTeh.Warning" parent="TextAppearance.MineTeh.BodyMedium">
+        <item name="android:textColor">@color/warning</item>
+    </style>

@@ -6,41 +6,38 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:background="@color/white"
+    android:background="?attr/colorBackground"
     tools:context=".Signup">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="32dp">
+        android:padding="@dimen/spacing_xl">
 
-        <!-- App Name / Header -->
+        <!-- App Name / Header with Material Typography -->
         <TextView
             android:id="@+id/header_signup"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:fontFamily="sans-serif-condensed-medium"
+            android:layout_marginTop="@dimen/spacing_lg"
             android:text="Create Account"
-            android:textColor="@color/purple"
-            android:textSize="36sp"
+            android:textAppearance="@style/TextAppearance.MineTeh.DisplaySmall"
+            android:textColor="?attr/colorPrimary"
             android:textStyle="bold"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
-        <!-- Welcome Messages -->
+        <!-- Welcome Messages with Material Typography -->
         <TextView
             android:id="@+id/textView_signup"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:fontFamily="sans-serif"
+            android:layout_marginTop="@dimen/spacing_md"
             android:gravity="center"
             android:text="Join our community today!"
-            android:textColor="@color/text_primary"
-            android:textSize="16sp"
-            android:textStyle="bold"
+            android:textAppearance="@style/TextAppearance.MineTeh.HeadlineSmall"
+            android:textColor="?attr/colorOnSurface"
             app:layout_constraintTop_toBottomOf="@id/header_signup"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
