@@ -12,8 +12,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="MineTeh"
-        android:textSize="68sp"
+        android:text="Welcome to MineTeh"
+        android:textSize="32sp"
         android:fontFamily="sans-serif-condensed-medium"
         android:textColor="?attr/colorOnSurface"/>
 
@@ -23,19 +23,18 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="48dp"
         android:gravity="center"
-        android:text="Scroll, Bid, Buy it!"
-        android:textSize="25sp"
-        android:fontFamily="sans-serif-condensed-medium"
+        android:text="Discover amazing items and start bidding!"
+        android:textSize="16sp"
+        android:fontFamily="sans-serif"
         android:textColor="?attr/colorOnSurface"/>
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/getStarted"
-        android:layout_width="wrap_content"
+    <TextView
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Get Started"
-        android:textSize="18sp"
-        style="@style/Widget.Material3.Button"
-        android:minHeight="48dp"
-        android:contentDescription="Get started with MineTeh" />
+        android:gravity="center"
+        android:text="Use the navigation below to explore auctions, search for items, manage your cart, and view your profile."
+        android:textSize="14sp"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:alpha="0.7" />
 
 </LinearLayout>

@@ -5,15 +5,29 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
+import com.example.mineteh.utils.TokenManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.android.material.button.MaterialButton
 
 class MainActivity : AppCompatActivity() {
 
+    private lateinit var tokenManager: TokenManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        tokenManager = TokenManager(this)
+        
+        // Check if user is logged in
+        if (!tokenManager.isLoggedIn()) {
+            // User is not logged in, redirect to login
+            val intent = Intent(this, Login::class.java)
+            startActivity(intent)
+            finish() // Close MainActivity so user can't go back
+            return
+        }
+        
+        // User is logged in, show main interface
         setContentView(R.layout.activity_main)
-
         setupBottomNavigation()
     }
 
