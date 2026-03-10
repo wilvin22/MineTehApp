@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorBackground">
+    android:background="?attr/colorSurface">
 
     <!-- AppBarLayout for Header and Categories that will hide/show on scroll -->
     <com.google.android.material.appbar.AppBarLayout
@@ -215,7 +215,7 @@
             android:layout_height="match_parent"
             android:padding="@dimen/spacing_md"
             android:clipToPadding="false"
-            android:background="?attr/colorBackground"
+            android:background="?attr/colorSurface"
             android:contentDescription="Items list" />
 
         <com.google.android.material.progressindicator.CircularProgressIndicator
