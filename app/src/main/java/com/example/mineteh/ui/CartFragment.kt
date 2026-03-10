@@ -16,4 +16,17 @@ class CartFragment : Fragment() {
     ): View? {
         return inflater.inflate(R.layout.fragment_cart, container, false)
     }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        
+        // TODO: Implement cart functionality
+        // This could include:
+        // - Cart items list
+        // - Quantity controls
+        // - Remove items
+        // - Total calculation
+        // - Checkout button
+        // - Empty cart state
+    }
 }

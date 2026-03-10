@@ -2,31 +2,76 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/homeFragment">
+    app:startDestination="@id/nav_home">
 
     <fragment
-        android:id="@+id/homeFragment"
+        android:id="@+id/nav_home"
         android:name="com.example.mineteh.ui.HomeFragment"
-        android:label="@string/nav_home" />
+        android:label="@string/nav_home">
+        <action
+            android:id="@+id/action_home_to_search"
+            app:destination="@id/nav_search"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left" />
+        <action
+            android:id="@+id/action_home_to_auctions"
+            app:destination="@id/nav_auctions"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left" />
+        <action
+            android:id="@+id/action_home_to_cart"
+            app:destination="@id/nav_cart"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left" />
+        <action
+            android:id="@+id/action_home_to_profile"
+            app:destination="@id/nav_profile"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left" />
+    </fragment>
 
     <fragment
-        android:id="@+id/searchFragment"
+        android:id="@+id/nav_search"
         android:name="com.example.mineteh.ui.SearchFragment"
-        android:label="@string/nav_search" />
+        android:label="@string/nav_search">
+        <action
+            android:id="@+id/action_search_to_home"
+            app:destination="@id/nav_home"
+            app:enterAnim="@anim/slide_in_left"
+            app:exitAnim="@anim/slide_out_right" />
+    </fragment>
 
     <fragment
-        android:id="@+id/auctionsFragment"
+        android:id="@+id/nav_auctions"
         android:name="com.example.mineteh.ui.AuctionsFragment"
-        android:label="@string/nav_auctions" />
+        android:label="@string/nav_auctions">
+        <action
+            android:id="@+id/action_auctions_to_home"
+            app:destination="@id/nav_home"
+            app:enterAnim="@anim/slide_in_left"
+            app:exitAnim="@anim/slide_out_right" />
+    </fragment>
 
     <fragment
-        android:id="@+id/cartFragment"
+        android:id="@+id/nav_cart"
         android:name="com.example.mineteh.ui.CartFragment"
-        android:label="@string/nav_cart" />
+        android:label="@string/nav_cart">
+        <action
+            android:id="@+id/action_cart_to_home"
+            app:destination="@id/nav_home"
+            app:enterAnim="@anim/slide_in_left"
+            app:exitAnim="@anim/slide_out_right" />
+    </fragment>
 
     <fragment
-        android:id="@+id/profileFragment"
+        android:id="@+id/nav_profile"
         android:name="com.example.mineteh.ui.ProfileFragment"
-        android:label="@string/nav_profile" />
+        android:label="@string/nav_profile">
+        <action
+            android:id="@+id/action_profile_to_home"
+            app:destination="@id/nav_home"
+            app:enterAnim="@anim/slide_in_left"
+            app:exitAnim="@anim/slide_out_right" />
+    </fragment>
 
 </navigation>
