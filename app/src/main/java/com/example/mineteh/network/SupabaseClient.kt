@@ -1,5 +1,9 @@
 package com.example.mineteh.network
 
+// TODO: Add Supabase dependencies back when needed
+// Temporarily commented out to fix build issues
+
+/*
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.postgrest.Postgrest
@@ -18,3 +22,4 @@ object SupabaseClient {
         install(Storage)
     }
 }
+*/

@@ -81,46 +81,55 @@
             </LinearLayout>
 
             <!-- Search Bar Row with Material Design 3 -->
-            <com.google.android.material.search.SearchBar
-                android:id="@+id/searchBar"
-                style="@style/Widget.MineTeh.SearchBar"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/recommended_touch_target"
                 android:layout_marginTop="@dimen/spacing_sm"
-                android:hint="Search for items, auctions..."
-                app:navigationIcon="@drawable/ic_search"
-                app:navigationContentDescription="Search"
-                android:contentDescription="Search bar">
+                android:background="?attr/colorSurface"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="@dimen/spacing_md"
+                android:paddingEnd="@dimen/spacing_md">
 
-                <!-- Action buttons in search bar -->
-                <LinearLayout
-                    android:layout_width="wrap_content"
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginEnd="@dimen/spacing_sm"
+                    android:contentDescription="Search icon"
+                    android:src="@drawable/ic_search"
+                    app:tint="?attr/colorOnSurface" />
+
+                <EditText
+                    android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
+                    android:layout_weight="1"
+                    android:background="@null"
+                    android:hint="Search for items, auctions..."
+                    android:textAppearance="@style/TextAppearance.MineTeh.BodyMedium"
+                    android:textColor="?attr/colorOnSurface"
+                    android:textColorHint="?attr/colorOnSurfaceVariant" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnSavedItems"
-                        style="@style/Widget.MineTeh.Button.IconButton"
-                        android:layout_width="@dimen/min_touch_target"
-                        android:layout_height="@dimen/min_touch_target"
-                        app:icon="@drawable/heart"
-                        app:iconTint="?attr/colorOnSurface"
-                        android:contentDescription="Saved items"
-                        app:backgroundTint="@android:color/transparent" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSavedItems"
+                    style="@style/Widget.MineTeh.Button.IconButton"
+                    android:layout_width="@dimen/min_touch_target"
+                    android:layout_height="@dimen/min_touch_target"
+                    app:icon="@drawable/heart"
+                    app:iconTint="?attr/colorOnSurface"
+                    android:contentDescription="Saved items"
+                    app:backgroundTint="@android:color/transparent" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnCart"
-                        style="@style/Widget.MineTeh.Button.IconButton"
-                        android:layout_width="@dimen/min_touch_target"
-                        android:layout_height="@dimen/min_touch_target"
-                        android:layout_marginStart="@dimen/spacing_xs"
-                        app:icon="@drawable/cart"
-                        app:iconTint="?attr/colorOnSurface"
-                        android:contentDescription="Shopping cart"
-                        app:backgroundTint="@android:color/transparent" />
-                </LinearLayout>
-            </com.google.android.material.search.SearchBar>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnCart"
+                    style="@style/Widget.MineTeh.Button.IconButton"
+                    android:layout_width="@dimen/min_touch_target"
+                    android:layout_height="@dimen/min_touch_target"
+                    android:layout_marginStart="@dimen/spacing_xs"
+                    app:icon="@drawable/cart"
+                    app:iconTint="?attr/colorOnSurface"
+                    android:contentDescription="Shopping cart"
+                    app:backgroundTint="@android:color/transparent" />
+            </LinearLayout>
         </LinearLayout>
 
         <!-- Categories Title and Buttons with Material Design -->

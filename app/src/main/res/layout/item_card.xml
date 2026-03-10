@@ -45,23 +45,22 @@
                 android:indeterminate="true" />
 
             <!-- Heart Icon Overlay with proper touch target -->
-            <com.google.android.material.button.MaterialButton
+            <ImageView
                 android:id="@+id/itemHeart"
-                style="@style/Widget.MineTeh.Button.IconButton"
                 android:layout_width="@dimen/min_touch_target"
                 android:layout_height="@dimen/min_touch_target"
                 android:layout_gravity="top|end"
                 android:layout_margin="@dimen/spacing_sm"
-                app:icon="@drawable/heart"
-                app:iconTint="?attr/colorOnSurface"
+                android:src="@drawable/heart"
                 android:contentDescription="Add to favorites"
-                android:background="@drawable/focus_indicator"
-                app:backgroundTint="@android:color/transparent" />
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="@dimen/spacing_sm" />
 
             <!-- Type Badge (Fixed/Bid) with Material Design -->
-            <com.google.android.material.chip.Chip
+            <TextView
                 android:id="@+id/itemTypeBadge"
-                style="@style/Widget.MineTeh.Chip.Action"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="FIXED"
@@ -69,9 +68,12 @@
                 android:textStyle="bold"
                 android:layout_gravity="bottom|start"
                 android:layout_margin="@dimen/spacing_sm"
-                app:chipBackgroundColor="?attr/colorPrimary"
+                android:background="@drawable/badge_background"
                 android:textColor="?attr/colorOnPrimary"
-                app:chipMinHeight="24dp"
+                android:paddingStart="@dimen/spacing_sm"
+                android:paddingEnd="@dimen/spacing_sm"
+                android:paddingTop="@dimen/spacing_xs"
+                android:paddingBottom="@dimen/spacing_xs"
                 android:clickable="false"
                 android:focusable="false" />
         </FrameLayout>

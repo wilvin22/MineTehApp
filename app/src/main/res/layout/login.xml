@@ -69,8 +69,6 @@
             app:boxCornerRadiusBottomStart="@dimen/corner_radius_md"
             app:boxCornerRadiusTopEnd="@dimen/corner_radius_md"
             app:boxCornerRadiusTopStart="@dimen/corner_radius_md"
-            app:startIconDrawable="@drawable/ic_person"
-            app:startIconContentDescription="Email icon"
             app:layout_constraintTop_toBottomOf="@id/textView2"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -129,15 +127,20 @@
             app:layout_constraintTop_toBottomOf="@id/password_layout"
             app:layout_constraintStart_toStartOf="@id/password_layout" />
 
-        <com.google.android.material.button.MaterialButton
+        <TextView
             android:id="@+id/forgotPassword"
-            style="@style/Widget.MineTeh.Button.Tertiary"
             android:layout_width="wrap_content"
             android:layout_height="@dimen/min_touch_target"
             android:text="Forgot Password?"
             android:textAppearance="@style/TextAppearance.MineTeh.LabelMedium"
             android:textColor="?attr/colorPrimary"
             android:contentDescription="Reset password"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground"
+            android:gravity="center"
+            android:paddingStart="@dimen/spacing_sm"
+            android:paddingEnd="@dimen/spacing_sm"
             app:layout_constraintTop_toTopOf="@id/rememberMeCheckbox"
             app:layout_constraintBottom_toBottomOf="@id/rememberMeCheckbox"
             app:layout_constraintEnd_toEndOf="@id/password_layout" />
