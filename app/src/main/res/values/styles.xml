@@ -134,7 +134,7 @@
         <item name="inactiveTrackColor">?attr/colorSurfaceVariant</item>
         <item name="thumbColor">?attr/colorPrimary</item>
     </style>
-</resources>
+
     <!-- Theme Overlays for Component Customization -->
     <style name="ThemeOverlay.MineTeh.BottomNavigation" parent="">
         <item name="colorSurface">?attr/colorSurface</item>
@@ -190,3 +190,4 @@
     <style name="TextAppearance.MineTeh.Warning" parent="TextAppearance.MineTeh.BodyMedium">
         <item name="android:textColor">@color/warning</item>
     </style>
+</resources>
