@@ -36,51 +36,38 @@ class ListingsRepository(private val context: Context) {
         offset: Int = 0
     ) = withContext(Dispatchers.IO) {
         try {
-            // Build the base query with joins
-            val selectQuery = """
-                id,
-                title,
-                description,
-                price,
-                location,
-                category,
-                listing_type,
-                status,
-                created_at,
-                end_time,
-                listing_images(image_url, is_primary),
-                accounts!seller_id(account_id, username, first_name, last_name)
-            """.trimIndent()
-            
-            // Start building the query
-            val queryBuilder = com.example.mineteh.supabase.SupabaseClient.database
+            // Query listings table
+            val response = com.example.mineteh.supabase.SupabaseClient.database
                 .from("listings")
-                .select(selectQuery)
-            
-            // Apply filters conditionally
-            var finalQuery = queryBuilder
-            
-            category?.let {
-                finalQuery = finalQuery.eq("category", it)
-            }
-            
-            type?.let {
-                finalQuery = finalQuery.eq("listing_type", it)
-            }
-            
-            search?.let {
-                finalQuery = finalQuery.ilike("title", "%$it%")
-            }
-            
-            // Apply ordering and pagination
-            val response = finalQuery
-                .order("created_at", ascending = false)
-                .range(offset.toLong(), (offset + limit - 1).toLong())
-                .execute()
+                .select()
             
             // Parse the response into List<Listing>
             val listings = parseListingsResponse(response.data)
-            Resource.Success(listings)
+            
+            // Apply filters in Kotlin (since Supabase Postgrest 2.0.0 API is limited)
+            var filteredListings = listings
+            
+            category?.let { cat ->
+                filteredListings = filteredListings.filter { it.category == cat }
+            }
+            
+            type?.let { t ->
+                filteredListings = filteredListings.filter { it.listingType == t }
+            }
+            
+            search?.let { s ->
+                filteredListings = filteredListings.filter { 
+                    it.title.contains(s, ignoreCase = true)
+                }
+            }
+            
+            // Sort by created_at descending
+            filteredListings = filteredListings.sortedByDescending { it.createdAt }
+            
+            // Apply pagination
+            val paginatedListings = filteredListings.drop(offset).take(limit)
+            
+            Resource.Success(paginatedListings)
             
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Failed to load listings")
