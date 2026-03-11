@@ -151,22 +151,23 @@ class AuthRepository(context: Context) {
             
             // Create the new user data matching your exact table structure
             // Only include required fields (NOT NULL without defaults)
-            // The database will auto-generate: account_id, is_admin, created_at, user_status, is_rider
             val newUserJson = """
-                [{
+                {
                     "username": "$username",
                     "first_name": "$firstName",
                     "last_name": "$lastName",
                     "email": "$email",
                     "password_hash": "$passwordHash"
-                }]
+                }
             """.trimIndent()
             
             android.util.Log.d("AuthRepository", "Attempting to insert user")
             
             // Insert new user into accounts table
             val insertResponse = database.from("accounts")
-                .insert(newUserJson)
+                .insert(newUserJson) {
+                    select()
+                }
             
             android.util.Log.d("AuthRepository", "User inserted successfully")
             
