@@ -1,6 +1,7 @@
 package com.example.mineteh.model.repository
 
 import android.content.Context
+import at.favre.lib.crypto.bcrypt.BCrypt
 import com.example.mineteh.models.LoginResponse
 import com.example.mineteh.models.RegisterResponse
 import com.example.mineteh.models.User
@@ -41,18 +42,23 @@ class AuthRepository(context: Context) {
                 }
             
             if (userData == null) {
-                android.util.Log.e("AuthRepository", "User not found")
+                android.util.Log.e("AuthRepository", "User not found for identifier: $identifier")
                 return@withContext Resource.Error<LoginResponse>("Invalid email or password")
             }
             
-            // Verify password (Note: In production, use proper password hashing like BCrypt)
+            // Verify password using BCrypt
             val storedPasswordHash = userData["password_hash"]?.jsonPrimitive?.content ?: ""
-            val inputPasswordHash = hashPassword(password)
+            android.util.Log.d("AuthRepository", "Verifying password for user: $identifier")
             
-            if (storedPasswordHash != inputPasswordHash) {
-                android.util.Log.e("AuthRepository", "Invalid password")
+            // Use BCrypt to verify the password
+            val verifyResult = BCrypt.verifyer().verify(password.toCharArray(), storedPasswordHash)
+            
+            if (!verifyResult.verified) {
+                android.util.Log.e("AuthRepository", "Invalid password for user: $identifier")
                 return@withContext Resource.Error<LoginResponse>("Invalid email or password")
             }
+            
+            android.util.Log.d("AuthRepository", "Password verified successfully for user: $identifier")
             
             // Extract user data
             val accountId = userData["account_id"]?.jsonPrimitive?.content?.toIntOrNull() ?: -1
