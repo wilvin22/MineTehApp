@@ -121,8 +121,8 @@ class AuthRepository(context: Context) {
         try {
             android.util.Log.d("AuthRepository", "Starting registration for username: $username, email: $email")
             
-            // Call the register_user RPC function
-            val response = database.rpc(
+            // Call the register_user RPC function using the client
+            val response = supabaseClient.postgrest.rpc(
                 "register_user",
                 mapOf(
                     "p_username" to username,
