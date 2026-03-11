@@ -121,21 +121,39 @@ class AuthRepository(context: Context) {
         try {
             android.util.Log.d("AuthRepository", "Starting registration for username: $username, email: $email")
             
-            // Call the register_user RPC function in Supabase
-            val response = database.rpc(
-                function = "register_user",
-                parameters = mapOf(
-                    "p_username" to username,
-                    "p_email" to email,
-                    "p_password" to password,
-                    "p_first_name" to firstName,
-                    "p_last_name" to lastName
-                )
-            )
+            // Use Ktor HttpClient to call the RPC function directly
+            val httpClient = io.ktor.client.HttpClient(io.ktor.client.engine.android.Android) {
+                install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
+                    io.ktor.serialization.kotlinx.json.json(Json {
+                        ignoreUnknownKeys = true
+                    })
+                }
+            }
+            
+            val rpcUrl = "https://didpavzminvohszuuowu.supabase.co/rest/v1/rpc/register_user"
+            val requestBody = kotlinx.serialization.json.buildJsonObject {
+                put("p_username", kotlinx.serialization.json.JsonPrimitive(username))
+                put("p_email", kotlinx.serialization.json.JsonPrimitive(email))
+                put("p_password", kotlinx.serialization.json.JsonPrimitive(password))
+                put("p_first_name", kotlinx.serialization.json.JsonPrimitive(firstName))
+                put("p_last_name", kotlinx.serialization.json.JsonPrimitive(lastName))
+            }
+            
+            val response: io.ktor.client.statement.HttpResponse = httpClient.post(rpcUrl) {
+                header("apikey", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpZHBhdnptaW52b2hzenV1b3d1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMTYwNDgsImV4cCI6MjA4NzU5MjA0OH0.iueZB9z5Z5YvKM98Gsy-ll--kLipCKXtmT0V7jHBA0Y")
+                header("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpZHBhdnptaW52b2hzenV1b3d1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMTYwNDgsImV4cCI6MjA4NzU5MjA0OH0.iueZB9z5Z5YvKM98Gsy-ll--kLipCKXtmT0V7jHBA0Y")
+                header("Content-Type", "application/json")
+                setBody(requestBody.toString())
+            }
+            
+            val responseBody = response.bodyAsText()
+            httpClient.close()
+            
+            android.util.Log.d("AuthRepository", "RPC response: $responseBody")
             
             // Parse the JSON response
             val json = Json { ignoreUnknownKeys = true }
-            val result = json.parseToJsonElement(response.data).jsonObject
+            val result = json.parseToJsonElement(responseBody).jsonObject
             
             val success = result["success"]?.jsonPrimitive?.content?.toBoolean() ?: false
             val message = result["message"]?.jsonPrimitive?.content ?: "Unknown error"
