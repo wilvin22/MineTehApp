@@ -13,7 +13,7 @@ This plan migrates the MineTeh Android application from a PHP backend with Retro
     - Add kotlinx-serialization plugin and dependencies
     - _Requirements: 1.1_
   
-  - [~] 1.2 Create SupabaseClient singleton module
+  - [x] 1.2 Create SupabaseClient singleton module
     - Create `app/src/main/java/com/example/mineteh/supabase/SupabaseClient.kt`
     - Implement singleton pattern with lateinit client property
     - Add initialize() method with Supabase URL and anon key configuration
@@ -21,7 +21,7 @@ This plan migrates the MineTeh Android application from a PHP backend with Retro
     - Add convenience properties for auth, database, and storage access
     - _Requirements: 1.2, 1.3, 1.4_
   
-  - [~] 1.3 Initialize Supabase client in MineTehApplication
+  - [x] 1.3 Initialize Supabase client in MineTehApplication
     - Update MineTehApplication.onCreate() to call SupabaseClient.initialize()
     - Store Supabase anon key in BuildConfig or local.properties
     - _Requirements: 1.4_
