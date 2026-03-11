@@ -1,21 +1,17 @@
 package com.example.mineteh.model.repository
 
 import android.content.Context
-import com.example.mineteh.models.LoginData
-import com.example.mineteh.models.LoginRequest
 import com.example.mineteh.models.LoginResponse
-import com.example.mineteh.models.RegisterRequest
 import com.example.mineteh.models.RegisterResponse
 import com.example.mineteh.models.User
 import com.example.mineteh.utils.Resource
 import com.example.mineteh.utils.TokenManager
-import io.github.jan.supabase.postgrest.postgrest
-import io.github.jan.supabase.postgrest.query.Columns
-import io.github.jan.supabase.postgrest.query.filter.FilterOperator
-import io.github.jan.supabase.postgrest.rpc
-import io.ktor.client.call.body
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 class AuthRepository(context: Context) {
     private val supabaseClient = com.example.mineteh.supabase.SupabaseClient.client
@@ -240,16 +236,24 @@ class AuthRepository(context: Context) {
             val response = supabaseClient.postgrest
                 .from("accounts")
                 .select()
+                .execute()
             
-            val userData = response.body<List<Map<String, Any>>>()
-                .firstOrNull { (it["account_id"] as? Number)?.toInt() == userId }
+            // Parse JSON response
+            val json = Json { ignoreUnknownKeys = true }
+            val jsonArray = json.parseToJsonElement(response.data).jsonArray
+            
+            val userData = jsonArray
+                .map { it.jsonObject }
+                .firstOrNull { obj ->
+                    (obj["account_id"]?.jsonPrimitive?.content?.toIntOrNull() ?: -1) == userId
+                }
                 ?: throw Exception("User not found")
             
-            val accountId = (userData["account_id"] as? Number)?.toInt() ?: -1
-            val username = userData["username"] as? String ?: ""
-            val email = userData["email"] as? String ?: ""
-            val firstName = userData["first_name"] as? String ?: ""
-            val lastName = userData["last_name"] as? String ?: ""
+            val accountId = userData["account_id"]?.jsonPrimitive?.content?.toIntOrNull() ?: -1
+            val username = userData["username"]?.jsonPrimitive?.content ?: ""
+            val email = userData["email"]?.jsonPrimitive?.content ?: ""
+            val firstName = userData["first_name"]?.jsonPrimitive?.content ?: ""
+            val lastName = userData["last_name"]?.jsonPrimitive?.content ?: ""
             
             // Create User object
             val user = User(
