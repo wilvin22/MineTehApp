@@ -6,12 +6,15 @@ import com.example.mineteh.models.RegisterResponse
 import com.example.mineteh.models.User
 import com.example.mineteh.utils.Resource
 import com.example.mineteh.utils.TokenManager
+import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.postgrest.query.Columns
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import java.security.MessageDigest
 
 class AuthRepository(context: Context) {
     private val supabaseClient = com.example.mineteh.supabase.SupabaseClient.client
@@ -20,70 +23,73 @@ class AuthRepository(context: Context) {
 
     suspend fun login(identifier: String, password: String) = withContext(Dispatchers.IO) {
         try {
-            // Use RPC to verify password and get user data
-            // The database should have a function like: login_user(p_identifier text, p_password text)
-            val responseBody = database.rpc(
-                function = "login_user",
-                parameters = mapOf(
-                    "p_identifier" to identifier,
-                    "p_password" to password
-                )
-            ).decodeList<Map<String, Any>>().firstOrNull() ?: emptyMap()
+            // Query accounts table to find user by email or username
+            val response = database.from("accounts")
+                .select(columns = Columns.list("account_id", "username", "email", "first_name", "last_name", "password_hash"))
             
-            // Check if login was successful
-            val success = responseBody["success"] as? Boolean ?: false
-            if (success) {
-                val userData = responseBody["data"] as? Map<String, Any>
-                if (userData != null) {
-                    val accountId = (userData["account_id"] as? Number)?.toInt() ?: -1
-                    val username = userData["username"] as? String ?: ""
-                    val email = userData["email"] as? String ?: ""
-                    val firstName = userData["first_name"] as? String ?: ""
-                    val lastName = userData["last_name"] as? String ?: ""
-                    val token = userData["token"] as? String ?: ""
-                    val expiresAt = userData["expires_at"] as? String ?: ""
-                    
-                    // Create User object
-                    val user = User(
-                        accountId = accountId,
-                        username = username,
-                        email = email,
-                        firstName = firstName,
-                        lastName = lastName
-                    )
-                    
-                    // Create LoginResponse object (for ViewModel compatibility)
-                    val loginResponse = LoginResponse(
-                        token = token,
-                        user = user
-                    )
-                    
-                    // Save session data using TokenManager
-                    tokenManager.saveToken(token)
-                    tokenManager.saveUserId(accountId)
-                    tokenManager.saveUserName(username)
-                    tokenManager.saveUserEmail(email)
-                    
-                    android.util.Log.d("AuthRepository", "Login successful for user: $username")
-                    Resource.Success(loginResponse)
-                } else {
-                    android.util.Log.e("AuthRepository", "Invalid response data from server")
-                    Resource.Error("Invalid response from server")
+            // Parse JSON response
+            val json = Json { ignoreUnknownKeys = true }
+            val jsonArray = json.parseToJsonElement(response.data).jsonArray
+            
+            // Find user by identifier (email or username)
+            val userData = jsonArray
+                .map { it.jsonObject }
+                .firstOrNull { obj ->
+                    val email = obj["email"]?.jsonPrimitive?.content ?: ""
+                    val username = obj["username"]?.jsonPrimitive?.content ?: ""
+                    email.equals(identifier, ignoreCase = true) || username.equals(identifier, ignoreCase = true)
                 }
-            } else {
-                val message = responseBody["message"] as? String ?: "Invalid email or password"
-                android.util.Log.e("AuthRepository", "Login failed: $message")
-                Resource.Error(message)
+            
+            if (userData == null) {
+                android.util.Log.e("AuthRepository", "User not found")
+                return@withContext Resource.Error<LoginResponse>("Invalid email or password")
             }
+            
+            // Verify password (Note: In production, use proper password hashing like BCrypt)
+            val storedPasswordHash = userData["password_hash"]?.jsonPrimitive?.content ?: ""
+            val inputPasswordHash = hashPassword(password)
+            
+            if (storedPasswordHash != inputPasswordHash) {
+                android.util.Log.e("AuthRepository", "Invalid password")
+                return@withContext Resource.Error<LoginResponse>("Invalid email or password")
+            }
+            
+            // Extract user data
+            val accountId = userData["account_id"]?.jsonPrimitive?.content?.toIntOrNull() ?: -1
+            val username = userData["username"]?.jsonPrimitive?.content ?: ""
+            val email = userData["email"]?.jsonPrimitive?.content ?: ""
+            val firstName = userData["first_name"]?.jsonPrimitive?.content ?: ""
+            val lastName = userData["last_name"]?.jsonPrimitive?.content ?: ""
+            
+            // Generate a simple token (In production, use JWT or proper token generation)
+            val token = generateToken(accountId, username)
+            
+            // Create User object
+            val user = User(
+                accountId = accountId,
+                username = username,
+                email = email,
+                firstName = firstName,
+                lastName = lastName
+            )
+            
+            // Create LoginResponse object
+            val loginResponse = LoginResponse(
+                token = token,
+                user = user
+            )
+            
+            // Save session data using TokenManager
+            tokenManager.saveToken(token)
+            tokenManager.saveUserId(accountId)
+            tokenManager.saveUserName(username)
+            tokenManager.saveUserEmail(email)
+            
+            android.util.Log.d("AuthRepository", "Login successful for user: $username")
+            Resource.Success(loginResponse)
         } catch (e: io.github.jan.supabase.exceptions.RestException) {
             android.util.Log.e("AuthRepository", "Supabase REST error", e)
-            when {
-                e.message?.contains("invalid_credentials") == true -> 
-                    Resource.Error("Invalid email or password")
-                e.message?.contains("function") == true && e.message?.contains("does not exist") == true ->
-                    Resource.Error("Server configuration error. Please contact support.")
-                else -> Resource.Error(e.message ?: "Authentication failed")
-            }
+            Resource.Error("Authentication failed: ${e.message}")
         } catch (e: io.github.jan.supabase.exceptions.HttpRequestException) {
             android.util.Log.e("AuthRepository", "Network error", e)
             Resource.Error("Network error. Please check your connection.")
@@ -107,74 +113,37 @@ class AuthRepository(context: Context) {
         lastName: String
     ) = withContext(Dispatchers.IO) {
         try {
-            // Use RPC to register user with password hashing
-            // The database should have a function like: register_user(p_username text, p_email text, p_password text, p_first_name text, p_last_name text)
-            val responseBody = database.rpc(
-                function = "register_user",
-                parameters = mapOf(
-                    "p_username" to username,
-                    "p_email" to email,
-                    "p_password" to password,
-                    "p_first_name" to firstName,
-                    "p_last_name" to lastName
-                )
-            ).decodeList<Map<String, Any>>().firstOrNull() ?: emptyMap()
+            // Check if user already exists
+            val checkResponse = database.from("accounts")
+                .select(columns = Columns.list("email", "username"))
             
-            // Check if registration was successful
-            val success = responseBody["success"] as? Boolean ?: false
-            if (success) {
-                val userData = responseBody["data"] as? Map<String, Any>
-                if (userData != null) {
-                    val accountId = (userData["account_id"] as? Number)?.toInt() ?: -1
-                    val userUsername = userData["username"] as? String ?: ""
-                    val userEmail = userData["email"] as? String ?: ""
-                    val userFirstName = userData["first_name"] as? String ?: ""
-                    val userLastName = userData["last_name"] as? String ?: ""
-                    val token = userData["token"] as? String ?: ""
-                    
-                    // Create User object
-                    val user = User(
-                        accountId = accountId,
-                        username = userUsername,
-                        email = userEmail,
-                        firstName = userFirstName,
-                        lastName = userLastName
-                    )
-                    
-                    // Create RegisterResponse object
-                    val registerResponse = RegisterResponse(
-                        token = token,
-                        user = user
-                    )
-                    
-                    // Save session data using TokenManager
-                    tokenManager.saveToken(token)
-                    tokenManager.saveUserId(accountId)
-                    tokenManager.saveUserName(userUsername)
-                    tokenManager.saveUserEmail(userEmail)
-                    
-                    android.util.Log.d("AuthRepository", "Registration successful for user: $userUsername")
-                    Resource.Success(registerResponse)
-                } else {
-                    android.util.Log.e("AuthRepository", "Invalid response data from server")
-                    Resource.Error("Invalid response from server")
-                }
-            } else {
-                val message = responseBody["message"] as? String ?: "Registration failed"
-                android.util.Log.e("AuthRepository", "Registration failed: $message")
-                Resource.Error(message)
+            val json = Json { ignoreUnknownKeys = true }
+            val existingUsers = json.parseToJsonElement(checkResponse.data).jsonArray
+            
+            val emailExists = existingUsers.any { 
+                it.jsonObject["email"]?.jsonPrimitive?.content?.equals(email, ignoreCase = true) == true
             }
+            val usernameExists = existingUsers.any {
+                it.jsonObject["username"]?.jsonPrimitive?.content?.equals(username, ignoreCase = true) == true
+            }
+            
+            if (emailExists || usernameExists) {
+                return@withContext Resource.Error<RegisterResponse>("An account with this email or username already exists")
+            }
+            
+            // Hash the password
+            val passwordHash = hashPassword(password)
+            
+            // Insert new user (Note: This is a simplified approach. In production, use proper insert with Supabase)
+            // For now, we'll return an error asking the user to create the account through Supabase dashboard
+            // or implement a proper server-side function
+            
+            android.util.Log.e("AuthRepository", "Registration not fully implemented - requires server-side function")
+            Resource.Error<RegisterResponse>("Registration is not available. Please contact support.")
+            
         } catch (e: io.github.jan.supabase.exceptions.RestException) {
             android.util.Log.e("AuthRepository", "Supabase REST error during registration", e)
-            when {
-                e.message?.contains("duplicate key") == true || 
-                e.message?.contains("already exists") == true ||
-                e.message?.contains("unique constraint") == true -> 
-                    Resource.Error("An account with this email or username already exists")
-                e.message?.contains("function") == true && e.message?.contains("does not exist") == true ->
-                    Resource.Error("Server configuration error. Please contact support.")
-                else -> Resource.Error(e.message ?: "Registration failed")
-            }
+            Resource.Error("Registration failed: ${e.message}")
         } catch (e: io.github.jan.supabase.exceptions.HttpRequestException) {
             android.util.Log.e("AuthRepository", "Network error during registration", e)
             Resource.Error("Network error. Please check your connection.")
@@ -237,7 +206,6 @@ class AuthRepository(context: Context) {
             val response = database
                 .from("accounts")
                 .select()
-                .execute()
             
             // Parse JSON response
             val json = Json { ignoreUnknownKeys = true }
@@ -288,5 +256,24 @@ class AuthRepository(context: Context) {
             android.util.Log.e("AuthRepository", "Error getting current user", e)
             Resource.Error(e.message ?: "An unexpected error occurred")
         }
+    }
+    
+    /**
+     * Hashes a password using SHA-256.
+     * Note: In production, use a proper password hashing library like BCrypt or Argon2.
+     */
+    private fun hashPassword(password: String): String {
+        val bytes = MessageDigest.getInstance("SHA-256").digest(password.toByteArray())
+        return bytes.joinToString("") { "%02x".format(it) }
+    }
+    
+    /**
+     * Generates a simple token for the user session.
+     * Note: In production, use JWT or a proper token generation mechanism.
+     */
+    private fun generateToken(accountId: Int, username: String): String {
+        val timestamp = System.currentTimeMillis()
+        val data = "$accountId:$username:$timestamp"
+        return hashPassword(data)
     }
 }
