@@ -237,13 +237,13 @@ class AuthRepository(context: Context) {
             }
             
             // Query accounts table to get full user profile data
-            val userData = supabaseClient.postgrest
+            val response = supabaseClient.postgrest
                 .from("accounts")
                 .select()
-                .filter {
-                    eq("account_id", userId)
-                }
-                .decodeSingle<Map<String, Any>>()
+            
+            val userData = response.body<List<Map<String, Any>>>()
+                .firstOrNull { (it["account_id"] as? Number)?.toInt() == userId }
+                ?: throw Exception("User not found")
             
             val accountId = (userData["account_id"] as? Number)?.toInt() ?: -1
             val username = userData["username"] as? String ?: ""
