@@ -149,25 +149,21 @@ class AuthRepository(context: Context) {
             val passwordHash = BCrypt.withDefaults().hashToString(12, password.toCharArray())
             android.util.Log.d("AuthRepository", "Password hashed successfully")
             
-            // Create the new user data matching your exact table structure
-            // Only include required fields (NOT NULL without defaults)
-            val newUserJson = """
-                {
-                    "username": "$username",
-                    "first_name": "$firstName",
-                    "last_name": "$lastName",
-                    "email": "$email",
-                    "password_hash": "$passwordHash"
-                }
-            """.trimIndent()
+            // Escape special characters in strings for JSON
+            val escapedUsername = username.replace("\"", "\\\"").replace("\\", "\\\\")
+            val escapedFirstName = firstName.replace("\"", "\\\"").replace("\\", "\\\\")
+            val escapedLastName = lastName.replace("\"", "\\\"").replace("\\", "\\\\")
+            val escapedEmail = email.replace("\"", "\\\"").replace("\\", "\\\\")
+            val escapedPasswordHash = passwordHash.replace("\"", "\\\"").replace("\\", "\\\\")
             
-            android.util.Log.d("AuthRepository", "Attempting to insert user")
+            // Create the new user data as a JSON array (Postgrest expects an array)
+            val newUserJson = """[{"username":"$escapedUsername","first_name":"$escapedFirstName","last_name":"$escapedLastName","email":"$escapedEmail","password_hash":"$escapedPasswordHash"}]"""
+            
+            android.util.Log.d("AuthRepository", "Attempting to insert user with JSON: $newUserJson")
             
             // Insert new user into accounts table
             val insertResponse = database.from("accounts")
-                .insert(newUserJson) {
-                    select()
-                }
+                .insert(newUserJson)
             
             android.util.Log.d("AuthRepository", "User inserted successfully")
             
