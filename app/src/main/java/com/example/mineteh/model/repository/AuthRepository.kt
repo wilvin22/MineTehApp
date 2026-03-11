@@ -28,6 +28,12 @@ class AuthRepository(context: Context) {
             } else {
                 Resource.Error(response.body()?.message ?: "Login failed")
             }
+        } catch (e: com.google.gson.JsonSyntaxException) {
+            Resource.Error("Server response error. Please try again.")
+        } catch (e: java.net.UnknownHostException) {
+            Resource.Error("No internet connection")
+        } catch (e: java.net.SocketTimeoutException) {
+            Resource.Error("Connection timeout. Please try again.")
         } catch (e: Exception) {
             Resource.Error(e.message ?: "Network error")
         }

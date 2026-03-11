@@ -47,6 +47,7 @@ object ApiClient {
         .build()
 
     private val gson = GsonBuilder()
+        .setLenient()
         .registerTypeAdapter(
             object : TypeToken<ApiResponse<List<Listing>>>() {}.type,
             ApiResponseDeserializer()
