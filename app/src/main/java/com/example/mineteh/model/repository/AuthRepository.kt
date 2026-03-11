@@ -121,72 +121,53 @@ class AuthRepository(context: Context) {
         try {
             android.util.Log.d("AuthRepository", "Starting registration for username: $username, email: $email")
             
-            // Check if user already exists
-            val checkResponse = database.from("accounts")
-                .select(columns = Columns.list("email", "username"))
+            // Call the register_user RPC function
+            val response = database.rpc(
+                "register_user",
+                mapOf(
+                    "p_username" to username,
+                    "p_email" to email,
+                    "p_password" to password,
+                    "p_first_name" to firstName,
+                    "p_last_name" to lastName
+                )
+            )
             
+            // Parse the response
             val json = Json { ignoreUnknownKeys = true }
-            val existingUsers = json.parseToJsonElement(checkResponse.data).jsonArray
+            val responseBody = json.parseToJsonElement(response.data).jsonObject
             
-            val emailExists = existingUsers.any { 
-                it.jsonObject["email"]?.jsonPrimitive?.content?.equals(email, ignoreCase = true) == true
-            }
-            val usernameExists = existingUsers.any {
-                it.jsonObject["username"]?.jsonPrimitive?.content?.equals(username, ignoreCase = true) == true
-            }
+            val success = responseBody["success"]?.jsonPrimitive?.content?.toBoolean() ?: false
+            val message = responseBody["message"]?.jsonPrimitive?.content ?: "Unknown error"
             
-            if (emailExists) {
-                android.util.Log.e("AuthRepository", "Email already exists: $email")
-                return@withContext Resource.Error<RegisterResponse>("An account with this email already exists")
+            if (!success) {
+                android.util.Log.e("AuthRepository", "Registration failed: $message")
+                return@withContext Resource.Error<RegisterResponse>(message)
             }
             
-            if (usernameExists) {
-                android.util.Log.e("AuthRepository", "Username already exists: $username")
-                return@withContext Resource.Error<RegisterResponse>("An account with this username already exists")
+            // Extract user data
+            val userData = responseBody["data"]?.jsonObject
+            if (userData == null) {
+                android.util.Log.e("AuthRepository", "No user data in response")
+                return@withContext Resource.Error<RegisterResponse>("Registration failed: No user data returned")
             }
             
-            // Hash the password using BCrypt
-            val passwordHash = BCrypt.withDefaults().hashToString(12, password.toCharArray())
-            android.util.Log.d("AuthRepository", "Password hashed successfully")
-            
-            // Escape special characters in strings for JSON
-            val escapedUsername = username.replace("\"", "\\\"").replace("\\", "\\\\")
-            val escapedFirstName = firstName.replace("\"", "\\\"").replace("\\", "\\\\")
-            val escapedLastName = lastName.replace("\"", "\\\"").replace("\\", "\\\\")
-            val escapedEmail = email.replace("\"", "\\\"").replace("\\", "\\\\")
-            val escapedPasswordHash = passwordHash.replace("\"", "\\\"").replace("\\", "\\\\")
-            
-            // Create the new user data as a JSON array (Postgrest expects an array)
-            val newUserJson = """[{"username":"$escapedUsername","first_name":"$escapedFirstName","last_name":"$escapedLastName","email":"$escapedEmail","password_hash":"$escapedPasswordHash"}]"""
-            
-            android.util.Log.d("AuthRepository", "Attempting to insert user with JSON: $newUserJson")
-            
-            // Insert new user into accounts table
-            val insertResponse = database.from("accounts")
-                .insert(newUserJson)
-            
-            android.util.Log.d("AuthRepository", "User inserted successfully")
-            
-            // Parse the inserted user data
-            val insertedUserArray = json.parseToJsonElement(insertResponse.data).jsonArray
-            if (insertedUserArray.isEmpty()) {
-                android.util.Log.e("AuthRepository", "Failed to retrieve inserted user data")
-                return@withContext Resource.Error<RegisterResponse>("Registration failed. Please try again.")
-            }
-            
-            val insertedUser = insertedUserArray.first().jsonObject
-            val accountId = insertedUser["account_id"]?.jsonPrimitive?.content?.toIntOrNull() ?: -1
+            val accountId = userData["account_id"]?.jsonPrimitive?.content?.toIntOrNull() ?: -1
+            val userUsername = userData["username"]?.jsonPrimitive?.content ?: ""
+            val userEmail = userData["email"]?.jsonPrimitive?.content ?: ""
+            val userFirstName = userData["first_name"]?.jsonPrimitive?.content ?: ""
+            val userLastName = userData["last_name"]?.jsonPrimitive?.content ?: ""
             
             // Generate a token for the new user
-            val token = generateToken(accountId, username)
+            val token = generateToken(accountId, userUsername)
             
             // Create User object
             val user = User(
                 accountId = accountId,
-                username = username,
-                email = email,
-                firstName = firstName,
-                lastName = lastName
+                username = userUsername,
+                email = userEmail,
+                firstName = userFirstName,
+                lastName = userLastName
             )
             
             // Create RegisterResponse object
@@ -198,10 +179,10 @@ class AuthRepository(context: Context) {
             // Save session data using TokenManager
             tokenManager.saveToken(token)
             tokenManager.saveUserId(accountId)
-            tokenManager.saveUserName(username)
-            tokenManager.saveUserEmail(email)
+            tokenManager.saveUserName(userUsername)
+            tokenManager.saveUserEmail(userEmail)
             
-            android.util.Log.d("AuthRepository", "Registration successful for user: $username")
+            android.util.Log.d("AuthRepository", "Registration successful for user: $userUsername")
             Resource.Success(registerResponse)
             
         } catch (e: io.github.jan.supabase.exceptions.RestException) {
