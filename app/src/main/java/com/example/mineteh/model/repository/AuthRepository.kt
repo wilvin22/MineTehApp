@@ -16,6 +16,12 @@ class AuthRepository(context: Context) {
     suspend fun login(identifier: String, password: String) = withContext(Dispatchers.IO) {
         try {
             val response = apiService.login(LoginRequest(identifier, password))
+            
+            // Log the raw response for debugging
+            android.util.Log.d("AuthRepository", "Response code: ${response.code()}")
+            android.util.Log.d("AuthRepository", "Response body: ${response.body()}")
+            android.util.Log.d("AuthRepository", "Response error: ${response.errorBody()?.string()}")
+            
             if (response.isSuccessful && response.body()?.success == true) {
                 val data = response.body()?.data
                 if (data != null) {
@@ -26,15 +32,21 @@ class AuthRepository(context: Context) {
                 }
                 Resource.Success(data)
             } else {
-                Resource.Error(response.body()?.message ?: "Login failed")
+                val errorMessage = response.body()?.message ?: response.errorBody()?.string() ?: "Login failed"
+                android.util.Log.e("AuthRepository", "Login error: $errorMessage")
+                Resource.Error(errorMessage)
             }
         } catch (e: com.google.gson.JsonSyntaxException) {
-            Resource.Error("Server response error. Please try again.")
+            android.util.Log.e("AuthRepository", "JSON parsing error", e)
+            Resource.Error("Server response error. Please check your backend API.")
         } catch (e: java.net.UnknownHostException) {
+            android.util.Log.e("AuthRepository", "No internet connection", e)
             Resource.Error("No internet connection")
         } catch (e: java.net.SocketTimeoutException) {
+            android.util.Log.e("AuthRepository", "Connection timeout", e)
             Resource.Error("Connection timeout. Please try again.")
         } catch (e: Exception) {
+            android.util.Log.e("AuthRepository", "Login error", e)
             Resource.Error(e.message ?: "Network error")
         }
     }

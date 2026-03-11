@@ -14,7 +14,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object ApiClient {
-    private const val BASE_URL = "https://mineteh.infinityfree.me/MineTeh/api/v1/"
+    private const val BASE_URL = "https://mineteh.infinityfree.me/"
 
     private var context: Context? = null
 
