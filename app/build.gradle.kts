@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     id("kotlin-parcelize")
     alias(libs.plugins.ksp)
+    kotlin("plugin.serialization") version "1.9.22"
 }
 
 android {
@@ -71,4 +72,15 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
+
+    // Supabase SDK
+    implementation("io.github.jan-tennert.supabase:postgrest-kt:2.0.0")
+    implementation("io.github.jan-tennert.supabase:gotrue-kt:2.0.0")
+    implementation("io.github.jan-tennert.supabase:storage-kt:2.0.0")
+    
+    // Ktor Client for Supabase
+    implementation("io.ktor:ktor-client-android:2.3.7")
+    
+    // Kotlinx Serialization
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
 }
