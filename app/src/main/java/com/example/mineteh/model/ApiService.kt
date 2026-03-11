@@ -8,17 +8,17 @@ import retrofit2.http.*
 
 interface ApiService {
     // Auth endpoints
-    @POST("auth/login.php")
+    @POST("login.php")
     suspend fun login(@Body request: LoginRequest): Response<ApiResponse<LoginResponse>>
 
-    @POST("auth/register.php")
+    @POST("register.php")
     suspend fun register(@Body request: RegisterRequest): Response<ApiResponse<RegisterResponse>>
 
-    @POST("auth/logout.php")
+    @POST("logout.php")
     suspend fun logout(): Response<ApiResponse<Any>>
 
     // Listings endpoints
-    @GET("listings/index.php")
+    @GET("index.php")
     suspend fun getListings(
         @Query("category") category: String? = null,
         @Query("type") type: String? = null,
@@ -27,11 +27,11 @@ interface ApiService {
         @Query("offset") offset: Int = 0
     ): Response<ApiResponse<List<Listing>>>
 
-    @GET("listings/show.php")
+    @GET("show.php")
     suspend fun getListing(@Query("id") id: Int): Response<ApiResponse<Listing>>
 
     @Multipart
-    @POST("listings/create.php")
+    @POST("create.php")
     suspend fun createListing(
         @Part("title") title: RequestBody,
         @Part("description") description: RequestBody,
@@ -45,17 +45,17 @@ interface ApiService {
     ): Response<ApiResponse<Listing>>
 
     // Bids endpoints
-    @POST("bids/place.php")
+    @POST("place.php")
     suspend fun placeBid(
         @Body request: BidRequest
     ): Response<ApiResponse<BidData>>
 
     // Favorites endpoints
-    @POST("favorites/toggle.php")
+    @POST("toggle.php")
     suspend fun toggleFavorite(
         @Body request: FavoriteRequest
     ): Response<ApiResponse<FavoriteData>>
 
-    @GET("favorites/index.php")
+    @GET("favorites.php")
     suspend fun getFavorites(): Response<ApiResponse<List<Listing>>>
 }
