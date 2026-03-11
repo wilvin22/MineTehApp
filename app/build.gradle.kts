@@ -87,4 +87,7 @@ dependencies {
     
     // Kotlinx Serialization
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
+    
+    // BCrypt for password verification
+    implementation("at.favre.lib:bcrypt:0.10.2")
 }
