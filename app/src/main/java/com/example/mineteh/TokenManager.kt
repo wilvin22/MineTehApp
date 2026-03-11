@@ -2,6 +2,7 @@ package com.example.mineteh.utils
 
 import android.content.Context
 import android.content.SharedPreferences
+import io.github.jan.supabase.gotrue.user.UserSession
 
 class TokenManager(context: Context) {
     private val prefs: SharedPreferences = context.getSharedPreferences(
@@ -16,6 +17,11 @@ class TokenManager(context: Context) {
         private const val KEY_USER_EMAIL = "user_email"
         private const val KEY_REMEMBER_ME = "remember_me"
         private const val KEY_SAVED_EMAIL = "saved_email"
+        
+        // New keys for Supabase session management
+        private const val KEY_ACCESS_TOKEN = "access_token"
+        private const val KEY_REFRESH_TOKEN = "refresh_token"
+        private const val KEY_SESSION = "supabase_session"
     }
 
     fun saveToken(token: String) {
@@ -66,6 +72,40 @@ class TokenManager(context: Context) {
         return prefs.getString(KEY_SAVED_EMAIL, null)
     }
 
+    /**
+     * Saves a Supabase session to SharedPreferences.
+     * Stores both access token and refresh token for session management.
+     * 
+     * @param session The Supabase UserSession to save
+     */
+    fun saveSession(session: UserSession) {
+        prefs.edit().apply {
+            putString(KEY_ACCESS_TOKEN, session.accessToken)
+            putString(KEY_REFRESH_TOKEN, session.refreshToken)
+            // Also save to legacy KEY_TOKEN for backward compatibility
+            putString(KEY_TOKEN, session.accessToken)
+            apply()
+        }
+    }
+
+    /**
+     * Retrieves the access token from the stored session.
+     * 
+     * @return Access token string if available, null otherwise
+     */
+    fun getAccessToken(): String? {
+        return prefs.getString(KEY_ACCESS_TOKEN, null)
+    }
+
+    /**
+     * Retrieves the refresh token from the stored session.
+     * 
+     * @return Refresh token string if available, null otherwise
+     */
+    fun getRefreshToken(): String? {
+        return prefs.getString(KEY_REFRESH_TOKEN, null)
+    }
+
     fun clearToken() {
         prefs.edit().remove(KEY_TOKEN).apply()
     }
@@ -84,6 +124,7 @@ class TokenManager(context: Context) {
     }
 
     fun isLoggedIn(): Boolean {
-        return getToken() != null
+        // Check both legacy token and new access token for backward compatibility
+        return getToken() != null || getAccessToken() != null
     }
 }

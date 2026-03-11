@@ -26,7 +26,7 @@ This plan migrates the MineTeh Android application from a PHP backend with Retro
     - Store Supabase anon key in BuildConfig or local.properties
     - _Requirements: 1.4_
   
-  - [ ]* 1.4 Write unit tests for Supabase client initialization
+  - [~]* 1.4 Write unit tests for Supabase client initialization
     - Test singleton pattern (same instance returned)
     - Test client configuration with correct URL and key
     - Test module installation (Auth, Postgrest, Storage)
@@ -34,14 +34,14 @@ This plan migrates the MineTeh Android application from a PHP backend with Retro
     - **Validates: Requirements 1.4**
 
 - [ ] 2. Phase 2: AuthRepository Migration
-  - [ ] 2.1 Update TokenManager for Supabase session management
+  - [x] 2.1 Update TokenManager for Supabase session management
     - Add saveSession() and getSession() methods
     - Add getAccessToken() and getRefreshToken() methods
     - Update existing methods to work with Supabase session format
     - Maintain backward compatibility with existing token storage
     - _Requirements: 2.3, 2.5_
   
-  - [ ] 2.2 Implement AuthRepository login with Supabase Auth
+  - [x] 2.2 Implement AuthRepository login with Supabase Auth
     - Replace apiService.login() with SupabaseClient.auth.signInWith(Email)
     - Extract user data from Supabase session
     - Store session using TokenManager.saveSession()
@@ -49,7 +49,7 @@ This plan migrates the MineTeh Android application from a PHP backend with Retro
     - Return Resource.Success with LoginData on success
     - _Requirements: 2.2, 2.3, 2.7_
   
-  - [ ] 2.3 Implement AuthRepository register with Supabase Auth
+  - [x] 2.3 Implement AuthRepository register with Supabase Auth
     - Replace apiService.register() with SupabaseClient.auth.signUp()
     - Store user metadata (username, firstName, lastName) in Supabase user profile
     - Create corresponding account record in accounts table
@@ -57,13 +57,13 @@ This plan migrates the MineTeh Android application from a PHP backend with Retro
     - Handle duplicate email errors with descriptive messages
     - _Requirements: 2.1, 2.6_
   
-  - [ ] 2.4 Implement AuthRepository logout with Supabase Auth
+  - [x] 2.4 Implement AuthRepository logout with Supabase Auth
     - Replace apiService.logout() with SupabaseClient.auth.signOut()
     - Clear session using TokenManager.clearAll()
     - Return Resource.Success on successful logout
     - _Requirements: 2.4, 2.5_
   
-  - [ ] 2.5 Implement getCurrentUser method
+  - [x] 2.5 Implement getCurrentUser method
     - Use SupabaseClient.auth.currentUserOrNull() to get current user
     - Query accounts table to get full user profile data
     - Return Resource.Success with User object
@@ -83,7 +83,7 @@ This plan migrates the MineTeh Android application from a PHP backend with Retro
     - **Property 3: Authentication State Persistence**
     - **Validates: Requirements 2.1, 2.2, 2.3, 2.4, 2.5**
   
-  - [ ] 2.8 Test AuthRepository with existing LoginViewModel and SignupViewModel
+  - [x] 2.8 Test AuthRepository with existing LoginViewModel and SignupViewModel
     - Verify login flow works end-to-end
     - Verify registration flow works end-to-end
     - Verify logout flow works end-to-end
@@ -94,7 +94,7 @@ This plan migrates the MineTeh Android application from a PHP backend with Retro
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 4. Phase 3: ListingsRepository Migration
-  - [ ] 4.1 Implement getListings with Supabase Postgrest
+  - [x] 4.1 Implement getListings with Supabase Postgrest
     - Replace apiService.getListings() with Postgrest query on listings table
     - Apply filters using .eq(), .like(), .order() for category, type, search
     - Implement pagination with .range() for limit and offset
@@ -102,20 +102,20 @@ This plan migrates the MineTeh Android application from a PHP backend with Retro
     - Parse response into List<Listing>
     - _Requirements: 4.1, 4.6_
   
-  - [ ] 4.2 Implement getUserListings with ownership filtering
+  - [~] 4.2 Implement getUserListings with ownership filtering
     - Query listings table with .eq("account_id", currentUserId)
     - Join with listing_images table
     - Return only listings owned by authenticated user
     - _Requirements: 4.2_
   
-  - [ ] 4.3 Implement getListing for single item retrieval
+  - [~] 4.3 Implement getListing for single item retrieval
     - Query listings table with .eq("listing_id", id).single()
     - Join with listing_images, accounts, and bids tables
     - Include highest bid information
     - Include is_favorited status for current user
     - _Requirements: 4.1, 4.6_
   
-  - [ ] 4.4 Implement createListing with Supabase Storage for images
+  - [~] 4.4 Implement createListing with Supabase Storage for images
     - Upload images to Supabase Storage bucket
     - Insert listing record into listings table with current user as owner
     - Insert image records into listing_images table with storage paths
@@ -123,7 +123,7 @@ This plan migrates the MineTeh Android application from a PHP backend with Retro
     - Handle storage errors gracefully
     - _Requirements: 4.3_
   
-  - [ ] 4.5 Implement updateListing with authorization check
+  - [~] 4.5 Implement updateListing with authorization check
     - Verify current user owns the listing (RLS policy enforces this)
     - Update listing record with provided fields
     - Handle image updates if new images provided
@@ -146,7 +146,7 @@ This plan migrates the MineTeh Android application from a PHP backend with Retro
     - **Property 9: Listing Serialization Round-Trip**
     - **Validates: Requirements 4.2, 4.3, 4.4, 4.6**
   
-  - [ ] 4.8 Test ListingsRepository with existing ViewModels
+  - [~] 4.8 Test ListingsRepository with existing ViewModels
     - Test with HomeViewModel for listing display
     - Test with ListingsViewModel for filtering and search
     - Test with CreateListingViewModel for creation
@@ -155,39 +155,39 @@ This plan migrates the MineTeh Android application from a PHP backend with Retro
     - _Requirements: 8.5, 10.2_
 
 - [ ] 5. Phase 4: BidsRepository and FavoritesRepository Migration
-  - [ ] 5.1 Implement placeBid with Supabase Postgrest
+  - [~] 5.1 Implement placeBid with Supabase Postgrest
     - Insert bid record into bids table with current user and listing IDs
     - Handle duplicate bid constraint violations
     - Return created bid data with bidder information
     - _Requirements: 5.1_
   
-  - [ ] 5.2 Implement getBidsForListing
+  - [~] 5.2 Implement getBidsForListing
     - Query bids table with .eq("listing_id", listingId)
     - Join with accounts table to get bidder information
     - Order by bid_amount descending
     - _Requirements: 5.2_
   
-  - [ ] 5.3 Implement getUserBids
+  - [~] 5.3 Implement getUserBids
     - Query bids table with .eq("account_id", currentUserId)
     - Join with listings and accounts tables
     - Return all bids placed by current user
     - _Requirements: 5.3_
   
-  - [ ] 5.4 Implement toggleFavorite with upsert logic
+  - [~] 5.4 Implement toggleFavorite with upsert logic
     - Check if favorite exists for user and listing
     - If exists, delete the favorite record
     - If not exists, insert new favorite record
     - Return favorite status (added or removed)
     - _Requirements: 6.1, 6.2, 6.4_
   
-  - [ ] 5.5 Implement getFavorites with join
+  - [~] 5.5 Implement getFavorites with join
     - Query favorites table with .eq("account_id", currentUserId)
     - Join with listings table to get full listing data
     - Join with listing_images for images
     - Return list of favorited listings
     - _Requirements: 6.3_
   
-  - [ ] 5.6 Implement isFavorited check
+  - [~] 5.6 Implement isFavorited check
     - Query favorites table for specific user and listing combination
     - Return boolean indicating favorite status
     - _Requirements: 6.3_
@@ -210,7 +210,7 @@ This plan migrates the MineTeh Android application from a PHP backend with Retro
     - **Property 12: Favorites Management Idempotence**
     - **Validates: Requirements 5.1, 5.2, 5.3, 6.1, 6.2, 6.3, 6.4**
   
-  - [ ] 5.10 Test repositories with existing ViewModels
+  - [~] 5.10 Test repositories with existing ViewModels
     - Test BidsRepository with BidActivity and BidDetailActivity
     - Test FavoritesRepository with FavoritesViewModel and SavedItemsActivity
     - Verify no breaking changes to ViewModel interfaces
@@ -220,14 +220,14 @@ This plan migrates the MineTeh Android application from a PHP backend with Retro
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 7. Phase 5: Profile Management and Error Handling
-  - [ ] 7.1 Implement updateProfile in AuthRepository
+  - [~] 7.1 Implement updateProfile in AuthRepository
     - Update user metadata in Supabase Auth
     - Update corresponding account record in accounts table
     - Handle validation errors with descriptive messages
     - Return updated user profile
     - _Requirements: 7.2, 7.4_
   
-  - [ ] 7.2 Create centralized error handling utility
+  - [~] 7.2 Create centralized error handling utility
     - Create handleSupabaseError() function to map exceptions
     - Map RestException to user-friendly messages
     - Map HttpRequestException to network error messages
@@ -235,13 +235,13 @@ This plan migrates the MineTeh Android application from a PHP backend with Retro
     - Ensure consistent error types across all repositories
     - _Requirements: 8.6_
   
-  - [ ] 7.3 Implement token refresh handling
+  - [~] 7.3 Implement token refresh handling
     - Configure Supabase Auth with autoRefresh = true
     - Add error handling for token refresh failures
     - Clear session and redirect to login on refresh failure
     - _Requirements: 3.2, 3.3_
   
-  - [ ] 7.4 Add request authentication interceptor
+  - [~] 7.4 Add request authentication interceptor
     - Verify Supabase SDK automatically includes auth token in headers
     - Test authenticated requests include correct Authorization header
     - _Requirements: 3.1_
@@ -266,7 +266,7 @@ This plan migrates the MineTeh Android application from a PHP backend with Retro
     - **Validates: Requirements 3.1, 3.2, 3.3**
 
 - [ ] 8. Phase 6: Integration Testing and Validation
-  - [ ] 8.1 Run full unit test suite
+  - [~] 8.1 Run full unit test suite
     - Execute all repository unit tests
     - Execute all ViewModel integration tests
     - Verify 80% minimum code coverage
@@ -277,7 +277,7 @@ This plan migrates the MineTeh Android application from a PHP backend with Retro
     - Verify all 15 properties pass
     - Document any property test failures
   
-  - [ ] 8.3 Manual end-to-end testing
+  - [~] 8.3 Manual end-to-end testing
     - Test complete registration flow
     - Test complete login flow
     - Test listing creation with image upload
@@ -288,7 +288,7 @@ This plan migrates the MineTeh Android application from a PHP backend with Retro
     - Test logout flow
     - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6_
   
-  - [ ] 8.4 Test error scenarios
+  - [~] 8.4 Test error scenarios
     - Test invalid credentials login
     - Test duplicate email registration
     - Test unauthorized listing update
@@ -297,7 +297,7 @@ This plan migrates the MineTeh Android application from a PHP backend with Retro
     - Test token expiration and refresh
     - _Requirements: 2.6, 2.7, 4.5, 5.4_
   
-  - [ ] 8.5 Performance testing
+  - [~] 8.5 Performance testing
     - Benchmark listing query response times
     - Test with large datasets (100+ listings)
     - Test concurrent operations (multiple users)
@@ -308,38 +308,38 @@ This plan migrates the MineTeh Android application from a PHP backend with Retro
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 10. Phase 7: Cleanup and Retrofit Removal
-  - [ ] 10.1 Remove Retrofit dependencies from build.gradle.kts
+  - [~] 10.1 Remove Retrofit dependencies from build.gradle.kts
     - Remove retrofit library dependency
     - Remove converter-gson dependency
     - Remove okhttp3 logging-interceptor dependency
     - _Requirements: 9.1_
   
-  - [ ] 10.2 Delete ApiService interface
+  - [~] 10.2 Delete ApiService interface
     - Delete `app/src/main/java/com/example/mineteh/model/ApiService.kt`
     - _Requirements: 9.2_
   
-  - [ ] 10.3 Delete ApiClient configuration
+  - [~] 10.3 Delete ApiClient configuration
     - Delete `app/src/main/java/com/example/mineteh/ApiClient.kt`
     - _Requirements: 9.4_
   
-  - [ ] 10.4 Delete custom deserializers
+  - [~] 10.4 Delete custom deserializers
     - Delete `app/src/main/java/com/example/mineteh/network/ApiResponseDeserializer.kt`
     - Delete `app/src/main/java/com/example/mineteh/network/ListingDeserializer.kt`
     - _Requirements: 9.3_
   
-  - [ ] 10.5 Remove unused network configuration
+  - [~] 10.5 Remove unused network configuration
     - Remove any PHP backend URL constants
     - Remove Retrofit-specific annotations from data models
     - Clean up any remaining Retrofit imports
     - _Requirements: 9.4_
   
-  - [ ] 10.6 Verify build succeeds after cleanup
+  - [~] 10.6 Verify build succeeds after cleanup
     - Run ./gradlew clean build
     - Ensure no compilation errors
     - Ensure no missing dependency errors
     - _Requirements: 9.1, 9.2, 9.3, 9.4_
   
-  - [ ] 10.7 Run final test suite
+  - [~] 10.7 Run final test suite
     - Execute all unit tests
     - Execute all integration tests
     - Verify no regressions from cleanup
