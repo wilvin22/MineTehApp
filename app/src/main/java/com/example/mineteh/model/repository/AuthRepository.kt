@@ -15,13 +15,14 @@ import kotlinx.serialization.json.jsonPrimitive
 
 class AuthRepository(context: Context) {
     private val supabaseClient = com.example.mineteh.supabase.SupabaseClient.client
+    private val database = com.example.mineteh.supabase.SupabaseClient.database
     private val tokenManager = TokenManager(context)
 
     suspend fun login(identifier: String, password: String) = withContext(Dispatchers.IO) {
         try {
             // Use RPC to verify password and get user data
             // The database should have a function like: login_user(p_identifier text, p_password text)
-            val responseBody = supabaseClient.postgrest.rpc(
+            val responseBody = database.rpc(
                 function = "login_user",
                 parameters = mapOf(
                     "p_identifier" to identifier,
@@ -108,7 +109,7 @@ class AuthRepository(context: Context) {
         try {
             // Use RPC to register user with password hashing
             // The database should have a function like: register_user(p_username text, p_email text, p_password text, p_first_name text, p_last_name text)
-            val responseBody = supabaseClient.postgrest.rpc(
+            val responseBody = database.rpc(
                 function = "register_user",
                 parameters = mapOf(
                     "p_username" to username,
@@ -233,7 +234,7 @@ class AuthRepository(context: Context) {
             }
             
             // Query accounts table to get full user profile data
-            val response = supabaseClient.postgrest
+            val response = database
                 .from("accounts")
                 .select()
                 .execute()
