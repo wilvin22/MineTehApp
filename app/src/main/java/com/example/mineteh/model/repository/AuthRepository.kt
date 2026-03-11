@@ -9,12 +9,25 @@ import com.example.mineteh.utils.Resource
 import com.example.mineteh.utils.TokenManager
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.android.Android
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.header
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
+import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.put
 import java.security.MessageDigest
 
 class AuthRepository(context: Context) {
@@ -122,27 +135,27 @@ class AuthRepository(context: Context) {
             android.util.Log.d("AuthRepository", "Starting registration for username: $username, email: $email")
             
             // Use Ktor HttpClient to call the RPC function directly
-            val httpClient = io.ktor.client.HttpClient(io.ktor.client.engine.android.Android) {
-                install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
-                    io.ktor.serialization.kotlinx.json.json(Json {
+            val httpClient = HttpClient(Android) {
+                install(ContentNegotiation) {
+                    json(Json {
                         ignoreUnknownKeys = true
                     })
                 }
             }
             
             val rpcUrl = "https://didpavzminvohszuuowu.supabase.co/rest/v1/rpc/register_user"
-            val requestBody = kotlinx.serialization.json.buildJsonObject {
-                put("p_username", kotlinx.serialization.json.JsonPrimitive(username))
-                put("p_email", kotlinx.serialization.json.JsonPrimitive(email))
-                put("p_password", kotlinx.serialization.json.JsonPrimitive(password))
-                put("p_first_name", kotlinx.serialization.json.JsonPrimitive(firstName))
-                put("p_last_name", kotlinx.serialization.json.JsonPrimitive(lastName))
+            val requestBody = buildJsonObject {
+                put("p_username", JsonPrimitive(username))
+                put("p_email", JsonPrimitive(email))
+                put("p_password", JsonPrimitive(password))
+                put("p_first_name", JsonPrimitive(firstName))
+                put("p_last_name", JsonPrimitive(lastName))
             }
             
-            val response: io.ktor.client.statement.HttpResponse = httpClient.post(rpcUrl) {
+            val response = httpClient.post(rpcUrl) {
                 header("apikey", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpZHBhdnptaW52b2hzenV1b3d1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMTYwNDgsImV4cCI6MjA4NzU5MjA0OH0.iueZB9z5Z5YvKM98Gsy-ll--kLipCKXtmT0V7jHBA0Y")
                 header("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpZHBhdnptaW52b2hzenV1b3d1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMTYwNDgsImV4cCI6MjA4NzU5MjA0OH0.iueZB9z5Z5YvKM98Gsy-ll--kLipCKXtmT0V7jHBA0Y")
-                header("Content-Type", "application/json")
+                contentType(ContentType.Application.Json)
                 setBody(requestBody.toString())
             }
             
