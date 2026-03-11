@@ -149,17 +149,20 @@ class AuthRepository(context: Context) {
             val passwordHash = BCrypt.withDefaults().hashToString(12, password.toCharArray())
             android.util.Log.d("AuthRepository", "Password hashed successfully")
             
-            // Create the new user data
+            // Create the new user data matching your exact table structure
+            // Only include required fields (NOT NULL without defaults)
+            // The database will auto-generate: account_id, is_admin, created_at, user_status, is_rider
             val newUserJson = """
-                {
+                [{
                     "username": "$username",
-                    "email": "$email",
-                    "password_hash": "$passwordHash",
                     "first_name": "$firstName",
                     "last_name": "$lastName",
-                    "created_at": "${java.time.Instant.now()}"
-                }
+                    "email": "$email",
+                    "password_hash": "$passwordHash"
+                }]
             """.trimIndent()
+            
+            android.util.Log.d("AuthRepository", "Attempting to insert user")
             
             // Insert new user into accounts table
             val insertResponse = database.from("accounts")
@@ -205,7 +208,8 @@ class AuthRepository(context: Context) {
             Resource.Success(registerResponse)
             
         } catch (e: io.github.jan.supabase.exceptions.RestException) {
-            android.util.Log.e("AuthRepository", "Supabase REST error during registration", e)
+            android.util.Log.e("AuthRepository", "Supabase REST error during registration: ${e.message}", e)
+            android.util.Log.e("AuthRepository", "Error details: ${e.error}")
             Resource.Error("Registration failed: ${e.message}")
         } catch (e: io.github.jan.supabase.exceptions.HttpRequestException) {
             android.util.Log.e("AuthRepository", "Network error during registration", e)
