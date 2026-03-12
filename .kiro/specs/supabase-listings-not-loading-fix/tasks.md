@@ -37,7 +37,7 @@
   - Mark task complete when tests are run and passing behavior is documented on unfixed code
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5_
 
-- [-] 3. Fix for listings not loading after login
+- [x] 3. Fix for listings not loading after login
 
   - [x] 3.1 Add diagnostic logging to Login.kt
     - Add entry log at start of navigateToHome(): "navigateToHome() called"
@@ -102,7 +102,7 @@
     - _Expected_Behavior: Logs reveal the exact break point in execution chain_
     - _Requirements: 2.1, 2.2, 2.3, 2.4_
 
-  - [ ] 3.6 Implement targeted fix based on diagnostic findings
+  - [x] 3.6 Implement targeted fix based on diagnostic findings
     - Based on where the chain breaks, implement the appropriate fix:
       - If HomeActivity not starting: Fix manifest configuration or intent creation
       - If ViewModel not initializing: Fix ViewModel factory or dependency injection
@@ -114,7 +114,7 @@
     - _Preservation: Preservation Requirements from design_
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 3.1, 3.2, 3.3, 3.4, 3.5_
 
-  - [ ] 3.7 Verify bug condition exploration test now passes
+  - [x] 3.7 Verify bug condition exploration test now passes
     - **Property 1: Expected Behavior** - Complete Execution Chain Logging
     - **IMPORTANT**: Re-run the SAME test from task 1 - do NOT write a new test
     - The test from task 1 encodes the expected behavior
@@ -125,7 +125,7 @@
     - **EXPECTED OUTCOME**: Test PASSES (confirms bug is fixed)
     - _Requirements: 2.1, 2.2, 2.3, 2.4_
 
-  - [ ] 3.8 Verify preservation tests still pass
+  - [x] 3.8 Verify preservation tests still pass
     - **Property 2: Preservation** - Login Flow Behavior
     - **IMPORTANT**: Re-run the SAME tests from task 2 - do NOT write new tests
     - Run preservation property tests from step 2
@@ -139,7 +139,7 @@
     - Confirm all tests still pass after fix (no regressions)
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5_
 
-- [ ] 4. Checkpoint - Ensure all tests pass
+- [x] 4. Checkpoint - Ensure all tests pass
   - Verify complete execution chain logs appear from Login through ListingsRepository
   - Verify listings are displayed correctly in HomeActivity
   - Verify all preservation tests pass (no regressions in login flow)
