@@ -106,29 +106,31 @@ class ListingsRepository(private val context: Context) {
         try {
             android.util.Log.d("ListingsRepository", "Fetching listing from Supabase...")
             
-            // Query single listing
+            // Query all listings and filter in Kotlin (Supabase Postgrest 2.0.0 has limited API)
             val response = com.example.mineteh.supabase.SupabaseClient.database
                 .from("listings")
                 .select()
-                .eq("id", id.toString())
-                .single()
             
             android.util.Log.d("ListingsRepository", "Raw response: ${response.data}")
             
-            if (response.data.isEmpty()) {
-                android.util.Log.w("ListingsRepository", "Listing not found")
+            if (response.data.isEmpty() || response.data == "[]") {
+                android.util.Log.w("ListingsRepository", "Empty response from Supabase")
                 return@withContext Resource.Error<Listing>("Listing not found")
             }
             
-            // Parse the response
-            val listings = parseListingsResponse("[${response.data}]")
+            // Parse all listings
+            val allListings = parseListingsResponse(response.data)
             
-            if (listings.isEmpty()) {
-                return@withContext Resource.Error<Listing>("Failed to parse listing")
+            // Find the specific listing by ID
+            val listing = allListings.find { it.id == id }
+            
+            if (listing == null) {
+                android.util.Log.w("ListingsRepository", "Listing with id=$id not found")
+                return@withContext Resource.Error<Listing>("Listing not found")
             }
             
-            android.util.Log.d("ListingsRepository", "Successfully loaded listing ${listings[0].id}")
-            Resource.Success(listings[0])
+            android.util.Log.d("ListingsRepository", "Successfully loaded listing ${listing.id}")
+            Resource.Success(listing)
             
         } catch (e: Exception) {
             android.util.Log.e("ListingsRepository", "Error loading listing", e)
