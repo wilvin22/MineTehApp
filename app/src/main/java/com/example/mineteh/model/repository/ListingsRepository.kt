@@ -189,18 +189,33 @@ class ListingsRepository(private val context: Context) {
                 }
 
             android.util.Log.d("ListingsRepository", "Insert response: ${insertResponse.data}")
+            android.util.Log.d("ListingsRepository", "Insert response status: ${insertResponse.status}")
             
             // Parse the inserted listing to get the ID
             val json = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
-            val jsonArray = json.parseToJsonElement(insertResponse.data).jsonArray
+            val responseElement = json.parseToJsonElement(insertResponse.data)
             
-            if (jsonArray.isEmpty()) {
-                return@withContext Resource.Error("Failed to create listing")
+            android.util.Log.d("ListingsRepository", "Parsed response element: $responseElement")
+            
+            val listingId = when {
+                responseElement is kotlinx.serialization.json.JsonArray && responseElement.isNotEmpty() -> {
+                    val listingJsonObj = responseElement.first().jsonObject
+                    android.util.Log.d("ListingsRepository", "Listing object: $listingJsonObj")
+                    listingJsonObj["listing_id"]?.jsonPrimitive?.int
+                        ?: listingJsonObj["listing_id"]?.jsonPrimitive?.content?.toIntOrNull()
+                }
+                responseElement is kotlinx.serialization.json.JsonObject -> {
+                    android.util.Log.d("ListingsRepository", "Single object response: $responseElement")
+                    responseElement["listing_id"]?.jsonPrimitive?.int
+                        ?: responseElement["listing_id"]?.jsonPrimitive?.content?.toIntOrNull()
+                }
+                else -> null
             }
             
-            val listingJsonObj = jsonArray.first().jsonObject
-            val listingId = listingJsonObj["listing_id"]?.jsonPrimitive?.content?.toIntOrNull()
-                ?: return@withContext Resource.Error("Failed to get listing ID")
+            if (listingId == null) {
+                android.util.Log.e("ListingsRepository", "Could not extract listing_id from response")
+                return@withContext Resource.Error("Failed to get listing ID")
+            }
             
             android.util.Log.d("ListingsRepository", "Listing created with ID: $listingId")
             
