@@ -45,6 +45,13 @@ class ListingsRepository(private val context: Context) {
                 .select()
             
             android.util.Log.d("ListingsRepository", "Raw response: ${response.data}")
+            android.util.Log.d("ListingsRepository", "Response length: ${response.data.length}")
+            
+            // Check if response is empty
+            if (response.data.isEmpty() || response.data == "[]") {
+                android.util.Log.w("ListingsRepository", "Empty response from Supabase")
+                return@withContext Resource.Success(emptyList())
+            }
             
             // Parse the response into List<Listing>
             val listings = parseListingsResponse(response.data)
@@ -195,53 +202,72 @@ class ListingsRepository(private val context: Context) {
      * Also fetches related images and seller information for each listing
      */
     private suspend fun parseListingsResponse(jsonData: String): List<Listing> {
-        val json = Json { ignoreUnknownKeys = true }
-        val jsonArray = json.parseToJsonElement(jsonData).jsonArray
-        
-        // Fetch all listing images
-        val imagesResponse = com.example.mineteh.supabase.SupabaseClient.database
-            .from("listing_images")
-            .select()
-        val allImages = parseListingImages(imagesResponse.data)
-        
-        // Fetch all accounts (sellers)
-        val accountsResponse = com.example.mineteh.supabase.SupabaseClient.database
-            .from("accounts")
-            .select()
-        val allAccounts = parseAccounts(accountsResponse.data)
-        
-        return jsonArray.map { element ->
-            val obj = element.jsonObject
+        try {
+            android.util.Log.d("ListingsRepository", "Parsing listings response...")
+            val json = Json { ignoreUnknownKeys = true }
+            val jsonArray = json.parseToJsonElement(jsonData).jsonArray
             
-            val listingId = obj["id"]?.jsonPrimitive?.content?.toIntOrNull() ?: 0
-            val sellerId = obj["seller_id"]?.jsonPrimitive?.content?.toIntOrNull()
+            android.util.Log.d("ListingsRepository", "Found ${jsonArray.size} listings in response")
             
-            // Find images for this listing
-            val images = allImages.filter { it.first == listingId }.map { it.second }
+            // Fetch all listing images
+            val imagesResponse = com.example.mineteh.supabase.SupabaseClient.database
+                .from("listing_images")
+                .select()
+            android.util.Log.d("ListingsRepository", "Images response: ${imagesResponse.data}")
+            val allImages = parseListingImages(imagesResponse.data)
+            android.util.Log.d("ListingsRepository", "Parsed ${allImages.size} images")
             
-            // Find seller for this listing
-            val seller = sellerId?.let { id ->
-                allAccounts.find { it.accountId == id }
+            // Fetch all accounts (sellers)
+            val accountsResponse = com.example.mineteh.supabase.SupabaseClient.database
+                .from("accounts")
+                .select()
+            android.util.Log.d("ListingsRepository", "Accounts response: ${accountsResponse.data}")
+            val allAccounts = parseAccounts(accountsResponse.data)
+            android.util.Log.d("ListingsRepository", "Parsed ${allAccounts.size} accounts")
+            
+            return jsonArray.mapIndexedNotNull { index, element ->
+                try {
+                    val obj = element.jsonObject
+                    
+                    val listingId = obj["id"]?.jsonPrimitive?.content?.toIntOrNull() ?: 0
+                    val sellerId = obj["seller_id"]?.jsonPrimitive?.content?.toIntOrNull()
+                    
+                    android.util.Log.d("ListingsRepository", "Parsing listing $index: id=$listingId, sellerId=$sellerId")
+                    
+                    // Find images for this listing
+                    val images = allImages.filter { it.first == listingId }.map { it.second }
+                    
+                    // Find seller for this listing
+                    val seller = sellerId?.let { id ->
+                        allAccounts.find { it.accountId == id }
+                    }
+                    
+                    // Create Listing object
+                    Listing(
+                        id = listingId,
+                        title = obj["title"]?.jsonPrimitive?.content ?: "",
+                        description = obj["description"]?.jsonPrimitive?.content ?: "",
+                        price = obj["price"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: 0.0,
+                        location = obj["location"]?.jsonPrimitive?.content ?: "",
+                        category = obj["category"]?.jsonPrimitive?.content ?: "",
+                        listingType = obj["listing_type"]?.jsonPrimitive?.content ?: "",
+                        status = obj["status"]?.jsonPrimitive?.content ?: "active",
+                        image = images.firstOrNull()?.imagePath,
+                        images = images,
+                        seller = seller,
+                        createdAt = obj["created_at"]?.jsonPrimitive?.content ?: "",
+                        isFavorited = false, // Will be determined separately if needed
+                        highestBid = null, // Will be fetched separately if needed
+                        endTime = obj["end_time"]?.jsonPrimitive?.content
+                    )
+                } catch (e: Exception) {
+                    android.util.Log.e("ListingsRepository", "Error parsing listing at index $index", e)
+                    null
+                }
             }
-            
-            // Create Listing object
-            Listing(
-                id = listingId,
-                title = obj["title"]?.jsonPrimitive?.content ?: "",
-                description = obj["description"]?.jsonPrimitive?.content ?: "",
-                price = obj["price"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: 0.0,
-                location = obj["location"]?.jsonPrimitive?.content ?: "",
-                category = obj["category"]?.jsonPrimitive?.content ?: "",
-                listingType = obj["listing_type"]?.jsonPrimitive?.content ?: "",
-                status = obj["status"]?.jsonPrimitive?.content ?: "active",
-                image = images.firstOrNull()?.imagePath,
-                images = images,
-                seller = seller,
-                createdAt = obj["created_at"]?.jsonPrimitive?.content ?: "",
-                isFavorited = false, // Will be determined separately if needed
-                highestBid = null, // Will be fetched separately if needed
-                endTime = obj["end_time"]?.jsonPrimitive?.content
-            )
+        } catch (e: Exception) {
+            android.util.Log.e("ListingsRepository", "Error in parseListingsResponse", e)
+            return emptyList()
         }
     }
     
@@ -250,15 +276,25 @@ class ListingsRepository(private val context: Context) {
      * Returns a list of Pair<listingId, ListingImage>
      */
     private fun parseListingImages(jsonData: String): List<Pair<Int, ListingImage>> {
-        val json = Json { ignoreUnknownKeys = true }
-        val jsonArray = json.parseToJsonElement(jsonData).jsonArray
-        
-        return jsonArray.mapNotNull { element ->
-            val obj = element.jsonObject
-            val listingId = obj["listing_id"]?.jsonPrimitive?.content?.toIntOrNull() ?: return@mapNotNull null
-            val imagePath = obj["image_path"]?.jsonPrimitive?.content ?: return@mapNotNull null
+        return try {
+            val json = Json { ignoreUnknownKeys = true }
+            val jsonArray = json.parseToJsonElement(jsonData).jsonArray
             
-            listingId to ListingImage(imagePath = imagePath)
+            jsonArray.mapNotNull { element ->
+                try {
+                    val obj = element.jsonObject
+                    val listingId = obj["listing_id"]?.jsonPrimitive?.content?.toIntOrNull() ?: return@mapNotNull null
+                    val imagePath = obj["image_path"]?.jsonPrimitive?.content ?: return@mapNotNull null
+                    
+                    listingId to ListingImage(imagePath = imagePath)
+                } catch (e: Exception) {
+                    android.util.Log.e("ListingsRepository", "Error parsing image", e)
+                    null
+                }
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("ListingsRepository", "Error in parseListingImages", e)
+            emptyList()
         }
     }
     
@@ -266,17 +302,27 @@ class ListingsRepository(private val context: Context) {
      * Parses accounts (sellers) from JSON response
      */
     private fun parseAccounts(jsonData: String): List<Seller> {
-        val json = Json { ignoreUnknownKeys = true }
-        val jsonArray = json.parseToJsonElement(jsonData).jsonArray
-        
-        return jsonArray.map { element ->
-            val obj = element.jsonObject
-            Seller(
-                accountId = obj["account_id"]?.jsonPrimitive?.content?.toIntOrNull(),
-                username = obj["username"]?.jsonPrimitive?.content ?: "",
-                firstName = obj["first_name"]?.jsonPrimitive?.content ?: "",
-                lastName = obj["last_name"]?.jsonPrimitive?.content ?: ""
-            )
+        return try {
+            val json = Json { ignoreUnknownKeys = true }
+            val jsonArray = json.parseToJsonElement(jsonData).jsonArray
+            
+            jsonArray.mapNotNull { element ->
+                try {
+                    val obj = element.jsonObject
+                    Seller(
+                        accountId = obj["account_id"]?.jsonPrimitive?.content?.toIntOrNull(),
+                        username = obj["username"]?.jsonPrimitive?.content ?: "",
+                        firstName = obj["first_name"]?.jsonPrimitive?.content ?: "",
+                        lastName = obj["last_name"]?.jsonPrimitive?.content ?: ""
+                    )
+                } catch (e: Exception) {
+                    android.util.Log.e("ListingsRepository", "Error parsing account", e)
+                    null
+                }
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("ListingsRepository", "Error in parseAccounts", e)
+            emptyList()
         }
     }
 }
