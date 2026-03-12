@@ -66,15 +66,49 @@ class ListingsAdapter(
                 auctionTimerLayout.visibility = View.GONE
             }
 
-            // Load image using Glide
-            // Construct full URL if needed. Assuming the server returns relative path.
-            val baseUrl = "http://192.168.18.4/MineTeh/" // Base URL for images
-            val imageUrl = listing.image?.let { if (it.startsWith("http")) it else baseUrl + it }
+            // Load image using Glide with public website URL
+            android.util.Log.d("ListingsAdapter", "Binding listing ${listing.id}: ${listing.title}")
+            android.util.Log.d("ListingsAdapter", "  - image field: ${listing.image}")
+            
+            val websiteUrl = "https://mineteh.infinityfree.me/home"
+            val imageUrl = listing.image?.let { imagePath ->
+                when {
+                    imagePath.startsWith("http") -> imagePath
+                    else -> "$websiteUrl/$imagePath"
+                }
+            }
+            
+            android.util.Log.d("ListingsAdapter", "  - Final image URL: $imageUrl")
             
             Glide.with(itemView.context)
                 .load(imageUrl)
                 .placeholder(R.drawable.dummyphoto)
                 .error(R.drawable.dummyphoto)
+                .skipMemoryCache(true)
+                .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.NONE)
+                .addListener(object : com.bumptech.glide.request.RequestListener<android.graphics.drawable.Drawable> {
+                    override fun onLoadFailed(
+                        e: com.bumptech.glide.load.engine.GlideException?,
+                        model: Any?,
+                        target: com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable>,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        android.util.Log.e("ListingsAdapter", "Image load FAILED for listing ${listing.id}: $imageUrl", e)
+                        e?.logRootCauses("ListingsAdapter")
+                        return false
+                    }
+
+                    override fun onResourceReady(
+                        resource: android.graphics.drawable.Drawable,
+                        model: Any,
+                        target: com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable>?,
+                        dataSource: com.bumptech.glide.load.DataSource,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        android.util.Log.d("ListingsAdapter", "Image load SUCCESS for listing ${listing.id}: $imageUrl (source: $dataSource)")
+                        return false
+                    }
+                })
                 .into(itemImage)
 
             itemHeart.setImageResource(
