@@ -243,6 +243,10 @@ class ListingsRepository(private val context: Context) {
                     
                     // Find images for this listing
                     val images = allImages.filter { it.first == listingId }.map { it.second }
+                    android.util.Log.d("ListingsRepository", "  - Found ${images.size} images for listing $listingId")
+                    images.forEachIndexed { imgIdx, img ->
+                        android.util.Log.d("ListingsRepository", "    - Image $imgIdx: ${img.imagePath}")
+                    }
                     
                     // Find seller for this listing
                     val seller = sellerId?.let { id ->
@@ -293,6 +297,7 @@ class ListingsRepository(private val context: Context) {
                     val listingId = obj["listing_id"]?.jsonPrimitive?.content?.toIntOrNull() ?: return@mapNotNull null
                     val imagePath = obj["image_path"]?.jsonPrimitive?.content ?: return@mapNotNull null
                     
+                    android.util.Log.d("ListingsRepository", "Parsed image: listingId=$listingId, path=$imagePath")
                     listingId to ListingImage(imagePath = imagePath)
                 } catch (e: Exception) {
                     android.util.Log.e("ListingsRepository", "Error parsing image", e)
