@@ -273,6 +273,20 @@ class ItemDetailActivity : AppCompatActivity() {
                     binding.btnPlaceBid.visibility = View.GONE
 
                     binding.btnAddToCart.setOnClickListener {
+                        // Add to cart
+                        val cartItem = CartItem(
+                            listingId = listing.id,
+                            title = listing.title,
+                            price = listing.price,
+                            image = listing.image,
+                            sellerId = listing.seller?.accountId,
+                            sellerName = listing.seller?.username ?: "Unknown",
+                            quantity = 1
+                        )
+                        
+                        val cartRepo = com.example.mineteh.model.repository.CartRepository(this)
+                        cartRepo.addToCart(cartItem)
+                        
                         Toast.makeText(this, "Added to cart", Toast.LENGTH_SHORT).show()
                     }
 
