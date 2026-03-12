@@ -107,18 +107,42 @@
                 </FrameLayout>
 
                 <!-- Product Info Section -->
-                <TextView
-                    android:id="@+id/detailItemName"
+                <LinearLayout
+                    android:id="@+id/titleContainer"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:text="Loading..."
-                    android:textColor="@color/black"
-                    android:textSize="22sp"
-                    android:textStyle="bold"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
                     app:layout_constraintTop_toBottomOf="@id/imageCarouselContainer"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent" />
+                    app:layout_constraintEnd_toEndOf="parent">
+
+                    <TextView
+                        android:id="@+id/detailItemName"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Loading..."
+                        android:textColor="@color/black"
+                        android:textSize="22sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/auctionStatusBadge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:text="LIVE"
+                        android:textColor="@color/white"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="4dp"
+                        android:background="@drawable/circle_background_red"
+                        android:visibility="gone" />
+
+                </LinearLayout>
 
                 <TextView
                     android:id="@+id/detailItemLocation"
@@ -128,7 +152,7 @@
                     android:text=""
                     android:textColor="@color/text_secondary"
                     android:textSize="16sp"
-                    app:layout_constraintTop_toBottomOf="@id/detailItemName"
+                    app:layout_constraintTop_toBottomOf="@id/titleContainer"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent" />
 
@@ -154,53 +178,89 @@
                     app:layout_constraintStart_toStartOf="parent" />
 
                 <!-- Bid-specific UI -->
-                <TextView
-                    android:id="@+id/currentBidLabel"
-                    android:layout_width="wrap_content"
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/bidInfoCard"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:text="Current Bid:"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="14sp"
                     android:visibility="gone"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="2dp"
+                    app:cardBackgroundColor="@color/purple_light"
                     app:layout_constraintTop_toBottomOf="@id/divider1"
-                    app:layout_constraintStart_toStartOf="parent" />
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent">
 
-                <TextView
-                    android:id="@+id/currentBidAmount"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:text="₱0.00"
-                    android:textColor="@color/purple"
-                    android:textSize="26sp"
-                    android:textStyle="bold"
-                    android:visibility="gone"
-                    app:layout_constraintTop_toTopOf="@id/currentBidLabel"
-                    app:layout_constraintBottom_toBottomOf="@id/currentBidLabel"
-                    app:layout_constraintStart_toEndOf="@id/currentBidLabel" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
 
-                <TextView
-                    android:id="@+id/auctionEndTime"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="Ends in: 2d 5h 30m"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="14sp"
-                    android:visibility="gone"
-                    app:layout_constraintTop_toBottomOf="@id/currentBidAmount"
-                    app:layout_constraintStart_toStartOf="parent" />
+                        <TextView
+                            android:id="@+id/currentBidLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Current Highest Bid"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/currentBidAmount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="₱0.00"
+                            android:textColor="@color/purple"
+                            android:textSize="32sp"
+                            android:textStyle="bold" />
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_marginTop="12dp"
+                            android:layout_marginBottom="12dp"
+                            android:background="@color/divider" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <ImageView
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:src="@android:drawable/ic_lock_idle_alarm"
+                                android:tint="@color/text_secondary"
+                                android:contentDescription="Timer icon" />
+
+                            <TextView
+                                android:id="@+id/auctionEndTime"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginStart="8dp"
+                                android:text="Ends in: 2d 5h 30m"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </androidx.cardview.widget.CardView>
 
                 <!-- Seller Info -->
                 <androidx.cardview.widget.CardView
                     android:id="@+id/sellerAvatarCard"
                     android:layout_width="56dp"
                     android:layout_height="56dp"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="16dp"
                     app:cardCornerRadius="28dp"
                     app:cardElevation="2dp"
-                    app:layout_constraintTop_toBottomOf="@id/detailItemPrice"
+                    app:layout_constraintTop_toBottomOf="@id/bidInfoCard"
                     app:layout_constraintStart_toStartOf="parent">
 
                     <ImageView
@@ -307,13 +367,16 @@
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnPlaceBid"
                     android:layout_width="0dp"
-                    android:layout_height="60dp"
+                    android:layout_height="64dp"
                     android:layout_marginTop="16dp"
                     android:text="Place Bid"
-                    android:textSize="18sp"
+                    android:textSize="20sp"
                     android:textStyle="bold"
                     android:textAllCaps="false"
                     android:visibility="gone"
+                    app:icon="@android:drawable/ic_input_add"
+                    app:iconGravity="textStart"
+                    app:iconPadding="8dp"
                     app:backgroundTint="@color/purple"
                     app:cornerRadius="12dp"
                     app:layout_constraintTop_toBottomOf="@id/btnAddToCart"
