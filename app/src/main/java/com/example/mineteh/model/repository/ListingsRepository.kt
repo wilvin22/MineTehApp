@@ -102,22 +102,37 @@ class ListingsRepository(private val context: Context) {
     }
 
     suspend fun getListing(id: Int) = withContext(Dispatchers.IO) {
+        android.util.Log.d("ListingsRepository", "getListing() called with id=$id")
         try {
-            val response = apiService.getListing(id)
-            if (response.isSuccessful) {
-                val body = response.body()
-                if (body != null && body.success) {
-                    Resource.Success(body.data)
-                } else {
-                    Resource.Error(body?.message ?: "Failed to load listing")
-                }
-            } else {
-                Resource.Error("Error: ${response.code()} ${response.message()}")
+            android.util.Log.d("ListingsRepository", "Fetching listing from Supabase...")
+            
+            // Query single listing
+            val response = com.example.mineteh.supabase.SupabaseClient.database
+                .from("listings")
+                .select()
+                .eq("id", id.toString())
+                .single()
+            
+            android.util.Log.d("ListingsRepository", "Raw response: ${response.data}")
+            
+            if (response.data.isEmpty()) {
+                android.util.Log.w("ListingsRepository", "Listing not found")
+                return@withContext Resource.Error<Listing>("Listing not found")
             }
-        } catch (e: JsonSyntaxException) {
-            Resource.Error("Data format error")
+            
+            // Parse the response
+            val listings = parseListingsResponse("[${response.data}]")
+            
+            if (listings.isEmpty()) {
+                return@withContext Resource.Error<Listing>("Failed to parse listing")
+            }
+            
+            android.util.Log.d("ListingsRepository", "Successfully loaded listing ${listings[0].id}")
+            Resource.Success(listings[0])
+            
         } catch (e: Exception) {
-            Resource.Error(e.message ?: "Network error")
+            android.util.Log.e("ListingsRepository", "Error loading listing", e)
+            Resource.Error<Listing>(e.message ?: "Failed to load listing")
         }
     }
 
