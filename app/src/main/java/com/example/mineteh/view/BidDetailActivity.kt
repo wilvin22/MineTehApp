@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager2.widget.ViewPager2
 import com.example.mineteh.R
 import com.example.mineteh.databinding.ItemDetailBinding
+import com.example.mineteh.models.CartItem
 import com.example.mineteh.models.Listing
 import com.example.mineteh.utils.Resource
 import com.example.mineteh.viewmodel.ListingDetailViewModel

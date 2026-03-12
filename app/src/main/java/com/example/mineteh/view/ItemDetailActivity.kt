@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager2.widget.ViewPager2
 import com.example.mineteh.R
 import com.example.mineteh.databinding.ItemDetailBinding
+import com.example.mineteh.models.CartItem
 import com.example.mineteh.models.Listing
 import com.example.mineteh.utils.Resource
 import com.example.mineteh.viewmodel.ListingDetailViewModel
@@ -291,8 +292,24 @@ class ItemDetailActivity : AppCompatActivity() {
                     }
 
                     binding.btnBuyNow.setOnClickListener {
+                        // Create temporary cart item for direct purchase
+                        val cartItem = CartItem(
+                            listingId = listing.id,
+                            title = listing.title,
+                            price = listing.price,
+                            image = listing.image,
+                            sellerId = listing.seller?.accountId,
+                            sellerName = listing.seller?.username ?: "Unknown",
+                            quantity = 1
+                        )
+                        
+                        // Create temporary cart with just this item
+                        val cartRepo = com.example.mineteh.model.repository.CartRepository(this)
+                        cartRepo.clearCart() // Clear any existing items
+                        cartRepo.addToCart(cartItem) // Add only this item
+                        
+                        // Go directly to checkout
                         val intent = Intent(this, CheckoutActivity::class.java)
-                        intent.putExtra("listing_id", listing.id)
                         startActivity(intent)
                     }
                 }
