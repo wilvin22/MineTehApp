@@ -25,8 +25,16 @@ import java.io.File
 import java.io.FileOutputStream
 
 class ListingsRepository(private val context: Context) {
-    private val apiService = ApiClient.apiService
-    private val tokenManager = TokenManager(context)
+    private val apiService: ApiService
+    private val tokenManager: TokenManager
+
+    init {
+        android.util.Log.d("ListingsRepository", "Constructor called with context: $context")
+        apiService = ApiClient.apiService
+        android.util.Log.d("ListingsRepository", "ApiService initialized")
+        tokenManager = TokenManager(context)
+        android.util.Log.d("ListingsRepository", "TokenManager initialized")
+    }
 
     suspend fun getListings(
         category: String? = null,
@@ -35,6 +43,7 @@ class ListingsRepository(private val context: Context) {
         limit: Int = 50,
         offset: Int = 0
     ) = withContext(Dispatchers.IO) {
+        android.util.Log.d("ListingsRepository", "getListings() called with category=$category, type=$type, search=$search, limit=$limit, offset=$offset")
         try {
             android.util.Log.d("ListingsRepository", "Fetching listings from Supabase...")
             

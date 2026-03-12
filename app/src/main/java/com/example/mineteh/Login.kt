@@ -9,6 +9,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.example.mineteh.utils.Resource
 import com.example.mineteh.utils.TokenManager
+import com.example.mineteh.view.HomeActivity
 import com.example.mineteh.viewmodel.LoginViewModel
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
@@ -124,9 +125,17 @@ class Login : AppCompatActivity() {
     }
 
     private fun navigateToHome() {
-        val intent = Intent(this, MainActivity::class.java)
-        startActivity(intent)
-        finish()
+        android.util.Log.d("Login", "navigateToHome() called")
+        try {
+            val intent = Intent(this, HomeActivity::class.java)
+            android.util.Log.d("Login", "Starting HomeActivity with intent: $intent")
+            startActivity(intent)
+            android.util.Log.d("Login", "startActivity(HomeActivity) completed")
+            finish()
+        } catch (e: Exception) {
+            android.util.Log.e("Login", "Error starting HomeActivity", e)
+            Toast.makeText(this, "Error navigating to home: ${e.message}", Toast.LENGTH_LONG).show()
+        }
     }
 
     override fun onDestroy() {
