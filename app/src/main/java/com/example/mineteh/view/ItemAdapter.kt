@@ -40,22 +40,21 @@ class ItemAdapter(
         holder.itemLocation?.text = "📍 ${item.location ?: "Unknown"}"
         holder.itemTypeBadge.text = item.listingType ?: "FIXED"
 
-        // Construct the full image URL
-        val baseUrl = "http://192.168.18.4/MineTeh/"
-        val imageUrl = item.image?.let { 
+        // Construct the Supabase Storage URL
+        val supabaseUrl = "https://didpavzminvohszuuowu.supabase.co"
+        val imageUrl = item.image?.let { imagePath ->
             when {
-                it.startsWith("http") -> it
-                it.startsWith("../") -> baseUrl + it.removePrefix("../")
-                else -> baseUrl + it
+                imagePath.startsWith("http") -> imagePath
+                else -> "$supabaseUrl/storage/v1/object/public/listing-images/$imagePath"
             }
         }
+
+        android.util.Log.d("ItemAdapter", "Loading image for ${item.title}: $imageUrl")
 
         Glide.with(holder.itemView.context)
             .load(imageUrl)
             .placeholder(R.drawable.dummyphoto)
             .error(R.drawable.dummyphoto)
-            .skipMemoryCache(true) // Skip memory cache
-            .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.NONE) // Skip disk cache
             .into(holder.itemImage)
 
         updateHeartIcon(holder.itemHeart, item.isFavorited)
