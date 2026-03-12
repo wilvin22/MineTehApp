@@ -217,9 +217,20 @@ class BidDetailActivity : AppCompatActivity() {
     private fun setupBidActionButtons(listing: Listing) {
         // Always show BID UI
         binding.detailItemPrice.visibility = View.GONE
-        binding.currentBidLabel.visibility = View.VISIBLE
-        binding.currentBidAmount.visibility = View.VISIBLE
-        binding.auctionEndTime.visibility = View.VISIBLE
+        binding.bidInfoCard.visibility = View.VISIBLE
+        binding.auctionStatusBadge.visibility = View.VISIBLE
+        
+        // Check if auction is still active
+        val isActive = listing.status.equals("active", ignoreCase = true)
+        val timeRemaining = com.example.mineteh.utils.TimeUtils.calculateTimeRemaining(listing.endTime ?: "")
+        
+        if (isActive && timeRemaining > 0) {
+            binding.auctionStatusBadge.text = "LIVE"
+            binding.auctionStatusBadge.setBackgroundResource(R.drawable.circle_background_red)
+        } else {
+            binding.auctionStatusBadge.text = "ENDED"
+            binding.auctionStatusBadge.setBackgroundColor(getColor(R.color.text_secondary))
+        }
         
         val currentBid = listing.highestBid?.bidAmount ?: listing.price
         binding.currentBidAmount.text = "₱ ${String.format("%.2f", currentBid)}"
@@ -299,7 +310,7 @@ class BidDetailActivity : AppCompatActivity() {
         val validationError = dialogView.findViewById<TextView>(R.id.bidValidationError)
 
         val currentBid = listing.highestBid?.bidAmount ?: listing.price
-        currentBidInfo.text = "Current highest bid: ₱ ${String.format("%.2f", currentBid)}"
+        currentBidInfo.text = "₱ ${String.format("%.2f", currentBid)}"
 
         val dialog = AlertDialog.Builder(this)
             .setView(dialogView)
