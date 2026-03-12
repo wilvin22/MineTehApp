@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
     app:cardElevation="4dp"
     app:cardCornerRadius="16dp"
-    app:cardBackgroundColor="@color/md_surface"
-    app:strokeWidth="0dp"
+    app:cardBackgroundColor="@color/white"
     android:foreground="?attr/selectableItemBackground"
     android:clickable="true"
     android:focusable="true">
@@ -97,7 +96,7 @@
                 android:text="₱350"
                 android:textStyle="bold"
                 android:textSize="20sp"
-                android:textColor="@color/md_primary"
+                android:textColor="@color/purple"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:lines="1"
@@ -109,7 +108,7 @@
                 android:text="Item Name"
                 android:textStyle="bold"
                 android:textSize="16sp"
-                android:textColor="@color/md_on_surface"
+                android:textColor="@color/text_primary"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:maxLines="2"
@@ -122,7 +121,7 @@
                 android:id="@+id/itemLocation"
                 android:text="📍 Manila"
                 android:textSize="13sp"
-                android:textColor="@color/md_on_surface_variant"
+                android:textColor="@color/text_secondary"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:lines="1"
@@ -153,9 +152,9 @@
                     android:text="2d 5h 30m"
                     android:textSize="13sp"
                     android:textStyle="bold"
-                    android:textColor="@color/md_primary"/>
+                    android:textColor="@color/purple"/>
             </LinearLayout>
 
         </LinearLayout>
     </LinearLayout>
-</com.google.android.material.card.MaterialCardView>
+</androidx.cardview.widget.CardView>
