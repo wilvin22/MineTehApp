@@ -36,6 +36,8 @@ class ListingsRepository(private val context: Context) {
         offset: Int = 0
     ) = withContext(Dispatchers.IO) {
         try {
+            android.util.Log.d("ListingsRepository", "Fetching listings from Supabase...")
+            
             // Query listings table with joins to get images and seller info
             // Note: Supabase Postgrest 2.0.0 has limited API, so we'll fetch all data and filter in Kotlin
             val response = com.example.mineteh.supabase.SupabaseClient.database
@@ -53,14 +55,17 @@ class ListingsRepository(private val context: Context) {
             var filteredListings = listings
             
             category?.let { cat ->
+                android.util.Log.d("ListingsRepository", "Filtering by category: $cat")
                 filteredListings = filteredListings.filter { it.category.equals(cat, ignoreCase = true) }
             }
             
             type?.let { t ->
+                android.util.Log.d("ListingsRepository", "Filtering by type: $t")
                 filteredListings = filteredListings.filter { it.listingType.equals(t, ignoreCase = true) }
             }
             
             search?.let { s ->
+                android.util.Log.d("ListingsRepository", "Filtering by search: $s")
                 filteredListings = filteredListings.filter { 
                     it.title.contains(s, ignoreCase = true) || 
                     it.description.contains(s, ignoreCase = true)
