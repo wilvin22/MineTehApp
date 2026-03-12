@@ -30,22 +30,35 @@ class ItemDetailActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ItemDetailBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-
-        setupToolbar()
-        setupObservers()
         
-        // Get listing_id from Intent
-        val listingId = intent.getIntExtra("listing_id", -1)
-        if (listingId == -1) {
-            Toast.makeText(this, "Invalid listing", Toast.LENGTH_SHORT).show()
-            finish()
-            return
-        }
+        try {
+            binding = ItemDetailBinding.inflate(layoutInflater)
+            setContentView(binding.root)
 
-        // Load listing data
-        viewModel.loadListing(listingId)
+            android.util.Log.d("ItemDetailActivity", "onCreate started")
+            
+            setupToolbar()
+            setupObservers()
+            
+            // Get listing_id from Intent
+            val listingId = intent.getIntExtra("listing_id", -1)
+            android.util.Log.d("ItemDetailActivity", "Received listing_id: $listingId")
+            
+            if (listingId == -1) {
+                android.util.Log.e("ItemDetailActivity", "Invalid listing_id")
+                Toast.makeText(this, "Invalid listing", Toast.LENGTH_SHORT).show()
+                finish()
+                return
+            }
+
+            // Load listing data
+            android.util.Log.d("ItemDetailActivity", "Loading listing $listingId")
+            viewModel.loadListing(listingId)
+        } catch (e: Exception) {
+            android.util.Log.e("ItemDetailActivity", "Error in onCreate", e)
+            Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+            finish()
+        }
     }
 
     private fun setupToolbar() {

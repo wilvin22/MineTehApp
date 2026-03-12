@@ -24,320 +24,329 @@
         android:layout_height="2dp"
         android:background="@color/purple_light" />
 
-    <!-- Loading State -->
-    <ProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:visibility="gone" />
-
-    <!-- Error State -->
-    <LinearLayout
-        android:id="@+id/errorLayout"
+    <!-- Content Container -->
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:padding="32dp"
-        android:visibility="gone">
-        
-        <TextView
-            android:id="@+id/errorMessage"
+        android:layout_height="match_parent">
+
+        <!-- Loading State -->
+        <ProgressBar
+            android:id="@+id/progressBar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Failed to load listing"
-            android:textSize="16sp"
-            android:textColor="@color/text_secondary"
-            android:gravity="center" />
-        
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnRetry"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="Retry"
-            app:backgroundTint="@color/purple" />
-    </LinearLayout>
+            android:layout_gravity="center"
+            android:visibility="gone" />
 
-    <!-- Content State -->
-    <androidx.core.widget.NestedScrollView
-        android:id="@+id/contentLayout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fillViewport="true"
-        android:visibility="gone">
-
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <!-- Error State -->
+        <LinearLayout
+            android:id="@+id/errorLayout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="16dp">
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="32dp"
+            android:visibility="gone">
+            
+            <TextView
+                android:id="@+id/errorMessage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Failed to load listing"
+                android:textSize="16sp"
+                android:textColor="@color/text_secondary"
+                android:gravity="center" />
+            
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnRetry"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Retry"
+                app:backgroundTint="@color/purple" />
+        </LinearLayout>
 
-            <!-- Image Carousel -->
-            <FrameLayout
-                android:id="@+id/imageCarouselContainer"
-                android:layout_width="0dp"
-                android:layout_height="320dp"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent">
+        <!-- Content State -->
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/contentLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+            android:visibility="gone">
 
-                <androidx.viewpager2.widget.ViewPager2
-                    android:id="@+id/imageCarousel"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp">
+
+                <!-- Image Carousel -->
+                <FrameLayout
+                    android:id="@+id/imageCarouselContainer"
+                    android:layout_width="0dp"
+                    android:layout_height="320dp"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent">
+
+                    <androidx.viewpager2.widget.ViewPager2
+                        android:id="@+id/imageCarousel"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" />
+
+                    <TextView
+                        android:id="@+id/imagePosition"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="bottom|end"
+                        android:layout_margin="16dp"
+                        android:text="1 / 1"
+                        android:background="@drawable/circle_background_red"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="6dp"
+                        android:textColor="@color/white"
+                        android:textSize="12sp" />
+                </FrameLayout>
+
+                <!-- Product Info Section -->
+                <TextView
+                    android:id="@+id/detailItemName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Loading..."
+                    android:textColor="@color/black"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    app:layout_constraintTop_toBottomOf="@id/imageCarouselContainer"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent" />
 
                 <TextView
-                    android:id="@+id/imagePosition"
+                    android:id="@+id/detailItemLocation"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text=""
+                    android:textColor="@color/text_secondary"
+                    android:textSize="16sp"
+                    app:layout_constraintTop_toBottomOf="@id/detailItemName"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent" />
+
+                <View
+                    android:id="@+id/divider1"
+                    android:layout_width="match_parent"
+                    android:layout_height="1.5dp"
+                    android:background="@color/black"
+                    android:layout_marginTop="12dp"
+                    app:layout_constraintTop_toBottomOf="@id/detailItemLocation" />
+
+                <!-- Price -->
+                <TextView
+                    android:id="@+id/detailItemPrice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="bottom|end"
-                    android:layout_margin="16dp"
-                    android:text="1 / 1"
-                    android:background="@drawable/circle_background_red"
-                    android:paddingHorizontal="12dp"
-                    android:paddingVertical="6dp"
-                    android:textColor="@color/white"
-                    android:textSize="12sp" />
-            </FrameLayout>
+                    android:layout_marginTop="12dp"
+                    android:text="₱0.00"
+                    android:textColor="@color/black"
+                    android:textSize="26sp"
+                    android:textStyle="bold"
+                    app:layout_constraintTop_toBottomOf="@id/divider1"
+                    app:layout_constraintStart_toStartOf="parent" />
 
-            <!-- Product Info Section -->
-            <TextView
-                android:id="@+id/detailItemName"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Tzuyu Twice Official Photocard"
-                android:textColor="@color/black"
-                android:textSize="22sp"
-                android:textStyle="bold"
-                app:layout_constraintTop_toBottomOf="@id/imageCarouselContainer"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
+                <!-- Bid-specific UI -->
+                <TextView
+                    android:id="@+id/currentBidLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="Current Bid:"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp"
+                    android:visibility="gone"
+                    app:layout_constraintTop_toBottomOf="@id/divider1"
+                    app:layout_constraintStart_toStartOf="parent" />
 
-            <TextView
-                android:id="@+id/detailItemLocation"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="123 Area Street, Dragon City"
-                android:textColor="@color/text_secondary"
-                android:textSize="16sp"
-                app:layout_constraintTop_toBottomOf="@id/detailItemName"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
+                <TextView
+                    android:id="@+id/currentBidAmount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="₱0.00"
+                    android:textColor="@color/purple"
+                    android:textSize="26sp"
+                    android:textStyle="bold"
+                    android:visibility="gone"
+                    app:layout_constraintTop_toTopOf="@id/currentBidLabel"
+                    app:layout_constraintBottom_toBottomOf="@id/currentBidLabel"
+                    app:layout_constraintStart_toEndOf="@id/currentBidLabel" />
 
-            <View
-                android:id="@+id/divider1"
-                android:layout_width="match_parent"
-                android:layout_height="1.5dp"
-                android:background="@color/black"
-                android:layout_marginTop="12dp"
-                app:layout_constraintTop_toBottomOf="@id/detailItemLocation" />
+                <TextView
+                    android:id="@+id/auctionEndTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Ends in: 2d 5h 30m"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp"
+                    android:visibility="gone"
+                    app:layout_constraintTop_toBottomOf="@id/currentBidAmount"
+                    app:layout_constraintStart_toStartOf="parent" />
 
-            <!-- Price -->
-            <TextView
-                android:id="@+id/detailItemPrice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="350.00"
-                android:textColor="@color/black"
-                android:textSize="26sp"
-                android:textStyle="bold"
-                app:layout_constraintTop_toBottomOf="@id/divider1"
-                app:layout_constraintStart_toStartOf="parent" />
+                <!-- Seller Info -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/sellerAvatarCard"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="12dp"
+                    app:cardCornerRadius="28dp"
+                    app:cardElevation="2dp"
+                    app:layout_constraintTop_toBottomOf="@id/detailItemPrice"
+                    app:layout_constraintStart_toStartOf="parent">
 
-            <!-- Bid-specific UI -->
-            <TextView
-                android:id="@+id/currentBidLabel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="Current Bid:"
-                android:textColor="@color/text_secondary"
-                android:textSize="14sp"
-                android:visibility="gone"
-                app:layout_constraintTop_toBottomOf="@id/divider1"
-                app:layout_constraintStart_toStartOf="parent" />
+                    <ImageView
+                        android:id="@+id/sellerAvatar"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/ic_launcher_background"
+                        android:contentDescription="Seller avatar" />
+                </androidx.cardview.widget.CardView>
 
-            <TextView
-                android:id="@+id/currentBidAmount"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:text="₱0.00"
-                android:textColor="@color/purple"
-                android:textSize="26sp"
-                android:textStyle="bold"
-                android:visibility="gone"
-                app:layout_constraintTop_toTopOf="@id/currentBidLabel"
-                app:layout_constraintBottom_toBottomOf="@id/currentBidLabel"
-                app:layout_constraintStart_toEndOf="@id/currentBidLabel" />
+                <TextView
+                    android:id="@+id/sellerName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="Seller"
+                    android:textColor="@color/black"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    app:layout_constraintTop_toTopOf="@id/sellerAvatarCard"
+                    app:layout_constraintStart_toEndOf="@id/sellerAvatarCard"
+                    app:layout_constraintEnd_toEndOf="parent" />
 
-            <TextView
-                android:id="@+id/auctionEndTime"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="Ends in: 2d 5h 30m"
-                android:textColor="@color/text_secondary"
-                android:textSize="14sp"
-                android:visibility="gone"
-                app:layout_constraintTop_toBottomOf="@id/currentBidAmount"
-                app:layout_constraintStart_toStartOf="parent" />
+                <TextView
+                    android:id="@+id/sellerUsername"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="@username"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp"
+                    app:layout_constraintTop_toBottomOf="@id/sellerName"
+                    app:layout_constraintStart_toEndOf="@id/sellerAvatarCard"
+                    app:layout_constraintEnd_toEndOf="parent" />
 
-            <!-- Seller Info -->
-            <androidx.cardview.widget.CardView
-                android:id="@+id/sellerAvatarCard"
-                android:layout_width="56dp"
-                android:layout_height="56dp"
-                android:layout_marginTop="12dp"
-                app:cardCornerRadius="28dp"
-                app:cardElevation="2dp"
-                app:layout_constraintTop_toBottomOf="@id/detailItemPrice"
-                app:layout_constraintStart_toStartOf="parent">
-
-                <ImageView
-                    android:id="@+id/sellerAvatar"
+                <View
+                    android:id="@+id/divider2"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/ic_launcher_background" />
-            </androidx.cardview.widget.CardView>
+                    android:layout_height="1dp"
+                    android:background="@color/divider"
+                    android:layout_marginTop="12dp"
+                    app:layout_constraintTop_toBottomOf="@id/sellerAvatarCard" />
 
-            <TextView
-                android:id="@+id/sellerName"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:text="MagicShopbyBTS"
-                android:textColor="@color/black"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                app:layout_constraintTop_toTopOf="@id/sellerAvatarCard"
-                app:layout_constraintStart_toEndOf="@id/sellerAvatarCard"
-                app:layout_constraintEnd_toEndOf="parent" />
+                <!-- Action Buttons Row -->
+                <ImageView
+                    android:id="@+id/detailHeart"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:layout_marginTop="16dp"
+                    android:src="@drawable/heart"
+                    android:padding="4dp"
+                    android:contentDescription="Favorite"
+                    app:layout_constraintTop_toBottomOf="@id/divider2"
+                    app:layout_constraintStart_toStartOf="parent" />
 
-            <TextView
-                android:id="@+id/sellerUsername"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:text="@username"
-                android:textColor="@color/text_secondary"
-                android:textSize="14sp"
-                app:layout_constraintTop_toBottomOf="@id/sellerName"
-                app:layout_constraintStart_toEndOf="@id/sellerAvatarCard"
-                app:layout_constraintEnd_toEndOf="parent" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAddToCart"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_marginStart="12dp"
+                    android:text="Add to Cart"
+                    android:textAllCaps="false"
+                    android:textSize="13sp"
+                    android:paddingHorizontal="4dp"
+                    app:backgroundTint="@color/purple"
+                    app:cornerRadius="12dp"
+                    app:layout_constraintTop_toTopOf="@id/detailHeart"
+                    app:layout_constraintBottom_toBottomOf="@id/detailHeart"
+                    app:layout_constraintStart_toEndOf="@id/detailHeart"
+                    app:layout_constraintEnd_toStartOf="@id/btnContactSeller"
+                    android:layout_marginEnd="8dp"/>
 
-            <View
-                android:id="@+id/divider2"
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@color/divider"
-                android:layout_marginTop="12dp"
-                app:layout_constraintTop_toBottomOf="@id/sellerAvatarCard" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnContactSeller"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:text="Contact Seller"
+                    android:textAllCaps="false"
+                    android:textSize="13sp"
+                    android:paddingHorizontal="4dp"
+                    app:backgroundTint="@color/purple"
+                    app:cornerRadius="12dp"
+                    app:layout_constraintTop_toTopOf="@id/detailHeart"
+                    app:layout_constraintBottom_toBottomOf="@id/detailHeart"
+                    app:layout_constraintStart_toEndOf="@id/btnAddToCart"
+                    app:layout_constraintEnd_toEndOf="parent" />
 
-            <!-- Action Buttons Row -->
-            <ImageView
-                android:id="@+id/detailHeart"
-                android:layout_width="44dp"
-                android:layout_height="44dp"
-                android:layout_marginTop="16dp"
-                android:src="@drawable/heart"
-                android:padding="4dp"
-                app:layout_constraintTop_toBottomOf="@id/divider2"
-                app:layout_constraintStart_toStartOf="parent" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnBuyNow"
+                    android:layout_width="0dp"
+                    android:layout_height="60dp"
+                    android:layout_marginTop="16dp"
+                    android:text="Buy Now"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textAllCaps="false"
+                    app:backgroundTint="@color/purple"
+                    app:cornerRadius="12dp"
+                    app:layout_constraintTop_toBottomOf="@id/btnAddToCart"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnAddToCart"
-                android:layout_width="0dp"
-                android:layout_height="56dp"
-                android:layout_marginStart="12dp"
-                android:text="Add to Cart"
-                android:textAllCaps="false"
-                android:textSize="13sp"
-                android:paddingHorizontal="4dp"
-                app:backgroundTint="@color/purple"
-                app:cornerRadius="12dp"
-                app:layout_constraintTop_toTopOf="@id/detailHeart"
-                app:layout_constraintBottom_toBottomOf="@id/detailHeart"
-                app:layout_constraintStart_toEndOf="@id/detailHeart"
-                app:layout_constraintEnd_toStartOf="@id/btnContactSeller"
-                android:layout_marginEnd="8dp"/>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnPlaceBid"
+                    android:layout_width="0dp"
+                    android:layout_height="60dp"
+                    android:layout_marginTop="16dp"
+                    android:text="Place Bid"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textAllCaps="false"
+                    android:visibility="gone"
+                    app:backgroundTint="@color/purple"
+                    app:cornerRadius="12dp"
+                    app:layout_constraintTop_toBottomOf="@id/btnAddToCart"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnContactSeller"
-                android:layout_width="0dp"
-                android:layout_height="56dp"
-                android:text="Contact Seller"
-                android:textAllCaps="false"
-                android:textSize="13sp"
-                android:paddingHorizontal="4dp"
-                app:backgroundTint="@color/purple"
-                app:cornerRadius="12dp"
-                app:layout_constraintTop_toTopOf="@id/detailHeart"
-                app:layout_constraintBottom_toBottomOf="@id/detailHeart"
-                app:layout_constraintStart_toEndOf="@id/btnAddToCart"
-                app:layout_constraintEnd_toEndOf="parent" />
+                <View
+                    android:id="@+id/divider3"
+                    android:layout_width="match_parent"
+                    android:layout_height="1.5dp"
+                    android:background="@color/black"
+                    android:layout_marginTop="16dp"
+                    app:layout_constraintTop_toBottomOf="@id/btnBuyNow" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnBuyNow"
-                android:layout_width="0dp"
-                android:layout_height="60dp"
-                android:layout_marginTop="16dp"
-                android:text="Buy Now"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:textAllCaps="false"
-                app:backgroundTint="@color/purple"
-                app:cornerRadius="12dp"
-                app:layout_constraintTop_toBottomOf="@id/btnAddToCart"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
+                <!-- Description / Bullet Points -->
+                <TextView
+                    android:id="@+id/detailItemDescription"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:lineSpacingExtra="6dp"
+                    android:text=""
+                    android:textColor="@color/black"
+                    android:textSize="18sp"
+                    app:layout_constraintTop_toBottomOf="@id/divider3"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:paddingBottom="32dp"/>
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnPlaceBid"
-                android:layout_width="0dp"
-                android:layout_height="60dp"
-                android:layout_marginTop="16dp"
-                android:text="Place Bid"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:textAllCaps="false"
-                android:visibility="gone"
-                app:backgroundTint="@color/purple"
-                app:cornerRadius="12dp"
-                app:layout_constraintTop_toBottomOf="@id/btnAddToCart"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <View
-                android:id="@+id/divider3"
-                android:layout_width="match_parent"
-                android:layout_height="1.5dp"
-                android:background="@color/black"
-                android:layout_marginTop="16dp"
-                app:layout_constraintTop_toBottomOf="@id/btnBuyNow" />
+        </androidx.core.widget.NestedScrollView>
 
-            <!-- Description / Bullet Points -->
-            <TextView
-                android:id="@+id/detailItemDescription"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:lineSpacingExtra="6dp"
-                android:text="• Photocard with Acrylic Holder\n• Stored safely in a sleeve\n• Original / Official merchandise"
-                android:textColor="@color/black"
-                android:textSize="18sp"
-                app:layout_constraintTop_toBottomOf="@id/divider3"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                android:paddingBottom="32dp"/>
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-    </androidx.core.widget.NestedScrollView>
+    </FrameLayout>
 
 </LinearLayout>
