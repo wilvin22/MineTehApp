@@ -41,7 +41,9 @@ class LostAuctionAdapter(
         private val itemImage: ImageView = itemView.findViewById(R.id.itemImage)
         private val itemName: TextView = itemView.findViewById(R.id.itemName)
         private val itemLocation: TextView = itemView.findViewById(R.id.itemLocation)
-        private val lostPrice: TextView = itemView.findViewById(R.id.lostPrice)
+        private val yourBid: TextView = itemView.findViewById(R.id.yourBid)
+        private val winningBid: TextView = itemView.findViewById(R.id.winningBid)
+        private val endDate: TextView = itemView.findViewById(R.id.endDate)
         
         fun bind(bidWithListing: UserBidWithListing) {
             val listing = bidWithListing.listing
@@ -49,7 +51,7 @@ class LostAuctionAdapter(
             
             // Set listing details
             itemName.text = listing.title
-            itemLocation.text = listing.location
+            itemLocation.text = "📍 ${listing.location}"
             
             // Load image
             val imageUrl = listing.image?.let {
@@ -66,8 +68,12 @@ class LostAuctionAdapter(
                 )
                 .into(itemImage)
             
-            // Set lost bid amount
-            lostPrice.text = "Lost Bid: ${CurrencyUtils.formatCurrency(bid.bidAmount)}"
+            // Set bid amounts
+            yourBid.text = CurrencyUtils.formatCurrency(bid.bidAmount)
+            winningBid.text = CurrencyUtils.formatCurrency(bidWithListing.highestBid)
+            
+            // Set end date
+            endDate.text = TimeUtils.formatEndTime(listing.endTime)
             
             // Click listener
             itemView.setOnClickListener { onItemClick(bidWithListing) }
