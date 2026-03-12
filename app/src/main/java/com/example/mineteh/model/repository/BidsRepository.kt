@@ -17,6 +17,7 @@ import kotlinx.serialization.json.jsonPrimitive
 class BidsRepository(private val context: Context) {
     private val tokenManager = TokenManager(context)
     private val listingsRepository = ListingsRepository(context)
+    private val apiService = com.example.mineteh.network.ApiClient.apiService
     
     companion object {
         private const val TAG = "BidsRepository"
@@ -177,6 +178,50 @@ class BidsRepository(private val context: Context) {
         } catch (e: Exception) {
             Log.e(TAG, "Error fetching highest bids", e)
             emptyMap()
+        }
+    }
+}
+
+    
+    /**
+     * Places a bid on a listing via PHP API
+     */
+    suspend fun placeBid(listingId: Int, bidAmount: Double): Resource<com.example.mineteh.models.BidData> = withContext(Dispatchers.IO) {
+        try {
+            if (!tokenManager.isLoggedIn()) {
+                return@withContext Resource.Error("Not authenticated")
+            }
+            
+            val token = tokenManager.getToken()
+            if (token == null) {
+                return@withContext Resource.Error("Authentication token not found")
+            }
+            
+            Log.d(TAG, "Placing bid: listingId=$listingId, amount=$bidAmount")
+            
+            val request = com.example.mineteh.models.BidRequest(
+                listing_id = listingId,
+                bid_amount = bidAmount
+            )
+            
+            val response = apiService.placeBid("Bearer $token", request)
+            
+            if (response.isSuccessful && response.body() != null) {
+                val apiResponse = response.body()!!
+                if (apiResponse.success && apiResponse.data != null) {
+                    Log.d(TAG, "Bid placed successfully")
+                    Resource.Success(apiResponse.data)
+                } else {
+                    Log.e(TAG, "Bid placement failed: ${apiResponse.message}")
+                    Resource.Error(apiResponse.message ?: "Failed to place bid")
+                }
+            } else {
+                Log.e(TAG, "Bid placement API error: ${response.code()}")
+                Resource.Error("Failed to place bid: ${response.message()}")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error placing bid", e)
+            Resource.Error(e.message ?: "Failed to place bid")
         }
     }
 }
