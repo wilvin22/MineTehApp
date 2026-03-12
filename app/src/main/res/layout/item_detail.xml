@@ -24,34 +24,82 @@
         android:layout_height="2dp"
         android:background="@color/purple_light" />
 
-    <androidx.core.widget.NestedScrollView
+    <!-- Loading State -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone" />
+
+    <!-- Error State -->
+    <LinearLayout
+        android:id="@+id/errorLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fillViewport="true">
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="32dp"
+        android:visibility="gone">
+        
+        <TextView
+            android:id="@+id/errorMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Failed to load listing"
+            android:textSize="16sp"
+            android:textColor="@color/text_secondary"
+            android:gravity="center" />
+        
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnRetry"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Retry"
+            app:backgroundTint="@color/purple" />
+    </LinearLayout>
+
+    <!-- Content State -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/contentLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:visibility="gone">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="16dp">
 
-            <!-- Main Product Image -->
-            <androidx.cardview.widget.CardView
-                android:id="@+id/imageCard"
+            <!-- Image Carousel -->
+            <FrameLayout
+                android:id="@+id/imageCarouselContainer"
                 android:layout_width="0dp"
                 android:layout_height="320dp"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="4dp"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent">
 
-                <ImageView
-                    android:id="@+id/detailItemImage"
+                <androidx.viewpager2.widget.ViewPager2
+                    android:id="@+id/imageCarousel"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/ic_launcher_background" />
-            </androidx.cardview.widget.CardView>
+                    android:layout_height="match_parent" />
+
+                <TextView
+                    android:id="@+id/imagePosition"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|end"
+                    android:layout_margin="16dp"
+                    android:text="1 / 1"
+                    android:background="@drawable/circle_background_red"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="6dp"
+                    android:textColor="@color/white"
+                    android:textSize="12sp" />
+            </FrameLayout>
 
             <!-- Product Info Section -->
             <TextView
@@ -63,7 +111,7 @@
                 android:textColor="@color/black"
                 android:textSize="22sp"
                 android:textStyle="bold"
-                app:layout_constraintTop_toBottomOf="@id/imageCard"
+                app:layout_constraintTop_toBottomOf="@id/imageCarouselContainer"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
 
@@ -100,6 +148,45 @@
                 app:layout_constraintTop_toBottomOf="@id/divider1"
                 app:layout_constraintStart_toStartOf="parent" />
 
+            <!-- Bid-specific UI -->
+            <TextView
+                android:id="@+id/currentBidLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="Current Bid:"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp"
+                android:visibility="gone"
+                app:layout_constraintTop_toBottomOf="@id/divider1"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <TextView
+                android:id="@+id/currentBidAmount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="₱0.00"
+                android:textColor="@color/purple"
+                android:textSize="26sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                app:layout_constraintTop_toTopOf="@id/currentBidLabel"
+                app:layout_constraintBottom_toBottomOf="@id/currentBidLabel"
+                app:layout_constraintStart_toEndOf="@id/currentBidLabel" />
+
+            <TextView
+                android:id="@+id/auctionEndTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Ends in: 2d 5h 30m"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp"
+                android:visibility="gone"
+                app:layout_constraintTop_toBottomOf="@id/currentBidAmount"
+                app:layout_constraintStart_toStartOf="parent" />
+
             <!-- Seller Info -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/sellerAvatarCard"
@@ -129,7 +216,18 @@
                 android:textSize="18sp"
                 android:textStyle="bold"
                 app:layout_constraintTop_toTopOf="@id/sellerAvatarCard"
-                app:layout_constraintBottom_toBottomOf="@id/sellerAvatarCard"
+                app:layout_constraintStart_toEndOf="@id/sellerAvatarCard"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <TextView
+                android:id="@+id/sellerUsername"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:text="@username"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp"
+                app:layout_constraintTop_toBottomOf="@id/sellerName"
                 app:layout_constraintStart_toEndOf="@id/sellerAvatarCard"
                 app:layout_constraintEnd_toEndOf="parent" />
 
@@ -193,6 +291,22 @@
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:textAllCaps="false"
+                app:backgroundTint="@color/purple"
+                app:cornerRadius="12dp"
+                app:layout_constraintTop_toBottomOf="@id/btnAddToCart"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnPlaceBid"
+                android:layout_width="0dp"
+                android:layout_height="60dp"
+                android:layout_marginTop="16dp"
+                android:text="Place Bid"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textAllCaps="false"
+                android:visibility="gone"
                 app:backgroundTint="@color/purple"
                 app:cornerRadius="12dp"
                 app:layout_constraintTop_toBottomOf="@id/btnAddToCart"
