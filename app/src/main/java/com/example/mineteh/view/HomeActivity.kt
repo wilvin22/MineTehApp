@@ -25,50 +25,67 @@ class HomeActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.homepage)
-
-        recyclerView = findViewById(R.id.itemRecyclerView)
-        progressBar = findViewById(R.id.progressBar)
-
-        setupRecyclerView()
-        observeViewModel()
-
-        // Top Icons Navigation
-        findViewById<ImageView>(R.id.btnSavedItems).setOnClickListener {
-            startActivity(Intent(this, SavedItemsActivity::class.java))
-        }
-
-        findViewById<ImageView>(R.id.btnCart).setOnClickListener {
-            startActivity(Intent(this, CartActivity::class.java))
-        }
-
-        // Bottom Navigation
-        findViewById<LinearLayout>(R.id.nav_home).setOnClickListener {
-            // Already here
-        }
-
-        findViewById<LinearLayout>(R.id.nav_bid).setOnClickListener {
-            startActivity(Intent(this, BidActivity::class.java))
-            overridePendingTransition(0, 0)
-        }
-
-        findViewById<LinearLayout>(R.id.nav_sell).setOnClickListener {
-            startActivity(Intent(this, SellActivity::class.java))
-            overridePendingTransition(0, 0)
-        }
-
-        findViewById<LinearLayout>(R.id.nav_inbox).setOnClickListener {
-            startActivity(Intent(this, InboxActivity::class.java))
-            overridePendingTransition(0, 0)
-        }
-
-        findViewById<LinearLayout>(R.id.nav_profile).setOnClickListener {
-            startActivity(Intent(this, ProfileActivity::class.java))
-            overridePendingTransition(0, 0)
-        }
+        android.util.Log.d("HomeActivity", "onCreate() called")
+        android.util.Log.d("HomeActivity", "Intent extras: ${intent.extras}")
         
-        // Category filters
-        setupCategoryFilters()
+        try {
+            setContentView(R.layout.homepage)
+            android.util.Log.d("HomeActivity", "setContentView completed")
+
+            recyclerView = findViewById(R.id.itemRecyclerView)
+            progressBar = findViewById(R.id.progressBar)
+            android.util.Log.d("HomeActivity", "Views initialized")
+
+            android.util.Log.d("HomeActivity", "About to initialize ViewModel")
+            setupRecyclerView()
+            android.util.Log.d("HomeActivity", "RecyclerView setup completed")
+            
+            observeViewModel()
+            android.util.Log.d("HomeActivity", "ViewModel observation setup completed")
+            android.util.Log.d("HomeActivity", "ViewModel initialized: $viewModel")
+
+            // Top Icons Navigation
+            findViewById<ImageView>(R.id.btnSavedItems).setOnClickListener {
+                startActivity(Intent(this, SavedItemsActivity::class.java))
+            }
+
+            findViewById<ImageView>(R.id.btnCart).setOnClickListener {
+                startActivity(Intent(this, CartActivity::class.java))
+            }
+
+            // Bottom Navigation
+            findViewById<LinearLayout>(R.id.nav_home).setOnClickListener {
+                // Already here
+            }
+
+            findViewById<LinearLayout>(R.id.nav_bid).setOnClickListener {
+                startActivity(Intent(this, BidActivity::class.java))
+                overridePendingTransition(0, 0)
+            }
+
+            findViewById<LinearLayout>(R.id.nav_sell).setOnClickListener {
+                startActivity(Intent(this, SellActivity::class.java))
+                overridePendingTransition(0, 0)
+            }
+
+            findViewById<LinearLayout>(R.id.nav_inbox).setOnClickListener {
+                startActivity(Intent(this, InboxActivity::class.java))
+                overridePendingTransition(0, 0)
+            }
+
+            findViewById<LinearLayout>(R.id.nav_profile).setOnClickListener {
+                startActivity(Intent(this, ProfileActivity::class.java))
+                overridePendingTransition(0, 0)
+            }
+            
+            // Category filters
+            setupCategoryFilters()
+            
+            android.util.Log.d("HomeActivity", "onCreate() completed successfully")
+        } catch (e: Exception) {
+            android.util.Log.e("HomeActivity", "Error in onCreate()", e)
+            Toast.makeText(this, "Error loading home: ${e.message}", Toast.LENGTH_LONG).show()
+        }
     }
 
     private fun setupRecyclerView() {

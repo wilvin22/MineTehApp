@@ -11,20 +11,40 @@ import com.example.mineteh.utils.Resource
 import kotlinx.coroutines.launch
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository = ListingsRepository(application)
-
+    private val repository: ListingsRepository
+    
     private val _listings = MutableLiveData<Resource<List<Listing>>?>()
     val listings: LiveData<Resource<List<Listing>>?> = _listings
 
     init {
-        fetchListings()
+        android.util.Log.d("HomeViewModel", "Constructor called with application: $application")
+        try {
+            android.util.Log.d("HomeViewModel", "Creating ListingsRepository")
+            repository = ListingsRepository(application)
+            android.util.Log.d("HomeViewModel", "ListingsRepository created: $repository")
+            
+            android.util.Log.d("HomeViewModel", "init block executing")
+            android.util.Log.d("HomeViewModel", "About to call fetchListings()")
+            fetchListings()
+            android.util.Log.d("HomeViewModel", "fetchListings() call completed")
+        } catch (e: Exception) {
+            android.util.Log.e("HomeViewModel", "Error in init block", e)
+            _listings.value = Resource.Error("Failed to initialize: ${e.message}")
+        }
     }
 
     fun fetchListings(category: String? = null, type: String? = null, search: String? = null) {
+        android.util.Log.d("HomeViewModel", "fetchListings() called with category=$category, type=$type, search=$search")
         _listings.value = Resource.Loading()
         viewModelScope.launch {
-            val result = repository.getListings(category, type, search)
-            _listings.value = result
+            try {
+                val result = repository.getListings(category, type, search)
+                _listings.value = result
+                android.util.Log.d("HomeViewModel", "fetchListings() completed with result: $result")
+            } catch (e: Exception) {
+                android.util.Log.e("HomeViewModel", "Error in fetchListings()", e)
+                _listings.value = Resource.Error("Failed to fetch listings: ${e.message}")
+            }
         }
     }
 }
