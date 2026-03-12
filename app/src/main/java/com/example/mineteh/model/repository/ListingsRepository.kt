@@ -189,7 +189,6 @@ class ListingsRepository(private val context: Context) {
                 }
 
             android.util.Log.d("ListingsRepository", "Insert response: ${insertResponse.data}")
-            android.util.Log.d("ListingsRepository", "Insert response status: ${insertResponse.status}")
             
             // Parse the inserted listing to get the ID
             val json = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
@@ -201,13 +200,11 @@ class ListingsRepository(private val context: Context) {
                 responseElement is kotlinx.serialization.json.JsonArray && responseElement.isNotEmpty() -> {
                     val listingJsonObj = responseElement.first().jsonObject
                     android.util.Log.d("ListingsRepository", "Listing object: $listingJsonObj")
-                    listingJsonObj["listing_id"]?.jsonPrimitive?.int
-                        ?: listingJsonObj["listing_id"]?.jsonPrimitive?.content?.toIntOrNull()
+                    listingJsonObj["listing_id"]?.jsonPrimitive?.content?.toIntOrNull()
                 }
                 responseElement is kotlinx.serialization.json.JsonObject -> {
                     android.util.Log.d("ListingsRepository", "Single object response: $responseElement")
-                    responseElement["listing_id"]?.jsonPrimitive?.int
-                        ?: responseElement["listing_id"]?.jsonPrimitive?.content?.toIntOrNull()
+                    responseElement["listing_id"]?.jsonPrimitive?.content?.toIntOrNull()
                 }
                 else -> null
             }
