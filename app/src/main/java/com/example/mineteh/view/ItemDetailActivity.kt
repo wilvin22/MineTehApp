@@ -345,11 +345,11 @@ class ItemDetailActivity : AppCompatActivity() {
                     val currentBid = listing.highestBid?.bidAmount ?: listing.price
                     binding.currentBidAmount.text = "₱ ${String.format("%.2f", currentBid)}"
                     
-                    // Show BID buttons
+                    // Show BID buttons - hide Add to Cart, Contact Seller, and Buy Now
                     binding.btnAddToCart.visibility = View.GONE
                     binding.btnBuyNow.visibility = View.GONE
+                    binding.btnContactSeller.visibility = View.GONE
                     binding.btnPlaceBid.visibility = View.VISIBLE
-                    binding.btnContactSeller.visibility = View.VISIBLE
 
                     // Setup auction countdown
                     setupAuctionTimer(listing.endTime)
