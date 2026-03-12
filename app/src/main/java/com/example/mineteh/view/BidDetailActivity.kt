@@ -220,6 +220,11 @@ class BidDetailActivity : AppCompatActivity() {
         binding.bidInfoCard.visibility = View.VISIBLE
         binding.auctionStatusBadge.visibility = View.VISIBLE
         
+        // Update seller info constraint to bid card
+        val params = binding.sellerAvatarCard.layoutParams as androidx.constraintlayout.widget.ConstraintLayout.LayoutParams
+        params.topToBottom = binding.bidInfoCard.id
+        binding.sellerAvatarCard.layoutParams = params
+        
         // Check if auction is still active
         val isActive = listing.status.equals("active", ignoreCase = true)
         val timeRemaining = com.example.mineteh.utils.TimeUtils.calculateTimeRemaining(listing.endTime ?: "")

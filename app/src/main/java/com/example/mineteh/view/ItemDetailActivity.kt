@@ -268,6 +268,11 @@ class ItemDetailActivity : AppCompatActivity() {
                     binding.bidInfoCard.visibility = View.GONE
                     binding.auctionStatusBadge.visibility = View.GONE
                     
+                    // Update seller info constraint to price
+                    val params = binding.sellerAvatarCard.layoutParams as androidx.constraintlayout.widget.ConstraintLayout.LayoutParams
+                    params.topToBottom = binding.detailItemPrice.id
+                    binding.sellerAvatarCard.layoutParams = params
+                    
                     // Show FIXED buttons
                     binding.btnAddToCart.visibility = View.VISIBLE
                     binding.btnBuyNow.visibility = View.VISIBLE
@@ -319,6 +324,11 @@ class ItemDetailActivity : AppCompatActivity() {
                     binding.detailItemPrice.visibility = View.GONE
                     binding.bidInfoCard.visibility = View.VISIBLE
                     binding.auctionStatusBadge.visibility = View.VISIBLE
+                    
+                    // Update seller info constraint to bid card
+                    val params = binding.sellerAvatarCard.layoutParams as androidx.constraintlayout.widget.ConstraintLayout.LayoutParams
+                    params.topToBottom = binding.bidInfoCard.id
+                    binding.sellerAvatarCard.layoutParams = params
                     
                     // Check if auction is still active
                     val isActive = listing.status.equals("active", ignoreCase = true)
