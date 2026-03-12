@@ -262,15 +262,17 @@ class ItemDetailActivity : AppCompatActivity() {
             
             when (listing.listingType) {
                 "FIXED" -> {
-                    // Show FIXED listing buttons
+                    // Show FIXED listing UI
                     binding.detailItemPrice.text = "₱ ${String.format("%.2f", listing.price)}"
                     binding.detailItemPrice.visibility = View.VISIBLE
                     binding.bidInfoCard.visibility = View.GONE
                     binding.auctionStatusBadge.visibility = View.GONE
                     
+                    // Show FIXED buttons
                     binding.btnAddToCart.visibility = View.VISIBLE
                     binding.btnBuyNow.visibility = View.VISIBLE
                     binding.btnPlaceBid.visibility = View.GONE
+                    binding.btnContactSeller.visibility = View.VISIBLE
 
                     binding.btnAddToCart.setOnClickListener {
                         // Add to cart
@@ -313,7 +315,7 @@ class ItemDetailActivity : AppCompatActivity() {
                     }
                 }
                 "BID" -> {
-                    // Show BID listing buttons
+                    // Show BID listing UI
                     binding.detailItemPrice.visibility = View.GONE
                     binding.bidInfoCard.visibility = View.VISIBLE
                     binding.auctionStatusBadge.visibility = View.VISIBLE
@@ -333,9 +335,11 @@ class ItemDetailActivity : AppCompatActivity() {
                     val currentBid = listing.highestBid?.bidAmount ?: listing.price
                     binding.currentBidAmount.text = "₱ ${String.format("%.2f", currentBid)}"
                     
+                    // Show BID buttons
                     binding.btnAddToCart.visibility = View.GONE
                     binding.btnBuyNow.visibility = View.GONE
                     binding.btnPlaceBid.visibility = View.VISIBLE
+                    binding.btnContactSeller.visibility = View.VISIBLE
 
                     // Setup auction countdown
                     setupAuctionTimer(listing.endTime)
