@@ -56,10 +56,11 @@ class LiveAuctionAdapter(
         private val itemName: TextView = itemView.findViewById(R.id.itemName)
         private val itemLocation: TextView = itemView.findViewById(R.id.itemLocation)
         private val txtTimer: TextView = itemView.findViewById(R.id.txtTimer)
-        private val startingPrice: TextView = itemView.findViewById(R.id.startingPrice)
+        private val statusBadge: TextView = itemView.findViewById(R.id.statusBadge)
+        private val bidStatus: TextView = itemView.findViewById(R.id.bidStatus)
+        private val statusIndicator: View = itemView.findViewById(R.id.statusIndicator)
         private val currentBid: TextView = itemView.findViewById(R.id.currentBid)
         private val yourBid: TextView = itemView.findViewById(R.id.yourBid)
-        private val btnRaiseBid: MaterialButton = itemView.findViewById(R.id.btnRaiseBid)
         
         private var countdownJob: Job? = null
         
@@ -69,7 +70,7 @@ class LiveAuctionAdapter(
             
             // Set listing details
             itemName.text = listing.title
-            itemLocation.text = listing.location
+            itemLocation.text = "📍 ${listing.location}"
             
             // Load image
             val imageUrl = listing.image?.let {
@@ -84,51 +85,31 @@ class LiveAuctionAdapter(
                         .error(R.drawable.ic_launcher_background)
                         .diskCacheStrategy(DiskCacheStrategy.ALL)
                 )
-                .addListener(object : com.bumptech.glide.request.RequestListener<android.graphics.drawable.Drawable> {
-                    override fun onLoadFailed(
-                        e: com.bumptech.glide.load.engine.GlideException?,
-                        model: Any?,
-                        target: com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable>,
-                        isFirstResource: Boolean
-                    ): Boolean {
-                        return false
-                    }
-                    
-                    override fun onResourceReady(
-                        resource: android.graphics.drawable.Drawable,
-                        model: Any,
-                        target: com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable>?,
-                        dataSource: com.bumptech.glide.load.DataSource,
-                        isFirstResource: Boolean
-                    ): Boolean {
-                        return false
-                    }
-                })
                 .into(itemImage)
             
             // Set prices
-            startingPrice.text = CurrencyUtils.formatCurrency(listing.price)
             currentBid.text = CurrencyUtils.formatCurrency(bidWithListing.highestBid)
             yourBid.text = CurrencyUtils.formatCurrency(bid.bidAmount)
             
             // Determine if user is winning
             val isWinning = bid.bidAmount >= bidWithListing.highestBid
             
-            // Update button text and color based on status
+            // Update status indicator
             if (isWinning) {
-                btnRaiseBid.text = "Winning"
-                btnRaiseBid.setBackgroundColor(Color.parseColor("#4CAF50"))
+                bidStatus.text = "Winning"
+                bidStatus.setTextColor(Color.parseColor("#4CAF50"))
+                statusIndicator.setBackgroundResource(R.drawable.circle_background_red)
             } else {
-                btnRaiseBid.text = "Outbid - Raise Bid"
-                btnRaiseBid.setBackgroundColor(Color.parseColor("#D32F2F"))
+                bidStatus.text = "Outbid"
+                bidStatus.setTextColor(Color.parseColor("#D32F2F"))
+                statusIndicator.setBackgroundColor(Color.parseColor("#D32F2F"))
             }
             
             // Start countdown timer
             startCountdown(listing.endTime)
             
-            // Click listeners
+            // Click listener
             itemView.setOnClickListener { onItemClick(bidWithListing) }
-            btnRaiseBid.setOnClickListener { onItemClick(bidWithListing) }
         }
         
         private fun startCountdown(endTime: String?) {

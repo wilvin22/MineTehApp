@@ -42,6 +42,7 @@ class WonAuctionAdapter(
         private val itemName: TextView = itemView.findViewById(R.id.itemName)
         private val itemLocation: TextView = itemView.findViewById(R.id.itemLocation)
         private val wonPrice: TextView = itemView.findViewById(R.id.wonPrice)
+        private val endDate: TextView = itemView.findViewById(R.id.endDate)
         
         fun bind(bidWithListing: UserBidWithListing) {
             val listing = bidWithListing.listing
@@ -49,7 +50,7 @@ class WonAuctionAdapter(
             
             // Set listing details
             itemName.text = listing.title
-            itemLocation.text = listing.location
+            itemLocation.text = "📍 ${listing.location}"
             
             // Load image
             val imageUrl = listing.image?.let {
@@ -67,7 +68,10 @@ class WonAuctionAdapter(
                 .into(itemImage)
             
             // Set winning bid amount
-            wonPrice.text = "Won For: ${CurrencyUtils.formatCurrency(bid.bidAmount)}"
+            wonPrice.text = CurrencyUtils.formatCurrency(bid.bidAmount)
+            
+            // Set end date
+            endDate.text = TimeUtils.formatEndTime(listing.endTime)
             
             // Click listener
             itemView.setOnClickListener { onItemClick(bidWithListing) }
