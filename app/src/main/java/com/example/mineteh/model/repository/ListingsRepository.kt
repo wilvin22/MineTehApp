@@ -25,15 +25,13 @@ import java.io.File
 import java.io.FileOutputStream
 
 class ListingsRepository(private val context: Context) {
-    private val apiService: ApiService
-    private val tokenManager: TokenManager
+    private val apiService = ApiClient.apiService
+    private val tokenManager = TokenManager(context)
 
     init {
         android.util.Log.d("ListingsRepository", "Constructor called with context: $context")
-        apiService = ApiClient.apiService
-        android.util.Log.d("ListingsRepository", "ApiService initialized")
-        tokenManager = TokenManager(context)
-        android.util.Log.d("ListingsRepository", "TokenManager initialized")
+        android.util.Log.d("ListingsRepository", "ApiService initialized: $apiService")
+        android.util.Log.d("ListingsRepository", "TokenManager initialized: $tokenManager")
     }
 
     suspend fun getListings(
