@@ -60,13 +60,6 @@
                         android:scaleType="centerCrop"
                         android:src="@drawable/ic_launcher_background" />
 
-                    <!-- Gradient Overlay -->
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="120dp"
-                        android:layout_gravity="bottom"
-                        android:background="@drawable/gradient_overlay" />
-
                     <!-- Live Badge -->
                     <TextView
                         android:id="@+id/liveBadge"
