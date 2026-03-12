@@ -40,16 +40,26 @@ class ItemAdapter(
         holder.itemLocation?.text = "📍 ${item.location ?: "Unknown"}"
         holder.itemTypeBadge.text = item.listingType ?: "FIXED"
 
-        // Construct the Supabase Storage URL
+        android.util.Log.d("ItemAdapter", "Binding item ${item.id}: ${item.title}")
+        android.util.Log.d("ItemAdapter", "  - image field: ${item.image}")
+        android.util.Log.d("ItemAdapter", "  - images list size: ${item.images?.size}")
+        android.util.Log.d("ItemAdapter", "  - images list: ${item.images}")
+
+        // Try Supabase Storage first, fall back to PHP server
         val supabaseUrl = "https://didpavzminvohszuuowu.supabase.co"
+        val phpServerUrl = "http://192.168.18.4/MineTeh"
+        
         val imageUrl = item.image?.let { imagePath ->
             when {
                 imagePath.startsWith("http") -> imagePath
-                else -> "$supabaseUrl/storage/v1/object/public/listing-images/$imagePath"
+                else -> {
+                    // Try PHP server URL (temporary until images are migrated to Supabase)
+                    "$phpServerUrl/$imagePath"
+                }
             }
         }
 
-        android.util.Log.d("ItemAdapter", "Loading image for ${item.title}: $imageUrl")
+        android.util.Log.d("ItemAdapter", "  - Final image URL: $imageUrl")
 
         Glide.with(holder.itemView.context)
             .load(imageUrl)
