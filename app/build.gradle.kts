@@ -67,6 +67,8 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
     implementation("com.github.bumptech.glide:glide:4.16.0")
+    ksp("com.github.bumptech.glide:ksp:4.16.0")
+    implementation("com.github.bumptech.glide:okhttp3-integration:4.16.0")
 
     // Navigation Component
     implementation("androidx.navigation:navigation-fragment-ktx:2.8.4")
