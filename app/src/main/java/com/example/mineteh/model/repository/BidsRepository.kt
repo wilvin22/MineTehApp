@@ -190,11 +190,6 @@ class BidsRepository(private val context: Context) {
                 return@withContext Resource.Error("Not authenticated")
             }
             
-            val token = tokenManager.getToken()
-            if (token == null) {
-                return@withContext Resource.Error("Authentication token not found")
-            }
-            
             Log.d(TAG, "Placing bid: listingId=$listingId, amount=$bidAmount")
             
             val request = com.example.mineteh.models.BidRequest(
@@ -202,7 +197,7 @@ class BidsRepository(private val context: Context) {
                 bid_amount = bidAmount
             )
             
-            val response = apiService.placeBid("Bearer $token", request)
+            val response = apiService.placeBid(request)
             
             if (response.isSuccessful && response.body() != null) {
                 val apiResponse = response.body()!!
