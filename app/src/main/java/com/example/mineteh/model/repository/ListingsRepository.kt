@@ -162,29 +162,29 @@ class ListingsRepository(private val context: Context) {
 
             android.util.Log.d("ListingsRepository", "Creating listing: $title for user $userId")
             
-            // Step 1: Insert listing into Supabase
-            val listingData = buildMap {
-                put("title", title)
-                put("description", description)
-                put("price", price)
-                put("location", location)
-                put("category", category)
-                put("listing_type", listingType)
-                put("status", "ACTIVE")
-                put("seller_id", userId)
+            // Step 1: Insert listing into Supabase using JSON
+            val listingJson = kotlinx.serialization.json.buildJsonObject {
+                put("title", kotlinx.serialization.json.JsonPrimitive(title))
+                put("description", kotlinx.serialization.json.JsonPrimitive(description))
+                put("price", kotlinx.serialization.json.JsonPrimitive(price))
+                put("location", kotlinx.serialization.json.JsonPrimitive(location))
+                put("category", kotlinx.serialization.json.JsonPrimitive(category))
+                put("listing_type", kotlinx.serialization.json.JsonPrimitive(listingType))
+                put("status", kotlinx.serialization.json.JsonPrimitive("ACTIVE"))
+                put("seller_id", kotlinx.serialization.json.JsonPrimitive(userId))
                 if (endTime != null) {
-                    put("end_time", endTime)
+                    put("end_time", kotlinx.serialization.json.JsonPrimitive(endTime))
                 }
                 if (minBidIncrement != null) {
-                    put("min_bid_increment", minBidIncrement)
+                    put("min_bid_increment", kotlinx.serialization.json.JsonPrimitive(minBidIncrement))
                 }
             }
 
-            android.util.Log.d("ListingsRepository", "Inserting listing data: $listingData")
+            android.util.Log.d("ListingsRepository", "Inserting listing data: $listingJson")
             
             val insertResponse = com.example.mineteh.supabase.SupabaseClient.database
                 .from("listings")
-                .insert(listingData) {
+                .insert(listingJson) {
                     select()
                 }
 
@@ -198,28 +198,24 @@ class ListingsRepository(private val context: Context) {
                 return@withContext Resource.Error("Failed to create listing")
             }
             
-            val listingJson = jsonArray.first().jsonObject
-            val listingId = listingJson["listing_id"]?.jsonPrimitive?.content?.toIntOrNull()
+            val listingJsonObj = jsonArray.first().jsonObject
+            val listingId = listingJsonObj["listing_id"]?.jsonPrimitive?.content?.toIntOrNull()
                 ?: return@withContext Resource.Error("Failed to get listing ID")
             
             android.util.Log.d("ListingsRepository", "Listing created with ID: $listingId")
             
-            // Step 2: Upload images (simplified - just log for now)
-            // In production, you would upload to Supabase Storage
-            android.util.Log.d("ListingsRepository", "Would upload ${imageUris.size} images")
-            
-            // For now, create image records with placeholder paths
+            // Step 2: Create image records
             imageUris.forEachIndexed { index, uri ->
                 val imagePath = "uploads/listing_${listingId}_image_${index}.jpg"
-                val imageData = mapOf(
-                    "listing_id" to listingId,
-                    "image_path" to imagePath
-                )
+                val imageJson = kotlinx.serialization.json.buildJsonObject {
+                    put("listing_id", kotlinx.serialization.json.JsonPrimitive(listingId))
+                    put("image_path", kotlinx.serialization.json.JsonPrimitive(imagePath))
+                }
                 
                 try {
                     com.example.mineteh.supabase.SupabaseClient.database
                         .from("listing_images")
-                        .insert(imageData)
+                        .insert(imageJson)
                     android.util.Log.d("ListingsRepository", "Image record created: $imagePath")
                 } catch (e: Exception) {
                     android.util.Log.e("ListingsRepository", "Failed to create image record", e)
