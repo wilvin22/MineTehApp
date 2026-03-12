@@ -143,6 +143,7 @@
                         app:cardCornerRadius="12dp"
                         app:cardElevation="0dp">
                         <ImageView
+                            android:id="@+id/itemImage"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:scaleType="centerCrop"
@@ -156,6 +157,7 @@
                         android:orientation="vertical">
 
                         <TextView
+                            android:id="@+id/itemTitle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Tzuyu Twice Official Photocard"
@@ -164,6 +166,7 @@
                             android:textStyle="bold" />
 
                         <TextView
+                            android:id="@+id/itemLocation"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="123 Area Street, Dragon City"
@@ -172,6 +175,7 @@
                             android:layout_marginTop="4dp"/>
 
                         <TextView
+                            android:id="@+id/itemPrice"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
@@ -220,6 +224,7 @@
                             android:textColor="@color/text_secondary"
                             android:textSize="15sp" />
                         <TextView
+                            android:id="@+id/subtotalAmount"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_alignParentEnd="true"
@@ -240,6 +245,7 @@
                             android:textColor="@color/text_secondary"
                             android:textSize="15sp" />
                         <TextView
+                            android:id="@+id/shippingAmount"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_alignParentEnd="true"
@@ -266,6 +272,7 @@
                             android:textSize="18sp"
                             android:textStyle="bold" />
                         <TextView
+                            android:id="@+id/totalAmount"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_alignParentEnd="true"
