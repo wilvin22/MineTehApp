@@ -3,8 +3,10 @@ package com.example.mineteh.view
 import android.content.Intent
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
@@ -16,7 +18,6 @@ import com.example.mineteh.models.Listing
 import com.example.mineteh.utils.Resource
 import com.example.mineteh.viewmodel.ListingDetailViewModel
 import com.google.android.material.textfield.TextInputEditText
-import android.widget.TextView
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -29,22 +30,46 @@ class BidDetailActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ItemDetailBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-
-        setupToolbar()
-        setupObservers()
         
-        // Get listing_id from Intent
-        val listingId = intent.getIntExtra("listing_id", -1)
-        if (listingId == -1) {
-            Toast.makeText(this, "Invalid listing", Toast.LENGTH_SHORT).show()
-            finish()
-            return
-        }
+        Log.d("BidDetailActivity", "=== onCreate START ===")
+        
+        try {
+            binding = ItemDetailBinding.inflate(layoutInflater)
+            setContentView(binding.root)
+            Log.d("BidDetailActivity", "Layout inflated successfully")
 
-        // Load listing data
-        viewModel.loadListing(listingId)
+            setupToolbar()
+            Log.d("BidDetailActivity", "Toolbar setup complete")
+            
+            setupObservers()
+            Log.d("BidDetailActivity", "Observers setup complete")
+            
+            // Get listing_id from Intent
+            val listingId = intent.getIntExtra("listing_id", -1)
+            Log.d("BidDetailActivity", "Received listing_id: $listingId")
+            
+            if (listingId == -1) {
+                Log.e("BidDetailActivity", "Invalid listing_id, finishing activity")
+                Toast.makeText(this, "Invalid listing", Toast.LENGTH_SHORT).show()
+                finish()
+                return
+            }
+
+            // Show loading state immediately
+            showLoading()
+            Log.d("BidDetailActivity", "Showing loading state")
+
+            // Load listing data
+            Log.d("BidDetailActivity", "Calling viewModel.loadListing($listingId)")
+            viewModel.loadListing(listingId)
+            Log.d("BidDetailActivity", "=== onCreate END ===")
+            
+        } catch (e: Exception) {
+            Log.e("BidDetailActivity", "FATAL ERROR in onCreate", e)
+            e.printStackTrace()
+            Toast.makeText(this, "Error loading page: ${e.message}", Toast.LENGTH_LONG).show()
+            finish()
+        }
     }
 
     private fun setupToolbar() {
