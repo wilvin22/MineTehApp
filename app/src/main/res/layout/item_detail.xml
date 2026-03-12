@@ -339,7 +339,7 @@
                     android:id="@+id/btnContactSeller"
                     android:layout_width="0dp"
                     android:layout_height="56dp"
-                    android:text="Contact Seller"
+                    android:text="Contact"
                     android:textAllCaps="false"
                     android:textSize="13sp"
                     android:paddingHorizontal="4dp"
@@ -361,7 +361,7 @@
                     android:textAllCaps="false"
                     app:backgroundTint="@color/purple"
                     app:cornerRadius="12dp"
-                    app:layout_constraintTop_toBottomOf="@id/btnAddToCart"
+                    app:layout_constraintTop_toBottomOf="@id/detailHeart"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent" />
 
@@ -369,6 +369,7 @@
                     android:id="@+id/btnPlaceBid"
                     android:layout_width="0dp"
                     android:layout_height="64dp"
+                    android:layout_marginStart="12dp"
                     android:layout_marginTop="16dp"
                     android:text="Place Bid"
                     android:textSize="20sp"
@@ -380,8 +381,8 @@
                     app:iconPadding="8dp"
                     app:backgroundTint="@color/purple"
                     app:cornerRadius="12dp"
-                    app:layout_constraintTop_toBottomOf="@id/btnAddToCart"
-                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/divider2"
+                    app:layout_constraintStart_toEndOf="@id/detailHeart"
                     app:layout_constraintEnd_toEndOf="parent" />
 
                 <View

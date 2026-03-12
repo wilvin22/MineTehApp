@@ -242,6 +242,7 @@ class BidDetailActivity : AppCompatActivity() {
         
         binding.btnAddToCart.visibility = View.GONE
         binding.btnBuyNow.visibility = View.GONE
+        binding.btnContactSeller.visibility = View.GONE
         binding.btnPlaceBid.visibility = View.VISIBLE
 
         // Setup auction countdown
@@ -249,11 +250,6 @@ class BidDetailActivity : AppCompatActivity() {
 
         binding.btnPlaceBid.setOnClickListener {
             showBidDialog(listing)
-        }
-
-        // Contact Seller button
-        binding.btnContactSeller.setOnClickListener {
-            Toast.makeText(this, "Contact seller feature coming soon", Toast.LENGTH_SHORT).show()
         }
     }
 
