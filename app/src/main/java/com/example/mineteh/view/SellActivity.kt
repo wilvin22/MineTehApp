@@ -12,7 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mineteh.R
-import com.example.mineteh.adapters.PhotoPreviewAdapter
+import com.example.mineteh.view.PhotoPreviewAdapter
 import com.example.mineteh.utils.Resource
 import com.example.mineteh.viewmodel.CreateListingViewModel
 import com.google.android.material.textfield.TextInputEditText

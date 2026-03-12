@@ -1,4 +1,4 @@
-package com.example.mineteh.adapters
+package com.example.mineteh.view
 
 import android.net.Uri
 import android.view.LayoutInflater
