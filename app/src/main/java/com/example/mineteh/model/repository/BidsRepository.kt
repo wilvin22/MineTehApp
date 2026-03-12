@@ -180,8 +180,6 @@ class BidsRepository(private val context: Context) {
             emptyMap()
         }
     }
-}
-
     
     /**
      * Places a bid on a listing via PHP API
