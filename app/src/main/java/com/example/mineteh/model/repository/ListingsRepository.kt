@@ -172,6 +172,8 @@ class ListingsRepository(private val context: Context) {
                 return@withContext Resource.Error("Please select at least one image")
             }
 
+            android.util.Log.d("ListingsRepository", "Creating listing with ${imageParts.size} images")
+
             val response = apiService.createListing(
                 titlePart,
                 descriptionPart,
@@ -184,17 +186,29 @@ class ListingsRepository(private val context: Context) {
                 imageParts
             )
 
+            android.util.Log.d("ListingsRepository", "Response code: ${response.code()}")
+            android.util.Log.d("ListingsRepository", "Response successful: ${response.isSuccessful}")
+
             if (response.isSuccessful) {
                 val body = response.body()
+                android.util.Log.d("ListingsRepository", "Response body: $body")
+                
                 if (body != null && body.success) {
                     Resource.Success(body.data)
                 } else {
                     Resource.Error(body?.message ?: "Failed to create listing")
                 }
             } else {
-                Resource.Error("Error: ${response.code()}")
+                // Try to get error body as string
+                val errorBody = response.errorBody()?.string()
+                android.util.Log.e("ListingsRepository", "Error response: $errorBody")
+                Resource.Error(errorBody ?: "Error: ${response.code()}")
             }
+        } catch (e: com.google.gson.JsonSyntaxException) {
+            android.util.Log.e("ListingsRepository", "JSON parsing error", e)
+            Resource.Error("Server response format error. Please try again.")
         } catch (e: Exception) {
+            android.util.Log.e("ListingsRepository", "Create listing error", e)
             Resource.Error(e.message ?: "Network error")
         }
     }
