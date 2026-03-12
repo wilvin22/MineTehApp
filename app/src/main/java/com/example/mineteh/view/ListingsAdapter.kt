@@ -49,9 +49,19 @@ class ListingsAdapter(
         private val itemAuctionTimer: TextView = itemView.findViewById(R.id.itemAuctionTimer)
 
         fun bind(listing: Listing) {
+            val context = itemView.context
+            
             itemPrice.text = "₱${listing.price}"
             itemName.text = listing.title
             itemLocation.text = "📍 ${listing.location}"
+
+            // Set price color based on listing type
+            val priceColor = if (listing.listingType == "BID") {
+                context.getColor(R.color.md_primary)
+            } else {
+                context.getColor(R.color.md_tertiary)
+            }
+            itemPrice.setTextColor(priceColor)
 
             if (listing.listingType == "BID") {
                 itemTypeBadge.text = "BID"
@@ -94,6 +104,8 @@ class ListingsAdapter(
                 .load(glideUrl)
                 .placeholder(R.drawable.dummyphoto)
                 .error(R.drawable.dummyphoto)
+                .transform(com.bumptech.glide.load.resource.bitmap.CenterCrop(), 
+                           com.bumptech.glide.load.resource.bitmap.RoundedCorners(48))
                 .skipMemoryCache(true)
                 .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.NONE)
                 .addListener(object : com.bumptech.glide.request.RequestListener<android.graphics.drawable.Drawable> {

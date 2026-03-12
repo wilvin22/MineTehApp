@@ -35,10 +35,20 @@ class ItemAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = itemList[position]
+        val context = holder.itemView.context
+        
         holder.itemName.text = item.title ?: "No Title"
         holder.itemPrice.text = "₱ ${String.format("%.2f", item.price)}"
         holder.itemLocation?.text = "📍 ${item.location ?: "Unknown"}"
         holder.itemTypeBadge.text = item.listingType ?: "FIXED"
+
+        // Set price color based on listing type
+        val priceColor = if (item.listingType == "BID") {
+            context.getColor(R.color.md_primary)
+        } else {
+            context.getColor(R.color.md_tertiary)
+        }
+        holder.itemPrice.setTextColor(priceColor)
 
         android.util.Log.d("ItemAdapter", "Binding item ${item.id}: ${item.title}")
         android.util.Log.d("ItemAdapter", "  - image field: ${item.image}")
@@ -71,6 +81,8 @@ class ItemAdapter(
             .load(glideUrl)
             .placeholder(R.drawable.dummyphoto)
             .error(R.drawable.dummyphoto)
+            .transform(com.bumptech.glide.load.resource.bitmap.CenterCrop(), 
+                       com.bumptech.glide.load.resource.bitmap.RoundedCorners(48))
             .skipMemoryCache(true)
             .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.NONE)
             .addListener(object : com.bumptech.glide.request.RequestListener<android.graphics.drawable.Drawable> {
