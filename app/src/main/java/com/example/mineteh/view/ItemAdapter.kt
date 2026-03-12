@@ -44,7 +44,7 @@ class ItemAdapter(
 
         // Set price color based on listing type
         val priceColor = if (item.listingType == "BID") {
-            context.getColor(R.color.md_primary)
+            context.getColor(R.color.purple)
         } else {
             context.getColor(R.color.md_tertiary)
         }
