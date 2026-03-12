@@ -45,17 +45,13 @@ class ItemAdapter(
         android.util.Log.d("ItemAdapter", "  - images list size: ${item.images?.size}")
         android.util.Log.d("ItemAdapter", "  - images list: ${item.images}")
 
-        // Try Supabase Storage first, fall back to PHP server
-        val supabaseUrl = "https://didpavzminvohszuuowu.supabase.co"
-        val phpServerUrl = "http://192.168.18.4/MineTeh"
+        // Use public website URL for images
+        val websiteUrl = "https://mineteh.infinityfree.me/home"
         
         val imageUrl = item.image?.let { imagePath ->
             when {
                 imagePath.startsWith("http") -> imagePath
-                else -> {
-                    // Try PHP server URL (temporary until images are migrated to Supabase)
-                    "$phpServerUrl/$imagePath"
-                }
+                else -> "$websiteUrl/$imagePath"
             }
         }
 
