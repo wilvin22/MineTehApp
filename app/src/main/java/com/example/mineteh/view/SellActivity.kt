@@ -78,14 +78,21 @@ class SellActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.sell)
+        
+        try {
+            setContentView(R.layout.sell)
 
-        initViews()
-        setupPhotoRecyclerView()
-        setupNavigation()
-        setupCategoryDropdown()
-        setupListeners()
-        observeCreateListingState()
+            initViews()
+            setupPhotoRecyclerView()
+            setupNavigation()
+            setupCategoryDropdown()
+            setupListeners()
+            observeCreateListingState()
+        } catch (e: Exception) {
+            Log.e("SellActivity", "Error in onCreate", e)
+            Toast.makeText(this, "Error loading page: ${e.message}", Toast.LENGTH_LONG).show()
+            finish()
+        }
     }
 
     private fun initViews() {
