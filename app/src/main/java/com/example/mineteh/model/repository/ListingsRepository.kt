@@ -36,40 +36,48 @@ class ListingsRepository(private val context: Context) {
         offset: Int = 0
     ) = withContext(Dispatchers.IO) {
         try {
-            // Query listings table
+            // Query listings table with joins to get images and seller info
+            // Note: Supabase Postgrest 2.0.0 has limited API, so we'll fetch all data and filter in Kotlin
             val response = com.example.mineteh.supabase.SupabaseClient.database
                 .from("listings")
                 .select()
             
+            android.util.Log.d("ListingsRepository", "Raw response: ${response.data}")
+            
             // Parse the response into List<Listing>
             val listings = parseListingsResponse(response.data)
             
-            // Apply filters in Kotlin (since Supabase Postgrest 2.0.0 API is limited)
+            android.util.Log.d("ListingsRepository", "Parsed ${listings.size} listings")
+            
+            // Apply filters in Kotlin
             var filteredListings = listings
             
             category?.let { cat ->
-                filteredListings = filteredListings.filter { it.category == cat }
+                filteredListings = filteredListings.filter { it.category.equals(cat, ignoreCase = true) }
             }
             
             type?.let { t ->
-                filteredListings = filteredListings.filter { it.listingType == t }
+                filteredListings = filteredListings.filter { it.listingType.equals(t, ignoreCase = true) }
             }
             
             search?.let { s ->
                 filteredListings = filteredListings.filter { 
-                    it.title.contains(s, ignoreCase = true)
+                    it.title.contains(s, ignoreCase = true) || 
+                    it.description.contains(s, ignoreCase = true)
                 }
             }
             
-            // Sort by created_at descending
+            // Sort by created_at descending (newest first)
             filteredListings = filteredListings.sortedByDescending { it.createdAt }
             
             // Apply pagination
             val paginatedListings = filteredListings.drop(offset).take(limit)
             
+            android.util.Log.d("ListingsRepository", "Returning ${paginatedListings.size} listings after filters")
             Resource.Success(paginatedListings)
             
         } catch (e: Exception) {
+            android.util.Log.e("ListingsRepository", "Error loading listings", e)
             Resource.Error(e.message ?: "Failed to load listings")
         }
     }
@@ -179,60 +187,90 @@ class ListingsRepository(private val context: Context) {
     
     /**
      * Parses the JSON response from Supabase into a List<Listing>
+     * Also fetches related images and seller information for each listing
      */
-    private fun parseListingsResponse(jsonData: String): List<Listing> {
+    private suspend fun parseListingsResponse(jsonData: String): List<Listing> {
         val json = Json { ignoreUnknownKeys = true }
         val jsonArray = json.parseToJsonElement(jsonData).jsonArray
+        
+        // Fetch all listing images
+        val imagesResponse = com.example.mineteh.supabase.SupabaseClient.database
+            .from("listing_images")
+            .select()
+        val allImages = parseListingImages(imagesResponse.data)
+        
+        // Fetch all accounts (sellers)
+        val accountsResponse = com.example.mineteh.supabase.SupabaseClient.database
+            .from("accounts")
+            .select()
+        val allAccounts = parseAccounts(accountsResponse.data)
         
         return jsonArray.map { element ->
             val obj = element.jsonObject
             
-            // Parse listing images
-            val images = obj["listing_images"]?.jsonArray?.map { imgObj ->
-                val imgData = imgObj.jsonObject
-                ListingImage(
-                    imagePath = imgData["image_url"]?.jsonPrimitive?.content ?: ""
-                )
-            } ?: emptyList()
+            val listingId = obj["id"]?.jsonPrimitive?.content?.toIntOrNull() ?: 0
+            val sellerId = obj["seller_id"]?.jsonPrimitive?.content?.toIntOrNull()
             
-            // Parse seller information
-            val sellerObj = obj["accounts"]?.jsonObject
-            val seller = sellerObj?.let {
-                Seller(
-                    accountId = it["account_id"]?.jsonPrimitive?.content?.toIntOrNull(),
-                    username = it["username"]?.jsonPrimitive?.content ?: "",
-                    firstName = it["first_name"]?.jsonPrimitive?.content ?: "",
-                    lastName = it["last_name"]?.jsonPrimitive?.content ?: ""
-                )
-            }
+            // Find images for this listing
+            val images = allImages.filter { it.first == listingId }.map { it.second }
             
-            // Parse highest bid if present
-            val highestBidObj = obj["highest_bid"]?.jsonObject
-            val highestBid = highestBidObj?.let {
-                Bid(
-                    bidAmount = it["bid_amount"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: 0.0,
-                    bidTime = it["bid_time"]?.jsonPrimitive?.content ?: "",
-                    bidder = null
-                )
+            // Find seller for this listing
+            val seller = sellerId?.let { id ->
+                allAccounts.find { it.accountId == id }
             }
             
             // Create Listing object
             Listing(
-                id = obj["id"]?.jsonPrimitive?.content?.toIntOrNull() ?: 0,
+                id = listingId,
                 title = obj["title"]?.jsonPrimitive?.content ?: "",
                 description = obj["description"]?.jsonPrimitive?.content ?: "",
                 price = obj["price"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: 0.0,
                 location = obj["location"]?.jsonPrimitive?.content ?: "",
                 category = obj["category"]?.jsonPrimitive?.content ?: "",
                 listingType = obj["listing_type"]?.jsonPrimitive?.content ?: "",
-                status = obj["status"]?.jsonPrimitive?.content ?: "",
+                status = obj["status"]?.jsonPrimitive?.content ?: "active",
                 image = images.firstOrNull()?.imagePath,
                 images = images,
                 seller = seller,
                 createdAt = obj["created_at"]?.jsonPrimitive?.content ?: "",
-                isFavorited = obj["is_favorited"]?.jsonPrimitive?.content?.toBoolean() ?: false,
-                highestBid = highestBid,
+                isFavorited = false, // Will be determined separately if needed
+                highestBid = null, // Will be fetched separately if needed
                 endTime = obj["end_time"]?.jsonPrimitive?.content
+            )
+        }
+    }
+    
+    /**
+     * Parses listing images from JSON response
+     * Returns a list of Pair<listingId, ListingImage>
+     */
+    private fun parseListingImages(jsonData: String): List<Pair<Int, ListingImage>> {
+        val json = Json { ignoreUnknownKeys = true }
+        val jsonArray = json.parseToJsonElement(jsonData).jsonArray
+        
+        return jsonArray.mapNotNull { element ->
+            val obj = element.jsonObject
+            val listingId = obj["listing_id"]?.jsonPrimitive?.content?.toIntOrNull() ?: return@mapNotNull null
+            val imagePath = obj["image_path"]?.jsonPrimitive?.content ?: return@mapNotNull null
+            
+            listingId to ListingImage(imagePath = imagePath)
+        }
+    }
+    
+    /**
+     * Parses accounts (sellers) from JSON response
+     */
+    private fun parseAccounts(jsonData: String): List<Seller> {
+        val json = Json { ignoreUnknownKeys = true }
+        val jsonArray = json.parseToJsonElement(jsonData).jsonArray
+        
+        return jsonArray.map { element ->
+            val obj = element.jsonObject
+            Seller(
+                accountId = obj["account_id"]?.jsonPrimitive?.content?.toIntOrNull(),
+                username = obj["username"]?.jsonPrimitive?.content ?: "",
+                firstName = obj["first_name"]?.jsonPrimitive?.content ?: "",
+                lastName = obj["last_name"]?.jsonPrimitive?.content ?: ""
             )
         }
     }
