@@ -57,8 +57,18 @@ class ItemAdapter(
 
         android.util.Log.d("ItemAdapter", "  - Final image URL: $imageUrl")
 
+        val glideUrl = imageUrl?.let {
+            com.bumptech.glide.load.model.GlideUrl(
+                it,
+                com.bumptech.glide.load.model.LazyHeaders.Builder()
+                    .addHeader("User-Agent", "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36")
+                    .addHeader("Referer", "https://mineteh.infinityfree.me/")
+                    .build()
+            )
+        }
+
         Glide.with(holder.itemView.context)
-            .load(imageUrl)
+            .load(glideUrl)
             .placeholder(R.drawable.dummyphoto)
             .error(R.drawable.dummyphoto)
             .skipMemoryCache(true)
