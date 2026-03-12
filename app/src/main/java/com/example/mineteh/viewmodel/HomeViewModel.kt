@@ -11,18 +11,16 @@ import com.example.mineteh.utils.Resource
 import kotlinx.coroutines.launch
 
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository: ListingsRepository
+    private val repository = ListingsRepository(application)
     
     private val _listings = MutableLiveData<Resource<List<Listing>>?>()
     val listings: LiveData<Resource<List<Listing>>?> = _listings
 
     init {
         android.util.Log.d("HomeViewModel", "Constructor called with application: $application")
+        android.util.Log.d("HomeViewModel", "ListingsRepository created: $repository")
+        
         try {
-            android.util.Log.d("HomeViewModel", "Creating ListingsRepository")
-            repository = ListingsRepository(application)
-            android.util.Log.d("HomeViewModel", "ListingsRepository created: $repository")
-            
             android.util.Log.d("HomeViewModel", "init block executing")
             android.util.Log.d("HomeViewModel", "About to call fetchListings()")
             fetchListings()
