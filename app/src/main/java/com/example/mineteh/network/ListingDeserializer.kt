@@ -1,8 +1,6 @@
 package com.example.mineteh.network
 
-import com.example.mineteh.models.Bid
 import com.example.mineteh.models.Listing
-import com.example.mineteh.models.ListingImage
 import com.example.mineteh.models.Seller
 import com.google.gson.*
 import java.lang.reflect.Type
@@ -15,17 +13,21 @@ class ListingDeserializer : JsonDeserializer<Listing> {
     ): Listing {
         val jsonObject = json.asJsonObject
         
-        // Parse images field - handle if it's not an array or missing
+        // Parse images field - can be array of strings or array of objects with image_path
         val images = try {
             val imagesElement = jsonObject.get("images")
             when {
                 imagesElement == null || imagesElement.isJsonNull -> null
                 imagesElement.isJsonArray -> {
-                    imagesElement.asJsonArray.map { 
-                        context.deserialize<ListingImage>(it, ListingImage::class.java)
+                    imagesElement.asJsonArray.mapNotNull { element ->
+                        when {
+                            element.isJsonPrimitive -> element.asString
+                            element.isJsonObject -> element.asJsonObject.get("image_path")?.asString
+                            else -> null
+                        }
                     }
                 }
-                else -> null // If it's an object or string, treat as null
+                else -> null
             }
         } catch (e: Exception) {
             null
@@ -45,19 +47,26 @@ class ListingDeserializer : JsonDeserializer<Listing> {
             null
         }
         
-        // Parse highest_bid - handle when it's a number instead of an object
-        val highestBid = try {
+        // Parse highest_bid - it's just a number (Double) from the API
+        val highestBidAmount = try {
             val bidElement = jsonObject.get("highest_bid")
             when {
                 bidElement == null || bidElement.isJsonNull -> null
-                bidElement.isJsonPrimitive && bidElement.asJsonPrimitive.isNumber -> {
-                    // If it's just a number, create a Bid with that amount
-                    Bid(bidAmount = bidElement.asDouble, bidTime = "", bidder = null)
-                }
-                bidElement.isJsonObject -> {
-                    context.deserialize(bidElement, Bid::class.java)
-                }
+                bidElement.isJsonPrimitive && bidElement.asJsonPrimitive.isNumber -> bidElement.asDouble
                 else -> null
+            }
+        } catch (e: Exception) {
+            null
+        }
+        
+        // Parse bids array (for detail view)
+        val bids = try {
+            val bidsElement = jsonObject.get("bids")
+            if (bidsElement != null && !bidsElement.isJsonNull && bidsElement.isJsonArray) {
+                val listType = object : com.google.gson.reflect.TypeToken<List<com.example.mineteh.models.Bid>>() {}.type
+                context.deserialize(bidsElement, listType)
+            } else {
+                null
             }
         } catch (e: Exception) {
             null
@@ -77,8 +86,9 @@ class ListingDeserializer : JsonDeserializer<Listing> {
             seller = seller,
             createdAt = jsonObject.get("created_at").asString,
             isFavorited = jsonObject.get("is_favorited")?.asBoolean ?: false,
-            highestBid = highestBid,
-            endTime = jsonObject.get("end_time")?.takeIf { !it.isJsonNull }?.asString
+            highestBidAmount = highestBidAmount,
+            endTime = jsonObject.get("end_time")?.takeIf { !it.isJsonNull }?.asString,
+            bids = bids
         )
     }
 }

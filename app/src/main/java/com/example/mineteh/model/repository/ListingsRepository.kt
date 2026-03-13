@@ -2,23 +2,14 @@ package com.example.mineteh.model.repository
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import com.example.mineteh.models.Listing
-import com.example.mineteh.models.ListingImage
-import com.example.mineteh.models.Seller
-import com.example.mineteh.models.Bid
 import com.example.mineteh.network.ApiClient
 import com.example.mineteh.utils.Resource
-import com.example.mineteh.utils.TokenManager
-import com.google.gson.JsonSyntaxException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
-import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.File
@@ -26,118 +17,77 @@ import java.io.FileOutputStream
 
 class ListingsRepository(private val context: Context) {
     private val apiService = ApiClient.apiService
-    private val tokenManager = TokenManager(context)
+    private val tag = "ListingsRepository"
 
-    init {
-        android.util.Log.d("ListingsRepository", "Constructor called with context: $context")
-        android.util.Log.d("ListingsRepository", "ApiService initialized: $apiService")
-        android.util.Log.d("ListingsRepository", "TokenManager initialized: $tokenManager")
-    }
-
+    /**
+     * Get all listings from the API
+     */
     suspend fun getListings(
         category: String? = null,
         type: String? = null,
         search: String? = null,
         limit: Int = 50,
         offset: Int = 0
-    ) = withContext(Dispatchers.IO) {
-        android.util.Log.d("ListingsRepository", "getListings() called with category=$category, type=$type, search=$search, limit=$limit, offset=$offset")
+    ): Resource<List<Listing>> = withContext(Dispatchers.IO) {
         try {
-            android.util.Log.d("ListingsRepository", "Fetching listings from Supabase...")
+            Log.d(tag, "Fetching listings: category=$category, type=$type, search=$search")
             
-            // Query listings table with joins to get images and seller info
-            // Note: Supabase Postgrest 2.0.0 has limited API, so we'll fetch all data and filter in Kotlin
-            val response = com.example.mineteh.supabase.SupabaseClient.database
-                .from("listings")
-                .select()
+            val response = apiService.getListings(category, type, search, limit, offset)
             
-            android.util.Log.d("ListingsRepository", "Raw response: ${response.data}")
-            android.util.Log.d("ListingsRepository", "Response length: ${response.data.length}")
-            
-            // Check if response is empty
-            if (response.data.isEmpty() || response.data == "[]") {
-                android.util.Log.w("ListingsRepository", "Empty response from Supabase")
-                return@withContext Resource.Success(emptyList())
-            }
-            
-            // Parse the response into List<Listing>
-            val listings = parseListingsResponse(response.data)
-            
-            android.util.Log.d("ListingsRepository", "Parsed ${listings.size} listings")
-            
-            // Apply filters in Kotlin
-            var filteredListings = listings
-            
-            category?.let { cat ->
-                android.util.Log.d("ListingsRepository", "Filtering by category: $cat")
-                filteredListings = filteredListings.filter { it.category.equals(cat, ignoreCase = true) }
-            }
-            
-            type?.let { t ->
-                android.util.Log.d("ListingsRepository", "Filtering by type: $t")
-                filteredListings = filteredListings.filter { it.listingType.equals(t, ignoreCase = true) }
-            }
-            
-            search?.let { s ->
-                android.util.Log.d("ListingsRepository", "Filtering by search: $s")
-                filteredListings = filteredListings.filter { 
-                    it.title.contains(s, ignoreCase = true) || 
-                    it.description.contains(s, ignoreCase = true)
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body?.success == true && body.data != null) {
+                    Log.d(tag, "Successfully fetched ${body.data.size} listings")
+                    Resource.Success(body.data)
+                } else {
+                    val errorMsg = body?.message ?: "Unknown error"
+                    Log.e(tag, "API returned error: $errorMsg")
+                    Resource.Error(errorMsg)
                 }
+            } else {
+                val errorMsg = "HTTP ${response.code()}: ${response.message()}"
+                Log.e(tag, "API request failed: $errorMsg")
+                Resource.Error(errorMsg)
             }
-            
-            // Sort by created_at descending (newest first)
-            filteredListings = filteredListings.sortedByDescending { it.createdAt }
-            
-            // Apply pagination
-            val paginatedListings = filteredListings.drop(offset).take(limit)
-            
-            android.util.Log.d("ListingsRepository", "Returning ${paginatedListings.size} listings after filters")
-            Resource.Success(paginatedListings)
-            
         } catch (e: Exception) {
-            android.util.Log.e("ListingsRepository", "Error loading listings", e)
+            Log.e(tag, "Error fetching listings", e)
             Resource.Error(e.message ?: "Failed to load listings")
         }
     }
 
-    suspend fun getListing(id: Int) = withContext(Dispatchers.IO) {
-        android.util.Log.d("ListingsRepository", "getListing() called with id=$id")
+    /**
+     * Get a single listing by ID from the API
+     */
+    suspend fun getListing(id: Int): Resource<Listing> = withContext(Dispatchers.IO) {
         try {
-            android.util.Log.d("ListingsRepository", "Fetching listing from Supabase...")
+            Log.d(tag, "Fetching listing with id=$id")
             
-            // Query all listings and filter in Kotlin (Supabase Postgrest 2.0.0 has limited API)
-            val response = com.example.mineteh.supabase.SupabaseClient.database
-                .from("listings")
-                .select()
+            val response = apiService.getListing(id)
             
-            android.util.Log.d("ListingsRepository", "Raw response: ${response.data}")
-            
-            if (response.data.isEmpty() || response.data == "[]") {
-                android.util.Log.w("ListingsRepository", "Empty response from Supabase")
-                return@withContext Resource.Error<Listing>("Listing not found")
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body?.success == true && body.data != null) {
+                    Log.d(tag, "Successfully fetched listing: ${body.data.title}")
+                    Resource.Success(body.data)
+                } else {
+                    val errorMsg = body?.message ?: "Listing not found"
+                    Log.e(tag, "API returned error: $errorMsg")
+                    Resource.Error(errorMsg)
+                }
+            } else {
+                val errorMsg = "HTTP ${response.code()}: ${response.message()}"
+                Log.e(tag, "API request failed: $errorMsg")
+                Resource.Error(errorMsg)
             }
-            
-            // Parse all listings
-            val allListings = parseListingsResponse(response.data)
-            
-            // Find the specific listing by ID
-            val listing = allListings.find { it.id == id }
-            
-            if (listing == null) {
-                android.util.Log.w("ListingsRepository", "Listing with id=$id not found")
-                return@withContext Resource.Error<Listing>("Listing not found")
-            }
-            
-            android.util.Log.d("ListingsRepository", "Successfully loaded listing ${listing.id}")
-            Resource.Success(listing)
-            
         } catch (e: Exception) {
-            android.util.Log.e("ListingsRepository", "Error loading listing", e)
-            Resource.Error<Listing>(e.message ?: "Failed to load listing")
+            Log.e(tag, "Error fetching listing", e)
+            Resource.Error(e.message ?: "Failed to load listing")
         }
     }
 
+    /**
+     * Create a new listing via the API
+     */
     suspend fun createListing(
         title: String,
         description: String,
@@ -150,288 +100,174 @@ class ListingsRepository(private val context: Context) {
         imageUris: List<Uri>
     ): Resource<Listing> = withContext(Dispatchers.IO) {
         try {
-            // Check if logged in
-            if (!tokenManager.isLoggedIn()) {
-                return@withContext Resource.Error("Not authenticated")
-            }
-
-            val userId = tokenManager.getUserId()
-            if (userId == null) {
-                return@withContext Resource.Error("User ID not found")
-            }
-
-            android.util.Log.d("ListingsRepository", "Creating listing: $title for user $userId")
+            Log.d(tag, "Creating listing: $title")
             
-            // Step 1: Insert listing into Supabase using JSON
-            val listingJson = kotlinx.serialization.json.buildJsonObject {
-                put("title", kotlinx.serialization.json.JsonPrimitive(title))
-                put("description", kotlinx.serialization.json.JsonPrimitive(description))
-                put("price", kotlinx.serialization.json.JsonPrimitive(price))
-                put("location", kotlinx.serialization.json.JsonPrimitive(location))
-                put("category", kotlinx.serialization.json.JsonPrimitive(category))
-                put("listing_type", kotlinx.serialization.json.JsonPrimitive(listingType))
-                put("status", kotlinx.serialization.json.JsonPrimitive("ACTIVE"))
-                put("seller_id", kotlinx.serialization.json.JsonPrimitive(userId))
-                if (endTime != null) {
-                    put("end_time", kotlinx.serialization.json.JsonPrimitive(endTime))
+            // Prepare form data
+            val titleBody = title.toRequestBody("text/plain".toMediaTypeOrNull())
+            val descriptionBody = description.toRequestBody("text/plain".toMediaTypeOrNull())
+            val priceBody = price.toString().toRequestBody("text/plain".toMediaTypeOrNull())
+            val locationBody = location.toRequestBody("text/plain".toMediaTypeOrNull())
+            val categoryBody = category.toRequestBody("text/plain".toMediaTypeOrNull())
+            val listingTypeBody = listingType.toRequestBody("text/plain".toMediaTypeOrNull())
+            val endTimeBody = endTime?.toRequestBody("text/plain".toMediaTypeOrNull())
+            val minBidIncrementBody = minBidIncrement?.toString()?.toRequestBody("text/plain".toMediaTypeOrNull())
+            
+            // Prepare image parts
+            val imageParts = imageUris.mapNotNull { uri -> prepareImagePart(uri) }
+            
+            val response = apiService.createListing(
+                title = titleBody,
+                description = descriptionBody,
+                price = priceBody,
+                location = locationBody,
+                category = categoryBody,
+                listingType = listingTypeBody,
+                endTime = endTimeBody,
+                minBidIncrement = minBidIncrementBody,
+                images = imageParts
+            )
+            
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body?.success == true && body.data != null) {
+                    Log.d(tag, "Successfully created listing")
+                    Resource.Success(body.data)
+                } else {
+                    val errorMsg = body?.message ?: "Failed to create listing"
+                    Log.e(tag, "API returned error: $errorMsg")
+                    Resource.Error(errorMsg)
                 }
-                if (minBidIncrement != null) {
-                    put("min_bid_increment", kotlinx.serialization.json.JsonPrimitive(minBidIncrement))
-                }
-            }
-
-            android.util.Log.d("ListingsRepository", "Inserting listing data: $listingJson")
-            
-            val insertResponse = com.example.mineteh.supabase.SupabaseClient.database
-                .from("listings")
-                .insert(listingJson) {
-                    select()
-                }
-
-            android.util.Log.d("ListingsRepository", "Insert response: ${insertResponse.data}")
-            
-            // Parse the inserted listing to get the ID
-            val json = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
-            val responseElement = json.parseToJsonElement(insertResponse.data)
-            
-            android.util.Log.d("ListingsRepository", "Parsed response element: $responseElement")
-            android.util.Log.d("ListingsRepository", "Response element type: ${responseElement::class.simpleName}")
-            
-            val listingId = when {
-                responseElement is kotlinx.serialization.json.JsonArray && responseElement.isNotEmpty() -> {
-                    val listingJsonObj = responseElement.first().jsonObject
-                    android.util.Log.d("ListingsRepository", "Listing object keys: ${listingJsonObj.keys}")
-                    android.util.Log.d("ListingsRepository", "Full listing object: $listingJsonObj")
-                    
-                    // The field is "id" not "listing_id"
-                    listingJsonObj["id"]?.jsonPrimitive?.content?.toIntOrNull()
-                        ?: listingJsonObj["listing_id"]?.jsonPrimitive?.content?.toIntOrNull()
-                }
-                responseElement is kotlinx.serialization.json.JsonObject -> {
-                    android.util.Log.d("ListingsRepository", "Single object response keys: ${responseElement.keys}")
-                    android.util.Log.d("ListingsRepository", "Full response object: $responseElement")
-                    
-                    responseElement["id"]?.jsonPrimitive?.content?.toIntOrNull()
-                        ?: responseElement["listing_id"]?.jsonPrimitive?.content?.toIntOrNull()
-                }
-                else -> {
-                    android.util.Log.e("ListingsRepository", "Unexpected response type: ${responseElement::class.simpleName}")
-                    null
-                }
-            }
-            
-            if (listingId == null) {
-                android.util.Log.e("ListingsRepository", "Could not extract listing_id from response")
-                return@withContext Resource.Error("Failed to get listing ID. Response: ${insertResponse.data}")
-            }
-            
-            android.util.Log.d("ListingsRepository", "Listing created with ID: $listingId")
-            
-            // Step 2: Create image records
-            imageUris.forEachIndexed { index, uri ->
-                val imagePath = "uploads/listing_${listingId}_image_${index}.jpg"
-                val imageJson = kotlinx.serialization.json.buildJsonObject {
-                    put("listing_id", kotlinx.serialization.json.JsonPrimitive(listingId))
-                    put("image_path", kotlinx.serialization.json.JsonPrimitive(imagePath))
-                }
-                
-                try {
-                    com.example.mineteh.supabase.SupabaseClient.database
-                        .from("listing_images")
-                        .insert(imageJson)
-                    android.util.Log.d("ListingsRepository", "Image record created: $imagePath")
-                } catch (e: Exception) {
-                    android.util.Log.e("ListingsRepository", "Failed to create image record", e)
-                }
-            }
-            
-            // Step 3: Fetch the complete listing with images
-            val createdListing = getListing(listingId)
-            
-            if (createdListing is Resource.Success && createdListing.data != null) {
-                android.util.Log.d("ListingsRepository", "Listing created successfully")
-                Resource.Success(createdListing.data)
             } else {
-                // Return a basic listing if fetch fails
-                val basicListing = Listing(
-                    id = listingId,
-                    title = title,
-                    description = description,
-                    price = price,
-                    location = location,
-                    category = category,
-                    listingType = listingType,
-                    status = "ACTIVE",
-                    image = null,
-                    images = emptyList(),
-                    seller = null,
-                    createdAt = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date()),
-                    isFavorited = false,
-                    highestBid = null,
-                    endTime = endTime
-                )
-                Resource.Success(basicListing)
+                val errorMsg = "HTTP ${response.code()}: ${response.message()}"
+                Log.e(tag, "API request failed: $errorMsg")
+                Resource.Error(errorMsg)
             }
-            
         } catch (e: Exception) {
-            android.util.Log.e("ListingsRepository", "Create listing error", e)
+            Log.e(tag, "Error creating listing", e)
             Resource.Error(e.message ?: "Failed to create listing")
         }
     }
 
-    private fun prepareImagePart(uri: Uri): MultipartBody.Part? {
-        val file = getFileFromUri(uri) ?: return null
-        val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
-        return MultipartBody.Part.createFormData("images[]", file.name, requestFile)
+    /**
+     * Place a bid on a listing
+     */
+    suspend fun placeBid(listingId: Int, bidAmount: Double): Resource<Boolean> = withContext(Dispatchers.IO) {
+        try {
+            Log.d(tag, "Placing bid: listingId=$listingId, amount=$bidAmount")
+            
+            val request = com.example.mineteh.models.BidRequest(listingId, bidAmount)
+            val response = apiService.placeBid(request)
+            
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body?.success == true) {
+                    Log.d(tag, "Bid placed successfully")
+                    Resource.Success(true)
+                } else {
+                    val errorMsg = body?.message ?: "Failed to place bid"
+                    Log.e(tag, "API returned error: $errorMsg")
+                    Resource.Error(errorMsg)
+                }
+            } else {
+                val errorMsg = "HTTP ${response.code()}: ${response.message()}"
+                Log.e(tag, "API request failed: $errorMsg")
+                Resource.Error(errorMsg)
+            }
+        } catch (e: Exception) {
+            Log.e(tag, "Error placing bid", e)
+            Resource.Error(e.message ?: "Failed to place bid")
+        }
     }
 
-    private fun getFileFromUri(uri: Uri): File? {
-        return try {
-            val inputStream = context.contentResolver.openInputStream(uri) ?: return null
-            val file = File(context.cacheDir, "upload_${System.currentTimeMillis()}_${(0..1000).random()}.jpg")
-            val outputStream = FileOutputStream(file)
-            inputStream.use { input ->
-                outputStream.use { output ->
-                    input.copyTo(output)
+    /**
+     * Toggle favorite status for a listing
+     */
+    suspend fun toggleFavorite(listingId: Int): Resource<Boolean> = withContext(Dispatchers.IO) {
+        try {
+            Log.d(tag, "Toggling favorite: listingId=$listingId")
+            
+            val request = com.example.mineteh.models.FavoriteRequest(listingId)
+            val response = apiService.toggleFavorite(request)
+            
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body?.success == true && body.data != null) {
+                    Log.d(tag, "Favorite toggled: isFavorited=${body.data.isFavorited}")
+                    Resource.Success(body.data.isFavorited)
+                } else {
+                    val errorMsg = body?.message ?: "Failed to toggle favorite"
+                    Log.e(tag, "API returned error: $errorMsg")
+                    Resource.Error(errorMsg)
                 }
+            } else {
+                val errorMsg = "HTTP ${response.code()}: ${response.message()}"
+                Log.e(tag, "API request failed: $errorMsg")
+                Resource.Error(errorMsg)
             }
-            file
         } catch (e: Exception) {
+            Log.e(tag, "Error toggling favorite", e)
+            Resource.Error(e.message ?: "Failed to toggle favorite")
+        }
+    }
+
+    /**
+     * Get user's favorite listings
+     */
+    suspend fun getFavorites(): Resource<List<Listing>> = withContext(Dispatchers.IO) {
+        try {
+            Log.d(tag, "Fetching favorites")
+            
+            val response = apiService.getFavorites()
+            
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body?.success == true && body.data != null) {
+                    Log.d(tag, "Successfully fetched ${body.data.size} favorites")
+                    Resource.Success(body.data)
+                } else {
+                    val errorMsg = body?.message ?: "Failed to load favorites"
+                    Log.e(tag, "API returned error: $errorMsg")
+                    Resource.Error(errorMsg)
+                }
+            } else {
+                val errorMsg = "HTTP ${response.code()}: ${response.message()}"
+                Log.e(tag, "API request failed: $errorMsg")
+                Resource.Error(errorMsg)
+            }
+        } catch (e: Exception) {
+            Log.e(tag, "Error fetching favorites", e)
+            Resource.Error(e.message ?: "Failed to load favorites")
+        }
+    }
+
+    /**
+     * Prepare an image part for multipart upload
+     */
+    private fun prepareImagePart(uri: Uri): MultipartBody.Part? {
+        return try {
+            val file = getFileFromUri(uri) ?: return null
+            val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
+            MultipartBody.Part.createFormData("images[]", file.name, requestFile)
+        } catch (e: Exception) {
+            Log.e(tag, "Error preparing image part", e)
             null
         }
     }
-    
+
     /**
-     * Parses the JSON response from Supabase into a List<Listing>
-     * Also fetches related images and seller information for each listing
+     * Convert URI to File
      */
-    private suspend fun parseListingsResponse(jsonData: String): List<Listing> {
-        try {
-            android.util.Log.d("ListingsRepository", "Parsing listings response...")
-            val json = Json { ignoreUnknownKeys = true }
-            val jsonArray = json.parseToJsonElement(jsonData).jsonArray
-            
-            android.util.Log.d("ListingsRepository", "Found ${jsonArray.size} listings in response")
-            
-            // Fetch all listing images
-            val imagesResponse = com.example.mineteh.supabase.SupabaseClient.database
-                .from("listing_images")
-                .select()
-            android.util.Log.d("ListingsRepository", "Images response: ${imagesResponse.data}")
-            val allImages = parseListingImages(imagesResponse.data)
-            android.util.Log.d("ListingsRepository", "Parsed ${allImages.size} images")
-            
-            // Fetch all accounts (sellers)
-            val accountsResponse = com.example.mineteh.supabase.SupabaseClient.database
-                .from("accounts")
-                .select()
-            android.util.Log.d("ListingsRepository", "Accounts response: ${accountsResponse.data}")
-            val allAccounts = parseAccounts(accountsResponse.data)
-            android.util.Log.d("ListingsRepository", "Parsed ${allAccounts.size} accounts")
-            
-            return jsonArray.mapIndexedNotNull { index, element ->
-                try {
-                    val obj = element.jsonObject
-                    
-                    val listingId = obj["id"]?.jsonPrimitive?.content?.toIntOrNull() ?: 0
-                    val sellerId = obj["seller_id"]?.jsonPrimitive?.content?.toIntOrNull()
-                    
-                    android.util.Log.d("ListingsRepository", "Parsing listing $index: id=$listingId, sellerId=$sellerId")
-                    
-                    // Find images for this listing
-                    val images = allImages.filter { it.first == listingId }.map { it.second }
-                    android.util.Log.d("ListingsRepository", "  - Found ${images.size} images for listing $listingId")
-                    images.forEachIndexed { imgIdx, img ->
-                        android.util.Log.d("ListingsRepository", "    - Image $imgIdx: ${img.imagePath}")
-                    }
-                    
-                    // Find seller for this listing
-                    val seller = sellerId?.let { id ->
-                        allAccounts.find { it.accountId == id }
-                    }
-                    
-                    // Create Listing object
-                    Listing(
-                        id = listingId,
-                        title = obj["title"]?.jsonPrimitive?.content ?: "",
-                        description = obj["description"]?.jsonPrimitive?.content ?: "",
-                        price = obj["price"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: 0.0,
-                        location = obj["location"]?.jsonPrimitive?.content ?: "",
-                        category = obj["category"]?.jsonPrimitive?.content ?: "",
-                        listingType = obj["listing_type"]?.jsonPrimitive?.content ?: "",
-                        status = obj["status"]?.jsonPrimitive?.content ?: "active",
-                        image = images.firstOrNull()?.imagePath,
-                        images = images,
-                        seller = seller,
-                        createdAt = obj["created_at"]?.jsonPrimitive?.content ?: "",
-                        isFavorited = false, // Will be determined separately if needed
-                        highestBid = null, // Will be fetched separately if needed
-                        endTime = obj["end_time"]?.jsonPrimitive?.content
-                    )
-                } catch (e: Exception) {
-                    android.util.Log.e("ListingsRepository", "Error parsing listing at index $index", e)
-                    null
-                }
-            }
-        } catch (e: Exception) {
-            android.util.Log.e("ListingsRepository", "Error in parseListingsResponse", e)
-            return emptyList()
-        }
-    }
-    
-    /**
-     * Parses listing images from JSON response
-     * Returns a list of Pair<listingId, ListingImage>
-     */
-    private fun parseListingImages(jsonData: String): List<Pair<Int, ListingImage>> {
+    private fun getFileFromUri(uri: Uri): File? {
         return try {
-            val json = Json { ignoreUnknownKeys = true }
-            val jsonArray = json.parseToJsonElement(jsonData).jsonArray
-            
-            jsonArray.mapNotNull { element ->
-                try {
-                    val obj = element.jsonObject
-                    val listingId = obj["listing_id"]?.jsonPrimitive?.content?.toIntOrNull() ?: return@mapNotNull null
-                    val imagePath = obj["image_path"]?.jsonPrimitive?.content ?: return@mapNotNull null
-                    
-                    android.util.Log.d("ListingsRepository", "Parsed image: listingId=$listingId, path=$imagePath")
-                    listingId to ListingImage(imagePath = imagePath)
-                } catch (e: Exception) {
-                    android.util.Log.e("ListingsRepository", "Error parsing image", e)
-                    null
-                }
+            val inputStream = context.contentResolver.openInputStream(uri) ?: return null
+            val file = File(context.cacheDir, "upload_${System.currentTimeMillis()}.jpg")
+            FileOutputStream(file).use { outputStream ->
+                inputStream.copyTo(outputStream)
             }
+            file
         } catch (e: Exception) {
-            android.util.Log.e("ListingsRepository", "Error in parseListingImages", e)
-            emptyList()
-        }
-    }
-    
-    /**
-     * Parses accounts (sellers) from JSON response
-     */
-    private fun parseAccounts(jsonData: String): List<Seller> {
-        return try {
-            val json = Json { ignoreUnknownKeys = true }
-            val jsonArray = json.parseToJsonElement(jsonData).jsonArray
-            
-            jsonArray.mapNotNull { element ->
-                try {
-                    val obj = element.jsonObject
-                    Seller(
-                        accountId = obj["account_id"]?.jsonPrimitive?.content?.toIntOrNull(),
-                        username = obj["username"]?.jsonPrimitive?.content ?: "",
-                        firstName = obj["first_name"]?.jsonPrimitive?.content ?: "",
-                        lastName = obj["last_name"]?.jsonPrimitive?.content ?: ""
-                    )
-                } catch (e: Exception) {
-                    android.util.Log.e("ListingsRepository", "Error parsing account", e)
-                    null
-                }
-            }
-        } catch (e: Exception) {
-            android.util.Log.e("ListingsRepository", "Error in parseAccounts", e)
-            emptyList()
+            Log.e(tag, "Error converting URI to file", e)
+            null
         }
     }
 }

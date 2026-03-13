@@ -27,13 +27,13 @@ class FavoritesRepository(context: Context) {
 
                 if (response.isSuccessful) {
                     val body = response.body()
-                    if (body != null && body.success) {
+                    if (body?.success == true && body.data != null) {
                         Resource.Success(body.data)
                     } else {
                         Resource.Error(body?.message ?: "Failed to toggle favorite")
                     }
                 } else {
-                    Resource.Error("Error: ${response.code()}")
+                    Resource.Error("HTTP ${response.code()}: ${response.message()}")
                 }
             } catch (e: Exception) {
                 Resource.Error(e.message ?: "Network error")
@@ -52,13 +52,13 @@ class FavoritesRepository(context: Context) {
 
                 if (response.isSuccessful) {
                     val body = response.body()
-                    if (body != null && body.success) {
+                    if (body?.success == true && body.data != null) {
                         Resource.Success(body.data)
                     } else {
                         Resource.Error(body?.message ?: "Failed to load favorites")
                     }
                 } else {
-                    Resource.Error("Error: ${response.code()}")
+                    Resource.Error("HTTP ${response.code()}: ${response.message()}")
                 }
             } catch (e: JsonSyntaxException) {
                 Resource.Error("Data format error: The server returned an unexpected response.")
