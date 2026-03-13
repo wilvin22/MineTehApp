@@ -8,17 +8,17 @@ import retrofit2.http.*
 
 interface ApiService {
     // Auth endpoints
-    @POST("login.php")
-    suspend fun login(@Body request: LoginRequest): Response<ApiResponse<LoginResponse>>
+    @POST("actions/v1/auth/login.php")
+    suspend fun login(@Body request: LoginRequest): Response<ApiResponse<LoginData>>
 
-    @POST("register.php")
-    suspend fun register(@Body request: RegisterRequest): Response<ApiResponse<RegisterResponse>>
+    @POST("actions/v1/auth/register.php")
+    suspend fun register(@Body request: RegisterRequest): Response<ApiResponse<LoginData>>
 
-    @POST("logout.php")
+    @POST("actions/v1/auth/logout.php")
     suspend fun logout(): Response<ApiResponse<Any>>
 
     // Listings endpoints
-    @GET("index.php")
+    @GET("actions/v1/listings/index.php")
     suspend fun getListings(
         @Query("category") category: String? = null,
         @Query("type") type: String? = null,
@@ -27,11 +27,11 @@ interface ApiService {
         @Query("offset") offset: Int = 0
     ): Response<ApiResponse<List<Listing>>>
 
-    @GET("show.php")
+    @GET("actions/v1/listings/show.php")
     suspend fun getListing(@Query("id") id: Int): Response<ApiResponse<Listing>>
 
     @Multipart
-    @POST("create.php")
+    @POST("actions/v1/listings/create.php")
     suspend fun createListing(
         @Part("title") title: RequestBody,
         @Part("description") description: RequestBody,
@@ -45,17 +45,17 @@ interface ApiService {
     ): Response<ApiResponse<Listing>>
 
     // Bids endpoints
-    @POST("place.php")
+    @POST("actions/v1/bids/place.php")
     suspend fun placeBid(
         @Body request: BidRequest
     ): Response<ApiResponse<BidData>>
 
     // Favorites endpoints
-    @POST("toggle.php")
+    @POST("actions/v1/favorites/toggle.php")
     suspend fun toggleFavorite(
         @Body request: FavoriteRequest
     ): Response<ApiResponse<FavoriteData>>
 
-    @GET("favorites.php")
+    @GET("actions/v1/favorites/index.php")
     suspend fun getFavorites(): Response<ApiResponse<List<Listing>>>
 }

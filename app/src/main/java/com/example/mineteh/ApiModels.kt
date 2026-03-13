@@ -57,19 +57,31 @@ data class Listing(
     val category: String,
     @SerializedName("listing_type") val listingType: String,
     val status: String,
-    val image: String?,
-    val images: List<ListingImage>?,
+    @SerializedName("image") private val _image: String?,
+    @SerializedName("images") private val _images: List<String>?,
     val seller: Seller?,
     @SerializedName("created_at") val createdAt: String,
     @SerializedName("is_favorited") val isFavorited: Boolean = false,
-    @SerializedName("highest_bid") val highestBid: Bid? = null,
-    @SerializedName("end_time") val endTime: String? = null  // Add this line if missing
-)
+    @SerializedName("highest_bid") val highestBidAmount: Double? = null,
+    @SerializedName("end_time") val endTime: String? = null,
+    val bids: List<Bid>? = null
+) {
+    // Helper properties to get full image URLs
+    val image: String?
+        get() = com.example.mineteh.utils.ImageUtils.getFullImageUrl(_image)
+    
+    val images: List<String>
+        get() = com.example.mineteh.utils.ImageUtils.getFullImageUrls(_images)
+    
+    // Helper property to get highest bid as Bid object for backward compatibility
+    val highestBid: Bid?
+        get() = if (highestBidAmount != null) {
+            Bid(bidAmount = highestBidAmount, bidTime = "", bidder = null)
+        } else {
+            bids?.firstOrNull()
+        }
+}
 
-
-data class ListingImage(
-    @SerializedName("image_path") val imagePath: String
-)
 
 data class Seller(
     @SerializedName("account_id") val accountId: Int? = null,
