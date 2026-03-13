@@ -11,10 +11,9 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.model.LazyHeaders
 import com.example.mineteh.R
-import com.example.mineteh.models.ListingImage
 
 class ImageCarouselAdapter(
-    private val images: List<ListingImage>,
+    private val images: List<String>,
     private val context: Context
 ) : RecyclerView.Adapter<ImageCarouselAdapter.ImageViewHolder>() {
 
@@ -32,15 +31,8 @@ class ImageCarouselAdapter(
     override fun getItemCount(): Int = images.size
 
     override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
-        val image = images[position]
+        val imageUrl = images[position]
         
-        // Use public website URL for images
-        val websiteUrl = "https://mineteh.infinityfree.me/home"
-        val imageUrl = when {
-            image.imagePath.startsWith("http") -> image.imagePath
-            else -> "$websiteUrl/${image.imagePath}"
-        }
-
         val glideUrl = GlideUrl(
             imageUrl,
             LazyHeaders.Builder()
