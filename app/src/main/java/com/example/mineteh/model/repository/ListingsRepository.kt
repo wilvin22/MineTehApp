@@ -147,6 +147,7 @@ class ListingsRepository(private val context: Context) {
         try {
             Log.d(tag, "Fetching listing with id=$id from Supabase")
             
+            // First, get the listing without images
             val response = supabase.from("listings").select(
                 columns = Columns.raw("""
                     *,
@@ -155,16 +156,6 @@ class ListingsRepository(private val context: Context) {
                         username,
                         first_name,
                         last_name
-                    ),
-                    listing_images!listing_id (
-                        image_path
-                    ),
-                    bids (
-                        bid_amount,
-                        bid_time,
-                        accounts!user_id (
-                            username
-                        )
                     )
                 """)
             ) {
@@ -173,9 +164,56 @@ class ListingsRepository(private val context: Context) {
                 }
             }.decodeSingle<SupabaseListingResponse>()
             
-            val listing = response.toListing()
+            Log.d(tag, "Fetched listing: ${response.title}")
             
-            Log.d(tag, "Successfully fetched listing: ${listing.title}")
+            // Manually fetch images for this specific listing
+            val images = try {
+                supabase.from("listing_images")
+                    .select() {
+                        filter {
+                            eq("listing_id", id)
+                        }
+                    }
+                    .decodeList<SupabaseListingImage>()
+            } catch (e: Exception) {
+                Log.e(tag, "Error fetching images for listing $id", e)
+                emptyList()
+            }
+            
+            Log.d(tag, "Listing $id (${response.title}) has ${images.size} images: ${images.map { it.image_path }}")
+            
+            // Add images to the response
+            val responseWithImages = response.copy(listing_images = images.ifEmpty { null })
+            
+            // Manually fetch bids for this specific listing
+            val bids = try {
+                supabase.from("bids").select(
+                    columns = Columns.raw("""
+                        bid_amount,
+                        bid_time,
+                        accounts!user_id (
+                            username
+                        )
+                    """)
+                ) {
+                    filter {
+                        eq("listing_id", id)
+                    }
+                    order("bid_amount", order = io.github.jan.supabase.postgrest.query.Order.DESCENDING)
+                }.decodeList<SupabaseBid>()
+            } catch (e: Exception) {
+                Log.e(tag, "Error fetching bids for listing $id", e)
+                emptyList()
+            }
+            
+            Log.d(tag, "Listing $id has ${bids.size} bids")
+            
+            // Add bids to the response
+            val responseWithImagesAndBids = responseWithImages.copy(bids = bids.ifEmpty { null })
+            
+            val listing = responseWithImagesAndBids.toListing()
+            
+            Log.d(tag, "Successfully fetched listing: ${listing.title} with ${listing.images?.size ?: 0} images")
             Resource.Success(listing)
             
         } catch (e: Exception) {
