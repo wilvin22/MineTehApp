@@ -68,10 +68,18 @@ data class Listing(
 ) {
     // Helper properties to get full image URLs
     val image: String?
-        get() = com.example.mineteh.utils.ImageUtils.getFullImageUrl(_image)
+        get() {
+            val fullUrl = com.example.mineteh.utils.ImageUtils.getFullImageUrl(_image)
+            android.util.Log.d("Listing", "Getting image URL: _image=$_image, fullUrl=$fullUrl")
+            return fullUrl
+        }
     
     val images: List<String>
-        get() = com.example.mineteh.utils.ImageUtils.getFullImageUrls(_images)
+        get() {
+            val fullUrls = com.example.mineteh.utils.ImageUtils.getFullImageUrls(_images)
+            android.util.Log.d("Listing", "Getting images URLs: _images=$_images, fullUrls=$fullUrls")
+            return fullUrls
+        }
     
     // Helper property to get highest bid as Bid object for backward compatibility
     val highestBid: Bid?
