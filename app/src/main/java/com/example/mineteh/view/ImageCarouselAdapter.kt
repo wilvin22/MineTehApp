@@ -33,22 +33,42 @@ class ImageCarouselAdapter(
     override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
         val imageUrl = images[position]
         
-        val glideUrl = GlideUrl(
-            imageUrl,
-            LazyHeaders.Builder()
-                .addHeader("User-Agent", "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36")
-                .addHeader("Referer", "https://mineteh.infinityfree.me/")
-                .build()
-        )
-
         holder.imageLoadingProgress.visibility = View.VISIBLE
 
-        Glide.with(context)
-            .load(glideUrl)
-            .placeholder(R.drawable.dummyphoto)
-            .error(R.drawable.dummyphoto)
-            .into(holder.carouselImage)
-            .clearOnDetach()
+        // Handle data URIs differently than regular URLs
+        if (imageUrl.startsWith("data:image/")) {
+            // Handle base64 data URI
+            try {
+                val base64Data = imageUrl.substring(imageUrl.indexOf(",") + 1)
+                val imageBytes = android.util.Base64.decode(base64Data, android.util.Base64.DEFAULT)
+                
+                Glide.with(context)
+                    .load(imageBytes)
+                    .placeholder(R.drawable.dummyphoto)
+                    .error(R.drawable.dummyphoto)
+                    .into(holder.carouselImage)
+                    .clearOnDetach()
+            } catch (e: Exception) {
+                android.util.Log.e("ImageCarouselAdapter", "Error decoding base64 image", e)
+                holder.carouselImage.setImageResource(R.drawable.dummyphoto)
+            }
+        } else {
+            // Handle regular URLs
+            val glideUrl = GlideUrl(
+                imageUrl,
+                LazyHeaders.Builder()
+                    .addHeader("User-Agent", "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36")
+                    .addHeader("Referer", "https://mineteh.infinityfree.me/")
+                    .build()
+            )
+
+            Glide.with(context)
+                .load(glideUrl)
+                .placeholder(R.drawable.dummyphoto)
+                .error(R.drawable.dummyphoto)
+                .into(holder.carouselImage)
+                .clearOnDetach()
+        }
 
         holder.imageLoadingProgress.visibility = View.GONE
     }

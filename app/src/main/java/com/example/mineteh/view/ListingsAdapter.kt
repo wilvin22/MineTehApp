@@ -100,36 +100,79 @@ class ListingsAdapter(
             Glide.with(itemView.context)
                 .clear(itemImage)
             
-            Glide.with(itemView.context)
-                .load(glideUrl)
-                .placeholder(R.drawable.dummyphoto)
-                .error(R.drawable.dummyphoto)
-                .transform(com.bumptech.glide.load.resource.bitmap.CenterCrop(), 
-                           com.bumptech.glide.load.resource.bitmap.RoundedCorners(48))
-                .addListener(object : com.bumptech.glide.request.RequestListener<android.graphics.drawable.Drawable> {
-                    override fun onLoadFailed(
-                        e: com.bumptech.glide.load.engine.GlideException?,
-                        model: Any?,
-                        target: com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable>,
-                        isFirstResource: Boolean
-                    ): Boolean {
-                        android.util.Log.e("ListingsAdapter", "Image load FAILED for listing ${listing.id}: $imageUrl", e)
-                        e?.logRootCauses("ListingsAdapter")
-                        return false
-                    }
+            // Handle data URIs differently than regular URLs
+            if (imageUrl != null && imageUrl.startsWith("data:image/")) {
+                // Handle base64 data URI
+                try {
+                    val base64Data = imageUrl.substring(imageUrl.indexOf(",") + 1)
+                    val imageBytes = android.util.Base64.decode(base64Data, android.util.Base64.DEFAULT)
+                    
+                    Glide.with(itemView.context)
+                        .load(imageBytes)
+                        .placeholder(R.drawable.dummyphoto)
+                        .error(R.drawable.dummyphoto)
+                        .transform(com.bumptech.glide.load.resource.bitmap.CenterCrop(), 
+                                   com.bumptech.glide.load.resource.bitmap.RoundedCorners(48))
+                        .addListener(object : com.bumptech.glide.request.RequestListener<android.graphics.drawable.Drawable> {
+                            override fun onLoadFailed(
+                                e: com.bumptech.glide.load.engine.GlideException?,
+                                model: Any?,
+                                target: com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable>,
+                                isFirstResource: Boolean
+                            ): Boolean {
+                                android.util.Log.e("ListingsAdapter", "Base64 image load FAILED for listing ${listing.id}", e)
+                                return false
+                            }
 
-                    override fun onResourceReady(
-                        resource: android.graphics.drawable.Drawable,
-                        model: Any,
-                        target: com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable>?,
-                        dataSource: com.bumptech.glide.load.DataSource,
-                        isFirstResource: Boolean
-                    ): Boolean {
-                        android.util.Log.d("ListingsAdapter", "Image load SUCCESS for listing ${listing.id}: $imageUrl (source: $dataSource)")
-                        return false
-                    }
-                })
-                .into(itemImage)
+                            override fun onResourceReady(
+                                resource: android.graphics.drawable.Drawable,
+                                model: Any,
+                                target: com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable>?,
+                                dataSource: com.bumptech.glide.load.DataSource,
+                                isFirstResource: Boolean
+                            ): Boolean {
+                                android.util.Log.d("ListingsAdapter", "Base64 image load SUCCESS for listing ${listing.id}")
+                                return false
+                            }
+                        })
+                        .into(itemImage)
+                } catch (e: Exception) {
+                    android.util.Log.e("ListingsAdapter", "Error decoding base64 image for listing ${listing.id}", e)
+                    itemImage.setImageResource(R.drawable.dummyphoto)
+                }
+            } else {
+                // Handle regular URLs
+                Glide.with(itemView.context)
+                    .load(glideUrl)
+                    .placeholder(R.drawable.dummyphoto)
+                    .error(R.drawable.dummyphoto)
+                    .transform(com.bumptech.glide.load.resource.bitmap.CenterCrop(), 
+                               com.bumptech.glide.load.resource.bitmap.RoundedCorners(48))
+                    .addListener(object : com.bumptech.glide.request.RequestListener<android.graphics.drawable.Drawable> {
+                        override fun onLoadFailed(
+                            e: com.bumptech.glide.load.engine.GlideException?,
+                            model: Any?,
+                            target: com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable>,
+                            isFirstResource: Boolean
+                        ): Boolean {
+                            android.util.Log.e("ListingsAdapter", "Image load FAILED for listing ${listing.id}: $imageUrl", e)
+                            e?.logRootCauses("ListingsAdapter")
+                            return false
+                        }
+
+                        override fun onResourceReady(
+                            resource: android.graphics.drawable.Drawable,
+                            model: Any,
+                            target: com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable>?,
+                            dataSource: com.bumptech.glide.load.DataSource,
+                            isFirstResource: Boolean
+                        ): Boolean {
+                            android.util.Log.d("ListingsAdapter", "Image load SUCCESS for listing ${listing.id}: $imageUrl (source: $dataSource)")
+                            return false
+                        }
+                    })
+                    .into(itemImage)
+            }
 
             itemHeart.setImageResource(
                 if (listing.isFavorited) R.drawable.heart_red else R.drawable.heart
