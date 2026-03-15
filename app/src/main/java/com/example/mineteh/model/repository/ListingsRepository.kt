@@ -359,16 +359,29 @@ class ListingsRepository(private val context: Context) {
             Log.d(tag, "Successfully processed ${uploadedImagePaths.size} images: $uploadedImagePaths")
             
             // Step 2: Insert listing into database
-            val listingData = mapOf(
-                "seller_id" to userId,
-                "title" to title,
-                "description" to description,
-                "price" to price,
-                "location" to location,
-                "category" to category,
-                "listing_type" to listingType,
-                "status" to "active",
-                "end_time" to endTime
+            @Serializable
+            data class ListingInsert(
+                val seller_id: Int,
+                val title: String,
+                val description: String,
+                val price: Double,
+                val location: String,
+                val category: String,
+                val listing_type: String,
+                val status: String,
+                val end_time: String?
+            )
+            
+            val listingData = ListingInsert(
+                seller_id = userId,
+                title = title,
+                description = description,
+                price = price,
+                location = location,
+                category = category,
+                listing_type = listingType,
+                status = "active",
+                end_time = endTime
             )
             
             Log.d(tag, "Inserting listing data: $listingData")
@@ -380,10 +393,16 @@ class ListingsRepository(private val context: Context) {
             Log.d(tag, "Listing inserted with ID: ${insertedListing.id}")
             
             // Step 3: Insert image records into listing_images table
+            @Serializable
+            data class ImageInsert(
+                val listing_id: Int,
+                val image_path: String
+            )
+            
             val imageRecords = uploadedImagePaths.map { imagePath ->
-                mapOf(
-                    "listing_id" to insertedListing.id,
-                    "image_path" to imagePath
+                ImageInsert(
+                    listing_id = insertedListing.id,
+                    image_path = imagePath
                 )
             }
             
