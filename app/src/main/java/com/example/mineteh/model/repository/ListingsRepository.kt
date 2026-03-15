@@ -8,10 +8,11 @@ import com.example.mineteh.supabase.SupabaseClient
 import com.example.mineteh.utils.Resource
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
+import io.github.jan.supabase.postgrest.query.filter.FilterOperator
+import io.github.jan.supabase.postgrest.query.filter.PostgrestFilterBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 
 class ListingsRepository(private val context: Context) {
     private val tag = "ListingsRepository"
@@ -35,9 +36,9 @@ class ListingsRepository(private val context: Context) {
         try {
             Log.d(tag, "Fetching listings from Supabase: category=$category, type=$type, search=$search")
             
-            // Build query
-            var query = supabase.from("listings")
-                .select(Columns.raw("""
+            // Build query with filters
+            val response = supabase.from("listings").select(
+                columns = Columns.raw("""
                     *,
                     accounts!seller_id (
                         account_id,
@@ -48,24 +49,29 @@ class ListingsRepository(private val context: Context) {
                     listing_images (
                         image_path
                     )
-                """))
-            
-            // Apply filters
-            if (category != null) {
-                query = query.eq("category", category)
-            }
-            if (type != null) {
-                query = query.eq("listing_type", type)
-            }
-            if (search != null) {
-                query = query.ilike("title", "%$search%")
-            }
-            
-            // Execute query with limit and offset
-            val response = query
-                .limit(limit.toLong())
-                .range(offset.toLong(), (offset + limit - 1).toLong())
-                .decodeList<SupabaseListingResponse>()
+                """)
+            ) {
+                // Apply filters
+                if (category != null) {
+                    filter {
+                        eq("category", category)
+                    }
+                }
+                if (type != null) {
+                    filter {
+                        eq("listing_type", type)
+                    }
+                }
+                if (search != null) {
+                    filter {
+                        ilike("title", "%$search%")
+                    }
+                }
+                
+                // Apply limit and range
+                limit(limit.toLong())
+                range(offset.toLong(), (offset + limit - 1).toLong())
+            }.decodeList<SupabaseListingResponse>()
             
             // Convert to app models
             val listings = response.map { it.toListing() }
@@ -86,8 +92,8 @@ class ListingsRepository(private val context: Context) {
         try {
             Log.d(tag, "Fetching listing with id=$id from Supabase")
             
-            val response = supabase.from("listings")
-                .select(Columns.raw("""
+            val response = supabase.from("listings").select(
+                columns = Columns.raw("""
                     *,
                     accounts!seller_id (
                         account_id,
@@ -105,9 +111,12 @@ class ListingsRepository(private val context: Context) {
                             username
                         )
                     )
-                """))
-                .eq("id", id)
-                .decodeSingle<SupabaseListingResponse>()
+                """)
+            ) {
+                filter {
+                    eq("id", id)
+                }
+            }.decodeSingle<SupabaseListingResponse>()
             
             val listing = response.toListing()
             
@@ -128,11 +137,12 @@ class ListingsRepository(private val context: Context) {
             Log.d(tag, "Toggling favorite: listingId=$listingId, userId=$userId")
             
             // Check if already favorited
-            val existing = supabase.from("favorites")
-                .select()
-                .eq("user_id", userId)
-                .eq("listing_id", listingId)
-                .decodeList<SupabaseFavorite>()
+            val existing = supabase.from("favorites").select() {
+                filter {
+                    eq("user_id", userId)
+                    eq("listing_id", listingId)
+                }
+            }.decodeList<SupabaseFavorite>()
             
             val isFavorited = if (existing.isEmpty()) {
                 // Add to favorites
@@ -145,13 +155,12 @@ class ListingsRepository(private val context: Context) {
                 true
             } else {
                 // Remove from favorites
-                supabase.from("favorites")
-                    .delete {
-                        filter {
-                            eq("user_id", userId)
-                            eq("listing_id", listingId)
-                        }
+                supabase.from("favorites").delete {
+                    filter {
+                        eq("user_id", userId)
+                        eq("listing_id", listingId)
                     }
+                }
                 false
             }
             
@@ -171,8 +180,8 @@ class ListingsRepository(private val context: Context) {
         try {
             Log.d(tag, "Fetching favorites for userId=$userId")
             
-            val response = supabase.from("favorites")
-                .select(Columns.raw("""
+            val response = supabase.from("favorites").select(
+                columns = Columns.raw("""
                     listings!listing_id (
                         *,
                         accounts!seller_id (
@@ -185,9 +194,12 @@ class ListingsRepository(private val context: Context) {
                             image_path
                         )
                     )
-                """))
-                .eq("user_id", userId)
-                .decodeList<SupabaseFavoriteWithListing>()
+                """)
+            ) {
+                filter {
+                    eq("user_id", userId)
+                }
+            }.decodeList<SupabaseFavoriteWithListing>()
             
             val listings = response.mapNotNull { it.listings?.toListing() }
             
