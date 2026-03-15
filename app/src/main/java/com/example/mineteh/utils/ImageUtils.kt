@@ -13,6 +13,8 @@ object ImageUtils {
         return when {
             // Already a full URL
             imagePath.startsWith("http://") || imagePath.startsWith("https://") -> imagePath
+            // Path already contains "uploads/" - use it directly with base domain
+            imagePath.startsWith("uploads/") -> "https://mineteh.infinityfree.me/home/$imagePath"
             // Relative path - prepend base URL
             else -> BASE_IMAGE_URL + imagePath.removePrefix("/")
         }
