@@ -66,15 +66,61 @@ class ItemAdapter(
         Glide.with(holder.itemView.context)
             .clear(holder.itemImage)
 
-        // Handle data URIs differently than regular URLs
-        if (imageUrl != null && imageUrl.startsWith("data:image/")) {
-            // Handle base64 data URI
-            try {
-                val base64Data = imageUrl.substring(imageUrl.indexOf(",") + 1)
-                val imageBytes = android.util.Base64.decode(base64Data, android.util.Base64.DEFAULT)
-                
+        // Handle different image formats
+        when {
+            imageUrl != null && imageUrl.startsWith("data:image/") -> {
+                // Handle base64 data URI
+                try {
+                    val base64Data = imageUrl.substring(imageUrl.indexOf(",") + 1)
+                    val imageBytes = android.util.Base64.decode(base64Data, android.util.Base64.DEFAULT)
+                    
+                    Glide.with(holder.itemView.context)
+                        .load(imageBytes)
+                        .placeholder(R.drawable.dummyphoto)
+                        .error(R.drawable.dummyphoto)
+                        .transform(com.bumptech.glide.load.resource.bitmap.CenterCrop(), 
+                                   com.bumptech.glide.load.resource.bitmap.RoundedCorners(48))
+                        .addListener(object : com.bumptech.glide.request.RequestListener<android.graphics.drawable.Drawable> {
+                            override fun onLoadFailed(
+                                e: com.bumptech.glide.load.engine.GlideException?,
+                                model: Any?,
+                                target: com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable>,
+                                isFirstResource: Boolean
+                            ): Boolean {
+                                android.util.Log.w("ItemAdapter", "Base64 image load failed for listing ${item.id}, using placeholder")
+                                return false
+                            }
+
+                            override fun onResourceReady(
+                                resource: android.graphics.drawable.Drawable,
+                                model: Any,
+                                target: com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable>?,
+                                dataSource: com.bumptech.glide.load.DataSource,
+                                isFirstResource: Boolean
+                            ): Boolean {
+                                android.util.Log.d("ItemAdapter", "Base64 image loaded successfully for listing ${item.id}")
+                                return false
+                            }
+                        })
+                        .into(holder.itemImage)
+                } catch (e: Exception) {
+                    android.util.Log.w("ItemAdapter", "Error decoding base64 image for listing ${item.id}, using placeholder")
+                    holder.itemImage.setImageResource(R.drawable.dummyphoto)
+                }
+            }
+            
+            imageUrl != null -> {
+                // Handle regular URLs - but expect many to fail (old listings)
+                val glideUrl = com.bumptech.glide.load.model.GlideUrl(
+                    imageUrl,
+                    com.bumptech.glide.load.model.LazyHeaders.Builder()
+                        .addHeader("User-Agent", "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36")
+                        .addHeader("Referer", "https://mineteh.infinityfree.me/")
+                        .build()
+                )
+
                 Glide.with(holder.itemView.context)
-                    .load(imageBytes)
+                    .load(glideUrl)
                     .placeholder(R.drawable.dummyphoto)
                     .error(R.drawable.dummyphoto)
                     .transform(com.bumptech.glide.load.resource.bitmap.CenterCrop(), 
@@ -86,7 +132,8 @@ class ItemAdapter(
                             target: com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable>,
                             isFirstResource: Boolean
                         ): Boolean {
-                            android.util.Log.e("ItemAdapter", "Base64 image load FAILED for listing ${item.id}", e)
+                            // Don't log errors for old listings - this is expected
+                            android.util.Log.d("ItemAdapter", "Image not available for listing ${item.id} (likely old listing), using placeholder")
                             return false
                         }
 
@@ -97,57 +144,18 @@ class ItemAdapter(
                             dataSource: com.bumptech.glide.load.DataSource,
                             isFirstResource: Boolean
                         ): Boolean {
-                            android.util.Log.d("ItemAdapter", "Base64 image load SUCCESS for listing ${item.id}")
+                            android.util.Log.d("ItemAdapter", "Image loaded successfully for listing ${item.id}")
                             return false
                         }
                     })
                     .into(holder.itemImage)
-            } catch (e: Exception) {
-                android.util.Log.e("ItemAdapter", "Error decoding base64 image for listing ${item.id}", e)
+            }
+            
+            else -> {
+                // No image URL available
+                android.util.Log.d("ItemAdapter", "No image URL for listing ${item.id}, using placeholder")
                 holder.itemImage.setImageResource(R.drawable.dummyphoto)
             }
-        } else {
-            // Handle regular URLs
-            val glideUrl = imageUrl?.let {
-                com.bumptech.glide.load.model.GlideUrl(
-                    it,
-                    com.bumptech.glide.load.model.LazyHeaders.Builder()
-                        .addHeader("User-Agent", "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36")
-                        .addHeader("Referer", "https://mineteh.infinityfree.me/")
-                        .build()
-                )
-            }
-
-            Glide.with(holder.itemView.context)
-                .load(glideUrl)
-                .placeholder(R.drawable.dummyphoto)
-                .error(R.drawable.dummyphoto)
-                .transform(com.bumptech.glide.load.resource.bitmap.CenterCrop(), 
-                           com.bumptech.glide.load.resource.bitmap.RoundedCorners(48))
-                .addListener(object : com.bumptech.glide.request.RequestListener<android.graphics.drawable.Drawable> {
-                    override fun onLoadFailed(
-                        e: com.bumptech.glide.load.engine.GlideException?,
-                        model: Any?,
-                        target: com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable>,
-                        isFirstResource: Boolean
-                    ): Boolean {
-                        android.util.Log.e("ItemAdapter", "Image load FAILED for listing ${item.id}: $imageUrl", e)
-                        e?.logRootCauses("ItemAdapter")
-                        return false
-                    }
-
-                    override fun onResourceReady(
-                        resource: android.graphics.drawable.Drawable,
-                        model: Any,
-                        target: com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable>?,
-                        dataSource: com.bumptech.glide.load.DataSource,
-                        isFirstResource: Boolean
-                    ): Boolean {
-                        android.util.Log.d("ItemAdapter", "Image load SUCCESS for listing ${item.id}: $imageUrl (source: $dataSource)")
-                        return false
-                    }
-                })
-                .into(holder.itemImage)
         }
 
         updateHeartIcon(holder.itemHeart, item.isFavorited)
