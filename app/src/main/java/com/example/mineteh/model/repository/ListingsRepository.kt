@@ -2,7 +2,6 @@ package com.example.mineteh.model.repository
 
 import android.content.Context
 import android.util.Log
-import com.example.mineteh.TokenManager
 import com.example.mineteh.models.Listing
 import com.example.mineteh.models.Seller
 import com.example.mineteh.supabase.SupabaseClient
@@ -11,6 +10,7 @@ import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.postgrest.query.filter.FilterOperator
 import io.github.jan.supabase.postgrest.query.filter.PostgrestFilterBuilder
+import io.github.jan.supabase.storage.storage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
@@ -286,7 +286,7 @@ class ListingsRepository(private val context: Context) {
             Log.d(tag, "Creating listing: $title with ${imageUris.size} images")
             
             // Get current user ID from TokenManager
-            val tokenManager = com.example.mineteh.TokenManager(context)
+            val tokenManager = com.example.mineteh.utils.TokenManager(context)
             val userId = tokenManager.getUserId()
             
             if (userId == -1) {
@@ -322,14 +322,14 @@ class ListingsRepository(private val context: Context) {
                     
                     try {
                         // Try to upload to Supabase Storage
-                        val uploadResult = supabase.storage
+                        val uploadResult = SupabaseClient.storage
                             .from("listings")
                             .upload(filePath, imageBytes, upsert = false)
                         
                         Log.d(tag, "Upload successful to Supabase Storage: $filePath")
                         
                         // Get the public URL for the uploaded file
-                        val publicUrl = supabase.storage
+                        val publicUrl = SupabaseClient.storage
                             .from("listings")
                             .publicUrl(filePath)
                         
