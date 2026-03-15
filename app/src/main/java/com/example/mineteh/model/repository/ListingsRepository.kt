@@ -394,13 +394,14 @@ class ListingsRepository(private val context: Context) {
             
             // Get the most recently inserted listing for this user
             val insertedListing = supabase.from("listings")
-                .select(columns = Columns.raw("*"))
-                .filter {
-                    eq("seller_id", userId)
-                    eq("title", title)
+                .select(columns = Columns.raw("*")) {
+                    filter {
+                        eq("seller_id", userId)
+                        eq("title", title)
+                    }
+                    order("created_at", ascending = false)
+                    limit(1)
                 }
-                .order("created_at", ascending = false)
-                .limit(1)
                 .decodeSingle<SupabaseListingResponse>()
             
             Log.d(tag, "Retrieved inserted listing with ID: ${insertedListing.id}")
