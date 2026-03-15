@@ -61,7 +61,15 @@ class ListingsRepository(private val context: Context) {
                 return@withContext Resource.Error("Cannot connect to server. Please check your internet connection.")
             }
             
-            // Build query with filters
+            // DIAGNOSTIC: Test if listing_images table exists and has data
+            try {
+                val testImages = supabase.from("listing_images").select().limit(5).body
+                Log.d(tag, "DIAGNOSTIC - listing_images table sample: $testImages")
+            } catch (e: Exception) {
+                Log.e(tag, "DIAGNOSTIC - Error accessing listing_images table", e)
+            }
+            
+            // Build query with filters - Try WITHOUT the foreign key hint first
             val response = supabase.from("listings").select(
                 columns = Columns.raw("""
                     *,
@@ -70,9 +78,6 @@ class ListingsRepository(private val context: Context) {
                         username,
                         first_name,
                         last_name
-                    ),
-                    listing_images!listing_id (
-                        image_path
                     )
                 """)
             ) {
@@ -99,14 +104,29 @@ class ListingsRepository(private val context: Context) {
             }.decodeList<SupabaseListingResponse>()
             
             Log.d(tag, "Raw response size: ${response.size}")
-            if (response.isNotEmpty()) {
-                val first = response.first()
-                Log.d(tag, "First listing: id=${first.id}, title=${first.title}")
-                Log.d(tag, "First listing images: ${first.listing_images}")
+            
+            // Manually fetch images for each listing
+            val listingsWithImages = response.map { listing ->
+                try {
+                    // Use proper Supabase filter syntax
+                    val images = supabase.from("listing_images")
+                        .select() {
+                            filter {
+                                SupabaseListingImage::listing_id eq listing.id
+                            }
+                        }
+                        .decodeList<SupabaseListingImage>()
+                    
+                    Log.d(tag, "Listing ${listing.id} (${listing.title}) has ${images.size} images: ${images.map { it.image_path }}")
+                    listing.copy(listing_images = images.ifEmpty { null })
+                } catch (e: Exception) {
+                    Log.e(tag, "Error fetching images for listing ${listing.id}", e)
+                    listing
+                }
             }
             
             // Convert to app models
-            val listings = response.map { it.toListing() }
+            val listings = listingsWithImages.map { it.toListing() }
             
             Log.d(tag, "Successfully fetched ${listings.size} listings from Supabase")
             Log.d(tag, "First listing image check: ${listings.firstOrNull()?.image}")
@@ -360,6 +380,8 @@ data class SupabaseAccount(
 
 @Serializable
 data class SupabaseListingImage(
+    val image_id: Int? = null,
+    val listing_id: Int,
     val image_path: String
 )
 
