@@ -321,11 +321,13 @@ class ListingsRepository(private val context: Context) {
                     val timestamp = System.currentTimeMillis()
                     val fileName = "img_${timestamp}_${index}.jpg"
                     
-                    Log.d(tag, "Uploading image to server: $fileName")
+                    Log.d(tag, "About to upload image: $fileName (${imageBytes.size} bytes)")
                     
                     try {
                         // Upload to the existing hosting server
+                        Log.d(tag, "Calling uploadImageToServer for: $fileName")
                         val uploadSuccess = uploadImageToServer(imageBytes, fileName)
+                        Log.d(tag, "uploadImageToServer returned: $uploadSuccess for $fileName")
                         
                         if (uploadSuccess) {
                             val imagePath = "uploads/$fileName"
