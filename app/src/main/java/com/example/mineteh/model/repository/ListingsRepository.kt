@@ -53,7 +53,7 @@ class ListingsRepository(private val context: Context) {
                         first_name,
                         last_name
                     ),
-                    listing_images!listing_id (
+                    listing_images:listing_images!listing_id (
                         image_path
                     )
                 """)
@@ -116,10 +116,10 @@ class ListingsRepository(private val context: Context) {
                         first_name,
                         last_name
                     ),
-                    listing_images!listing_id (
+                    listing_images:listing_images!listing_id (
                         image_path
                     ),
-                    bids!listing_id (
+                    bids:bids!listing_id (
                         bid_amount,
                         bid_time,
                         accounts!user_id (
@@ -205,7 +205,7 @@ class ListingsRepository(private val context: Context) {
                             first_name,
                             last_name
                         ),
-                        listing_images!listing_id (
+                        listing_images:listing_images!listing_id (
                             image_path
                         )
                     )
