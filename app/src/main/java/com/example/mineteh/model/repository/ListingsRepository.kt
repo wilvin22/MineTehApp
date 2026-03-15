@@ -80,10 +80,18 @@ class ListingsRepository(private val context: Context) {
                 range(offset.toLong(), (offset + limit - 1).toLong())
             }.decodeList<SupabaseListingResponse>()
             
+            Log.d(tag, "Raw response size: ${response.size}")
+            if (response.isNotEmpty()) {
+                val first = response.first()
+                Log.d(tag, "First listing: id=${first.id}, title=${first.title}")
+                Log.d(tag, "First listing images: ${first.listing_images}")
+            }
+            
             // Convert to app models
             val listings = response.map { it.toListing() }
             
             Log.d(tag, "Successfully fetched ${listings.size} listings from Supabase")
+            Log.d(tag, "First listing image check: ${listings.firstOrNull()?.image}")
             Resource.Success(listings)
             
         } catch (e: Exception) {
