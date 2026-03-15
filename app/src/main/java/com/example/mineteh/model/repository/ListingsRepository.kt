@@ -13,6 +13,13 @@ import io.github.jan.supabase.postgrest.query.filter.PostgrestFilterBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+
+// Configure Json to ignore unknown keys
+private val json = Json {
+    ignoreUnknownKeys = true
+    isLenient = true
+}
 
 class ListingsRepository(private val context: Context) {
     private val tag = "ListingsRepository"

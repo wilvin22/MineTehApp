@@ -33,6 +33,12 @@ object SupabaseClient {
         ) {
             install(Postgrest)
             install(Storage)
+            
+            // Configure default serializer to ignore unknown keys
+            defaultSerializer = kotlinx.serialization.json.Json {
+                ignoreUnknownKeys = true
+                isLenient = true
+            }
         }
         
         android.util.Log.d("SupabaseClient", "=== SUPABASE CLIENT INITIALIZED SUCCESSFULLY ===")
