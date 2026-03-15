@@ -269,7 +269,13 @@ class ListingsRepository(private val context: Context) {
     }
 
     /**
-     * Create a new listing with image uploads to Supabase Storage
+     * Create a new listing with actual image upload to Supabase Storage
+     * 
+     * This method now:
+     * 1. Uploads actual image files to Supabase Storage
+     * 2. Gets public URLs for the uploaded images
+     * 3. Stores the public URLs in the database
+     * 4. Images should display correctly in the app
      */
     suspend fun createListing(
         title: String,
@@ -301,7 +307,7 @@ class ListingsRepository(private val context: Context) {
             
             for ((index, uri) in imageUris.withIndex()) {
                 try {
-                    Log.d(tag, "Processing image ${index + 1}/${imageUris.size}: $uri")
+                    Log.d(tag, "Uploading image ${index + 1}/${imageUris.size}: $uri")
                     
                     // Read image data from URI
                     val inputStream = context.contentResolver.openInputStream(uri)
@@ -315,48 +321,45 @@ class ListingsRepository(private val context: Context) {
                     
                     // Generate unique filename
                     val timestamp = System.currentTimeMillis()
-                    val fileName = "img_${timestamp}_${index}.jpg"
-                    val filePath = "uploads/$fileName"
+                    val fileName = "listing_${timestamp}_${index}.jpg"
+                    val storagePath = "listings/$fileName"
                     
-                    Log.d(tag, "Attempting to upload to storage path: $filePath")
+                    Log.d(tag, "Uploading to Supabase Storage: $storagePath")
                     
                     try {
-                        // Try to upload to Supabase Storage
-                        val uploadResult = SupabaseClient.storage
-                            .from("listings")
-                            .upload(filePath, imageBytes, upsert = false)
+                        // Upload to Supabase Storage
+                        SupabaseClient.storage
+                            .from("images")
+                            .upload(storagePath, imageBytes, upsert = false)
                         
-                        Log.d(tag, "Upload successful to Supabase Storage: $filePath")
-                        
-                        // Get the public URL for the uploaded file
+                        // Get the public URL
                         val publicUrl = SupabaseClient.storage
-                            .from("listings")
-                            .publicUrl(filePath)
+                            .from("images")
+                            .publicUrl(storagePath)
                         
-                        Log.d(tag, "Public URL: $publicUrl")
-                        uploadedImagePaths.add(filePath)
+                        Log.d(tag, "Upload successful! Public URL: $publicUrl")
+                        
+                        // Store the public URL (not just the path)
+                        uploadedImagePaths.add(publicUrl)
                         
                     } catch (storageError: Exception) {
-                        Log.w(tag, "Supabase Storage upload failed, using fallback approach: ${storageError.message}")
-                        
-                        // Fallback: Create a placeholder path that matches the existing system
-                        // This allows the listing to be created even if storage upload fails
-                        uploadedImagePaths.add(filePath)
-                        Log.d(tag, "Added fallback path: $filePath")
+                        Log.e(tag, "Supabase Storage upload failed: ${storageError.message}")
+                        // Skip this image if upload fails
+                        continue
                     }
                     
                 } catch (e: Exception) {
                     Log.e(tag, "Failed to process image ${index + 1}: $uri", e)
-                    // Continue with other images even if one fails
+                    continue
                 }
             }
             
             if (uploadedImagePaths.isEmpty()) {
-                Log.e(tag, "No images were processed successfully")
-                return@withContext Resource.Error("Failed to process images. Please try again.")
+                Log.e(tag, "No images were uploaded successfully")
+                return@withContext Resource.Error("Failed to upload images. Please try again.")
             }
             
-            Log.d(tag, "Successfully processed ${uploadedImagePaths.size} images: $uploadedImagePaths")
+            Log.d(tag, "Successfully uploaded ${uploadedImagePaths.size} images to Supabase Storage")
             
             // Step 2: Insert listing into database
             @Serializable
@@ -428,6 +431,9 @@ class ListingsRepository(private val context: Context) {
             }
             
             Log.d(tag, "Image records inserted successfully")
+            
+            // Add a small delay to ensure images are committed to database
+            kotlinx.coroutines.delay(500)
             
             // Step 4: Fetch the complete listing with images and seller info
             val completeListing = supabase.from("listings").select(
