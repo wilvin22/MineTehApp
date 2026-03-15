@@ -332,11 +332,11 @@ class ListingsRepository(private val context: Context) {
                             uploadedImagePaths.add(imagePath)
                             Log.d(tag, "Upload successful! Path: $imagePath")
                         } else {
-                            Log.w(tag, "Failed to upload image: $fileName")
+                            Log.e(tag, "Failed to upload image: $fileName")
                         }
                         
                     } catch (uploadError: Exception) {
-                        Log.w(tag, "Image upload failed: ${uploadError.message}")
+                        Log.e(tag, "Image upload exception for $fileName", uploadError)
                     }
                     
                 } catch (e: Exception) {
@@ -474,7 +474,7 @@ class ListingsRepository(private val context: Context) {
      */
     private suspend fun uploadImageToServer(imageBytes: ByteArray, fileName: String): Boolean = withContext(Dispatchers.IO) {
         try {
-            Log.d(tag, "Uploading image to server: $fileName")
+            Log.d(tag, "Starting upload for: $fileName (${imageBytes.size} bytes)")
             
             // Create multipart request to upload image
             val url = "https://mineteh.infinityfree.me/home/upload_image.php"
@@ -487,9 +487,13 @@ class ListingsRepository(private val context: Context) {
                 doOutput = true
                 doInput = true
                 useCaches = false
+                connectTimeout = 30000 // 30 seconds
+                readTimeout = 30000 // 30 seconds
                 setRequestProperty("Content-Type", "multipart/form-data; boundary=$boundary")
                 setRequestProperty("User-Agent", "MineTeh-Android-App")
             }
+            
+            Log.d(tag, "Connection configured, starting upload...")
             
             val outputStream = connection.outputStream
             val writer = java.io.PrintWriter(java.io.OutputStreamWriter(outputStream, "UTF-8"), true)
@@ -509,6 +513,8 @@ class ListingsRepository(private val context: Context) {
             writer.append("--$boundary--").append("\r\n")
             writer.close()
             
+            Log.d(tag, "Data sent, getting response...")
+            
             // Get response
             val responseCode = connection.responseCode
             Log.d(tag, "Upload response code: $responseCode")
@@ -518,8 +524,8 @@ class ListingsRepository(private val context: Context) {
                 Log.d(tag, "Upload response: $response")
                 
                 // Check if response indicates success
-                val success = response.contains("success", ignoreCase = true) || 
-                             response.contains("uploaded", ignoreCase = true)
+                val success = response.contains("success", ignoreCase = true) && 
+                             response.contains("true", ignoreCase = true)
                 
                 if (success) {
                     Log.d(tag, "Image uploaded successfully: $fileName")
@@ -529,7 +535,13 @@ class ListingsRepository(private val context: Context) {
                     return@withContext false
                 }
             } else {
-                Log.e(tag, "Upload failed with response code: $responseCode")
+                // Try to read error response
+                val errorResponse = try {
+                    connection.errorStream?.bufferedReader()?.readText() ?: "No error details"
+                } catch (e: Exception) {
+                    "Could not read error response: ${e.message}"
+                }
+                Log.e(tag, "Upload failed with response code: $responseCode, error: $errorResponse")
                 return@withContext false
             }
             
