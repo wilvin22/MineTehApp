@@ -386,11 +386,24 @@ class ListingsRepository(private val context: Context) {
             
             Log.d(tag, "Inserting listing data: $listingData")
             
-            val insertedListing = supabase.from("listings")
+            // Insert the listing (without trying to get it back immediately)
+            supabase.from("listings")
                 .insert(listingData)
+            
+            Log.d(tag, "Listing inserted successfully")
+            
+            // Get the most recently inserted listing for this user
+            val insertedListing = supabase.from("listings")
+                .select(columns = Columns.raw("*"))
+                .filter {
+                    eq("seller_id", userId)
+                    eq("title", title)
+                }
+                .order("created_at", ascending = false)
+                .limit(1)
                 .decodeSingle<SupabaseListingResponse>()
             
-            Log.d(tag, "Listing inserted with ID: ${insertedListing.id}")
+            Log.d(tag, "Retrieved inserted listing with ID: ${insertedListing.id}")
             
             // Step 3: Insert image records into listing_images table
             @Serializable
@@ -408,8 +421,10 @@ class ListingsRepository(private val context: Context) {
             
             Log.d(tag, "Inserting ${imageRecords.size} image records")
             
-            supabase.from("listing_images")
-                .insert(imageRecords)
+            if (imageRecords.isNotEmpty()) {
+                supabase.from("listing_images")
+                    .insert(imageRecords)
+            }
             
             Log.d(tag, "Image records inserted successfully")
             
