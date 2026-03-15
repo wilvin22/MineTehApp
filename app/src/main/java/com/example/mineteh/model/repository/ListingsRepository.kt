@@ -110,11 +110,11 @@ class ListingsRepository(private val context: Context) {
             // Manually fetch images for each listing
             val listingsWithImages = response.map { listing ->
                 try {
-                    // Use proper Supabase filter syntax
+                    // Fetch images for this specific listing
                     val images = supabase.from("listing_images")
                         .select() {
                             filter {
-                                SupabaseListingImage::listing_id eq listing.id
+                                eq("listing_id", listing.id)
                             }
                         }
                         .decodeList<SupabaseListingImage>()
