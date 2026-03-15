@@ -61,16 +61,6 @@ class ListingsRepository(private val context: Context) {
                 return@withContext Resource.Error("Cannot connect to server. Please check your internet connection.")
             }
             
-            // DIAGNOSTIC: Test if listing_images table exists and has data
-            try {
-                val testImages = supabase.from("listing_images").select() {
-                    limit(5)
-                }.body
-                Log.d(tag, "DIAGNOSTIC - listing_images table sample: $testImages")
-            } catch (e: Exception) {
-                Log.e(tag, "DIAGNOSTIC - Error accessing listing_images table", e)
-            }
-            
             // Build query with filters - Try WITHOUT the foreign key hint first
             val response = supabase.from("listings").select(
                 columns = Columns.raw("""
