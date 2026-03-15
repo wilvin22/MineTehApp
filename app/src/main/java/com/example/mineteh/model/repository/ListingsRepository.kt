@@ -63,7 +63,9 @@ class ListingsRepository(private val context: Context) {
             
             // DIAGNOSTIC: Test if listing_images table exists and has data
             try {
-                val testImages = supabase.from("listing_images").select().limit(5).body
+                val testImages = supabase.from("listing_images").select() {
+                    limit(5)
+                }.body
                 Log.d(tag, "DIAGNOSTIC - listing_images table sample: $testImages")
             } catch (e: Exception) {
                 Log.e(tag, "DIAGNOSTIC - Error accessing listing_images table", e)
