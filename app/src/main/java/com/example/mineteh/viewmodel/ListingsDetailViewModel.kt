@@ -6,7 +6,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.mineteh.models.BidData
-import com.example.mineteh.models.FavoriteData
 import com.example.mineteh.models.Listing
 import com.example.mineteh.model.repository.BidsRepository
 import com.example.mineteh.model.repository.FavoritesRepository
@@ -25,8 +24,8 @@ class ListingDetailViewModel(application: Application) : AndroidViewModel(applic
     private val _bidResult = MutableLiveData<Resource<BidData>?>()
     val bidResult: LiveData<Resource<BidData>?> = _bidResult
 
-    private val _favoriteResult = MutableLiveData<Resource<FavoriteData>?>()
-    val favoriteResult: LiveData<Resource<FavoriteData>?> = _favoriteResult
+    private val _favoriteResult = MutableLiveData<Resource<Boolean>?>()
+    val favoriteResult: LiveData<Resource<Boolean>?> = _favoriteResult
 
     fun loadListing(listingId: Int) {
         _listing.value = Resource.Loading()

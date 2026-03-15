@@ -5,7 +5,6 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.example.mineteh.models.FavoriteData
 import com.example.mineteh.models.Listing
 import com.example.mineteh.model.repository.FavoritesRepository
 import com.example.mineteh.utils.Resource
@@ -17,8 +16,8 @@ class FavoritesViewModel(application: Application) : AndroidViewModel(applicatio
     private val _favorites = MutableLiveData<Resource<List<Listing>>>()
     val favorites: LiveData<Resource<List<Listing>>> = _favorites
 
-    private val _toggleResult = MutableLiveData<Resource<FavoriteData>?>()
-    val toggleResult: LiveData<Resource<FavoriteData>?> = _toggleResult
+    private val _toggleResult = MutableLiveData<Resource<Boolean>?>()
+    val toggleResult: LiveData<Resource<Boolean>?> = _toggleResult
 
     fun loadFavorites() {
         _favorites.value = Resource.Loading()

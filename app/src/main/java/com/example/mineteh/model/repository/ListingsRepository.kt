@@ -211,6 +211,34 @@ class ListingsRepository(private val context: Context) {
             Resource.Error(e.message ?: "Failed to load favorites")
         }
     }
+
+    /**
+     * Create a new listing (placeholder - to be implemented)
+     */
+    suspend fun createListing(
+        title: String,
+        description: String,
+        price: Double,
+        location: String,
+        category: String,
+        listingType: String,
+        endTime: String?,
+        minBidIncrement: Double?,
+        imageUris: List<android.net.Uri>
+    ): Resource<Listing> = withContext(Dispatchers.IO) {
+        try {
+            Log.d(tag, "Creating listing: $title")
+            // TODO: Implement listing creation with Supabase
+            // This will require:
+            // 1. Upload images to Supabase Storage
+            // 2. Insert listing into listings table
+            // 3. Insert image paths into listing_images table
+            Resource.Error("Listing creation not yet implemented with Supabase")
+        } catch (e: Exception) {
+            Log.e(tag, "Error creating listing", e)
+            Resource.Error(e.message ?: "Failed to create listing")
+        }
+    }
 }
 
 // Supabase response models
