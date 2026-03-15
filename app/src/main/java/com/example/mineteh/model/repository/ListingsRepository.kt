@@ -472,16 +472,26 @@ class ListingsRepository(private val context: Context) {
     }
 
     /**
-     * Upload image to the existing hosting server
+     * Upload image to the existing hosting server using base64 encoding
      */
     private suspend fun uploadImageToServer(imageBytes: ByteArray, fileName: String): Boolean = withContext(Dispatchers.IO) {
         try {
-            Log.d(tag, "Starting upload for: $fileName (${imageBytes.size} bytes)")
+            Log.d(tag, "Starting base64 upload for: $fileName (${imageBytes.size} bytes)")
             
-            // Create multipart request to upload image
+            // Convert image to base64
+            val base64Image = android.util.Base64.encodeToString(imageBytes, android.util.Base64.DEFAULT)
+            Log.d(tag, "Converted to base64, length: ${base64Image.length}")
+            
+            // Create JSON payload
+            val jsonPayload = """
+                {
+                    "filename": "$fileName",
+                    "image_data": "$base64Image"
+                }
+            """.trimIndent()
+            
+            // Create connection
             val url = "https://mineteh.infinityfree.me/home/upload_image.php"
-            
-            val boundary = "----WebKitFormBoundary" + System.currentTimeMillis()
             val connection = java.net.URL(url).openConnection() as java.net.HttpURLConnection
             
             connection.apply {
@@ -489,31 +499,19 @@ class ListingsRepository(private val context: Context) {
                 doOutput = true
                 doInput = true
                 useCaches = false
-                connectTimeout = 30000 // 30 seconds
-                readTimeout = 30000 // 30 seconds
-                setRequestProperty("Content-Type", "multipart/form-data; boundary=$boundary")
+                connectTimeout = 30000
+                readTimeout = 30000
+                setRequestProperty("Content-Type", "application/json")
                 setRequestProperty("User-Agent", "MineTeh-Android-App")
             }
             
-            Log.d(tag, "Connection configured, starting upload...")
+            Log.d(tag, "Sending JSON payload...")
             
+            // Send JSON data
             val outputStream = connection.outputStream
-            val writer = java.io.PrintWriter(java.io.OutputStreamWriter(outputStream, "UTF-8"), true)
-            
-            // Add file part
-            writer.append("--$boundary").append("\r\n")
-            writer.append("Content-Disposition: form-data; name=\"image\"; filename=\"$fileName\"").append("\r\n")
-            writer.append("Content-Type: image/jpeg").append("\r\n")
-            writer.append("\r\n")
-            writer.flush()
-            
-            // Write image bytes
-            outputStream.write(imageBytes)
+            outputStream.write(jsonPayload.toByteArray(Charsets.UTF_8))
             outputStream.flush()
-            
-            writer.append("\r\n")
-            writer.append("--$boundary--").append("\r\n")
-            writer.close()
+            outputStream.close()
             
             Log.d(tag, "Data sent, getting response...")
             
