@@ -43,6 +43,24 @@ class ListingsRepository(private val context: Context) {
         try {
             Log.d(tag, "Fetching listings from Supabase: category=$category, type=$type, search=$search")
             
+            // Check network connectivity first
+            val hasNetwork = com.example.mineteh.utils.NetworkUtils.isNetworkAvailable(context)
+            Log.d(tag, "Network available: $hasNetwork")
+            
+            if (!hasNetwork) {
+                Log.e(tag, "No network connection available")
+                return@withContext Resource.Error("No internet connection. Please check your network settings.")
+            }
+            
+            // Test DNS resolution
+            val canResolve = com.example.mineteh.utils.NetworkUtils.testSupabaseConnection()
+            Log.d(tag, "Can resolve Supabase hostname: $canResolve")
+            
+            if (!canResolve) {
+                Log.e(tag, "Cannot resolve Supabase hostname")
+                return@withContext Resource.Error("Cannot connect to server. Please check your internet connection.")
+            }
+            
             // Build query with filters
             val response = supabase.from("listings").select(
                 columns = Columns.raw("""
@@ -53,7 +71,7 @@ class ListingsRepository(private val context: Context) {
                         first_name,
                         last_name
                     ),
-                    listing_images (
+                    listing_images!listing_id (
                         image_path
                     )
                 """)
@@ -96,7 +114,17 @@ class ListingsRepository(private val context: Context) {
             
         } catch (e: Exception) {
             Log.e(tag, "Error fetching listings from Supabase", e)
-            Resource.Error(e.message ?: "Failed to load listings")
+            
+            // Provide more specific error messages
+            val errorMessage = when {
+                e.message?.contains("Unable to resolve host") == true -> 
+                    "Cannot connect to server. Please check your internet connection and try again."
+                e.message?.contains("timeout") == true -> 
+                    "Connection timeout. Please check your internet connection."
+                else -> e.message ?: "Failed to load listings"
+            }
+            
+            Resource.Error(errorMessage)
         }
     }
 
@@ -116,7 +144,7 @@ class ListingsRepository(private val context: Context) {
                         first_name,
                         last_name
                     ),
-                    listing_images (
+                    listing_images!listing_id (
                         image_path
                     ),
                     bids (
@@ -205,7 +233,7 @@ class ListingsRepository(private val context: Context) {
                             first_name,
                             last_name
                         ),
-                        listing_images (
+                        listing_images!listing_id (
                             image_path
                         )
                     )
@@ -282,12 +310,9 @@ data class SupabaseListingResponse(
         val highestBidAmount = bids?.maxOfOrNull { it.bid_amount }
         
         android.util.Log.d("SupabaseListingResponse", "Converting listing: id=$id, title=$title")
+        android.util.Log.d("SupabaseListingResponse", "Raw listing_images object: $listing_images")
         android.util.Log.d("SupabaseListingResponse", "Images from DB: $imagesList")
         android.util.Log.d("SupabaseListingResponse", "First image: $firstImage")
-        
-        // TEMPORARY: Use placeholder if no images
-        val finalImage = firstImage ?: "placeholder.jpg"
-        val finalImages = if (imagesList.isEmpty()) listOf("placeholder.jpg") else imagesList
         
         return Listing(
             id = id,
@@ -298,8 +323,8 @@ data class SupabaseListingResponse(
             category = category ?: "",
             listingType = listing_type,
             status = status,
-            _image = finalImage,
-            _images = finalImages,
+            _image = firstImage ?: "",
+            _images = imagesList,
             seller = accounts?.let {
                 Seller(
                     accountId = it.account_id,
