@@ -16,6 +16,11 @@ import kotlinx.serialization.json.Json
 class ListingsRepository(private val context: Context) {
     private val tag = "ListingsRepository"
     private val supabase = SupabaseClient.client
+    
+    init {
+        Log.d(tag, "=== SUPABASE REPOSITORY INITIALIZED (NEW CODE) ===")
+        Log.d(tag, "Using direct Supabase connection, NOT PHP API")
+    }
 
     /**
      * Get all listings from Supabase with optional filters
