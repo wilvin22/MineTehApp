@@ -6,6 +6,8 @@ import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.storage.Storage
 import io.github.jan.supabase.storage.storage
+import io.github.jan.supabase.serializer.KotlinXSerializer
+import kotlinx.serialization.json.Json
 
 /**
  * Singleton object for managing the Supabase client instance.
@@ -35,10 +37,12 @@ object SupabaseClient {
             install(Storage)
             
             // Configure default serializer to ignore unknown keys
-            defaultSerializer = kotlinx.serialization.json.Json {
-                ignoreUnknownKeys = true
-                isLenient = true
-            }
+            defaultSerializer = KotlinXSerializer(
+                Json {
+                    ignoreUnknownKeys = true
+                    isLenient = true
+                }
+            )
         }
         
         android.util.Log.d("SupabaseClient", "=== SUPABASE CLIENT INITIALIZED SUCCESSFULLY ===")
