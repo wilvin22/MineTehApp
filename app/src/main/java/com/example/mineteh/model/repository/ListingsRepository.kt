@@ -270,6 +270,7 @@ data class SupabaseListingResponse(
     val end_time: String? = null,
     val created_at: String,
     val accounts: SupabaseAccount? = null,
+    @kotlinx.serialization.SerialName("listing_images")
     val listing_images: List<SupabaseListingImage>? = null,
     val bids: List<SupabaseBid>? = null
 ) {
