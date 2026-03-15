@@ -272,6 +272,10 @@ data class SupabaseListingResponse(
         // Calculate highest bid
         val highestBidAmount = bids?.maxOfOrNull { it.bid_amount }
         
+        android.util.Log.d("SupabaseListingResponse", "Converting listing: id=$id, title=$title")
+        android.util.Log.d("SupabaseListingResponse", "Images from DB: $imagesList")
+        android.util.Log.d("SupabaseListingResponse", "First image: $firstImage")
+        
         return Listing(
             id = id,
             title = title,
