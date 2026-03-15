@@ -399,7 +399,7 @@ class ListingsRepository(private val context: Context) {
                         eq("seller_id", userId)
                         eq("title", title)
                     }
-                    order("created_at", ascending = false)
+                    order("created_at", order = io.github.jan.supabase.postgrest.query.Order.DESCENDING)
                     limit(1)
                 }
                 .decodeSingle<SupabaseListingResponse>()
