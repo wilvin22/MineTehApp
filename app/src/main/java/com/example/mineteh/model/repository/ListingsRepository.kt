@@ -10,7 +10,6 @@ import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.postgrest.query.filter.FilterOperator
 import io.github.jan.supabase.postgrest.query.filter.PostgrestFilterBuilder
-import io.github.jan.supabase.storage.storage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
@@ -269,13 +268,12 @@ class ListingsRepository(private val context: Context) {
     }
 
     /**
-     * Create a new listing with actual image upload to Supabase Storage
+     * Create a new listing with actual image upload to the existing hosting server
      * 
      * This method now:
-     * 1. Uploads actual image files to Supabase Storage
-     * 2. Gets public URLs for the uploaded images
-     * 3. Stores the public URLs in the database
-     * 4. Images should display correctly in the app
+     * 1. Uploads actual image files to https://mineteh.infinityfree.me/home/uploads/
+     * 2. Stores the successful upload paths in the database
+     * 3. Images will display correctly in the app and website
      */
     suspend fun createListing(
         title: String,
@@ -302,7 +300,7 @@ class ListingsRepository(private val context: Context) {
             
             Log.d(tag, "Creating listing for user ID: $userId")
             
-            // Step 1: Upload images to Supabase Storage
+            // Step 1: Upload images to the existing hosting server
             val uploadedImagePaths = mutableListOf<String>()
             
             for ((index, uri) in imageUris.withIndex()) {
@@ -321,35 +319,24 @@ class ListingsRepository(private val context: Context) {
                     
                     // Generate unique filename
                     val timestamp = System.currentTimeMillis()
-                    val fileName = "listing_${timestamp}_${index}.jpg"
-                    val storagePath = "listings/$fileName"
+                    val fileName = "img_${timestamp}_${index}.jpg"
                     
-                    Log.d(tag, "Uploading to Supabase Storage: $storagePath")
+                    Log.d(tag, "Uploading image to server: $fileName")
                     
                     try {
-                        // Upload to Supabase Storage
-                        SupabaseClient.storage
-                            .from("images")
-                            .upload(storagePath, imageBytes, upsert = false)
+                        // Upload to the existing hosting server
+                        val uploadSuccess = uploadImageToServer(imageBytes, fileName)
                         
-                        // Get the public URL
-                        val publicUrl = SupabaseClient.storage
-                            .from("images")
-                            .publicUrl(storagePath)
+                        if (uploadSuccess) {
+                            val imagePath = "uploads/$fileName"
+                            uploadedImagePaths.add(imagePath)
+                            Log.d(tag, "Upload successful! Path: $imagePath")
+                        } else {
+                            Log.w(tag, "Failed to upload image: $fileName")
+                        }
                         
-                        Log.d(tag, "Upload successful! Public URL: $publicUrl")
-                        
-                        // Store the public URL (not just the path)
-                        uploadedImagePaths.add(publicUrl)
-                        
-                    } catch (storageError: Exception) {
-                        Log.w(tag, "Supabase Storage upload failed: ${storageError.message}")
-                        
-                        // Fallback: Create a placeholder path for now
-                        // This allows listing creation to continue even if storage fails
-                        val fallbackPath = "uploads/listing_${timestamp}_${index}.jpg"
-                        uploadedImagePaths.add(fallbackPath)
-                        Log.d(tag, "Added fallback path: $fallbackPath")
+                    } catch (uploadError: Exception) {
+                        Log.w(tag, "Image upload failed: ${uploadError.message}")
                     }
                     
                 } catch (e: Exception) {
@@ -359,11 +346,11 @@ class ListingsRepository(private val context: Context) {
             }
             
             if (uploadedImagePaths.isEmpty()) {
-                Log.e(tag, "No images were processed successfully")
-                return@withContext Resource.Error("Failed to process images. Please try again.")
+                Log.e(tag, "No images were uploaded successfully")
+                return@withContext Resource.Error("Failed to upload images. Please try again.")
             }
             
-            Log.d(tag, "Successfully processed ${uploadedImagePaths.size} images (some may be fallback paths)")
+            Log.d(tag, "Successfully uploaded ${uploadedImagePaths.size} images")
             
             // Step 2: Insert listing into database
             @Serializable
@@ -461,7 +448,7 @@ class ListingsRepository(private val context: Context) {
             
             val listing = completeListing.toListing()
             
-            Log.d(tag, "Successfully created listing: ${listing.title} with ${listing.images?.size} images")
+            Log.d(tag, "Successfully created listing: ${listing.title} with ${listing.images?.size ?: 0} images")
             Resource.Success(listing)
             
         } catch (e: Exception) {
@@ -479,6 +466,76 @@ class ListingsRepository(private val context: Context) {
             }
             
             Resource.Error(errorMessage)
+        }
+    }
+
+    /**
+     * Upload image to the existing hosting server
+     */
+    private suspend fun uploadImageToServer(imageBytes: ByteArray, fileName: String): Boolean = withContext(Dispatchers.IO) {
+        try {
+            Log.d(tag, "Uploading image to server: $fileName")
+            
+            // Create multipart request to upload image
+            val url = "https://mineteh.infinityfree.me/home/upload_image.php"
+            
+            val boundary = "----WebKitFormBoundary" + System.currentTimeMillis()
+            val connection = java.net.URL(url).openConnection() as java.net.HttpURLConnection
+            
+            connection.apply {
+                requestMethod = "POST"
+                doOutput = true
+                doInput = true
+                useCaches = false
+                setRequestProperty("Content-Type", "multipart/form-data; boundary=$boundary")
+                setRequestProperty("User-Agent", "MineTeh-Android-App")
+            }
+            
+            val outputStream = connection.outputStream
+            val writer = java.io.PrintWriter(java.io.OutputStreamWriter(outputStream, "UTF-8"), true)
+            
+            // Add file part
+            writer.append("--$boundary").append("\r\n")
+            writer.append("Content-Disposition: form-data; name=\"image\"; filename=\"$fileName\"").append("\r\n")
+            writer.append("Content-Type: image/jpeg").append("\r\n")
+            writer.append("\r\n")
+            writer.flush()
+            
+            // Write image bytes
+            outputStream.write(imageBytes)
+            outputStream.flush()
+            
+            writer.append("\r\n")
+            writer.append("--$boundary--").append("\r\n")
+            writer.close()
+            
+            // Get response
+            val responseCode = connection.responseCode
+            Log.d(tag, "Upload response code: $responseCode")
+            
+            if (responseCode == 200) {
+                val response = connection.inputStream.bufferedReader().readText()
+                Log.d(tag, "Upload response: $response")
+                
+                // Check if response indicates success
+                val success = response.contains("success", ignoreCase = true) || 
+                             response.contains("uploaded", ignoreCase = true)
+                
+                if (success) {
+                    Log.d(tag, "Image uploaded successfully: $fileName")
+                    return@withContext true
+                } else {
+                    Log.e(tag, "Server rejected upload: $response")
+                    return@withContext false
+                }
+            } else {
+                Log.e(tag, "Upload failed with response code: $responseCode")
+                return@withContext false
+            }
+            
+        } catch (e: Exception) {
+            Log.e(tag, "Error uploading image: $fileName", e)
+            return@withContext false
         }
     }
 }
