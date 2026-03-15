@@ -91,4 +91,13 @@
     <!-- Additional utility colors -->
     <color name="success">#4CAF50</color>
     <color name="warning">#FF9800</color>
+    
+    <!-- New colors for layouts -->
+    <color name="primary_color">#6750A4</color>
+    <color name="background_light">#F5F5F5</color>
+    <color name="text_tertiary">#9E9E9E</color>
+    <color name="border_light">#E0E0E0</color>
+    <color name="success_color">#4CAF50</color>
+    <color name="error_color">#F44336</color>
+    <color name="warning_color">#FF9800</color>
 </resources>
