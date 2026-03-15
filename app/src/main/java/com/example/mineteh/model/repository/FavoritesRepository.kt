@@ -1,41 +1,33 @@
 package com.example.mineteh.model.repository
 
 import android.content.Context
-import com.example.mineteh.models.FavoriteData
-import com.example.mineteh.models.FavoriteRequest
+import android.util.Log
 import com.example.mineteh.models.Listing
-import com.example.mineteh.network.ApiClient
 import com.example.mineteh.utils.Resource
 import com.example.mineteh.utils.TokenManager
-import com.google.gson.JsonSyntaxException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class FavoritesRepository(context: Context) {
-    private val apiService = ApiClient.apiService
+class FavoritesRepository(private val context: Context) {
     private val tokenManager = TokenManager(context)
+    private val listingsRepository = ListingsRepository(context)
+    private val tag = "FavoritesRepository"
 
-    suspend fun toggleFavorite(listingId: Int): Resource<FavoriteData> {
+    suspend fun toggleFavorite(listingId: Int): Resource<Boolean> {
         return withContext(Dispatchers.IO) {
             try {
                 if (!tokenManager.isLoggedIn()) {
                     return@withContext Resource.Error("Not authenticated")
                 }
                 
-                val request = FavoriteRequest(listing_id = listingId)
-                val response = apiService.toggleFavorite(request)
-
-                if (response.isSuccessful) {
-                    val body = response.body()
-                    if (body?.success == true && body.data != null) {
-                        Resource.Success(body.data)
-                    } else {
-                        Resource.Error(body?.message ?: "Failed to toggle favorite")
-                    }
-                } else {
-                    Resource.Error("HTTP ${response.code()}: ${response.message()}")
+                val userId = tokenManager.getUserId()
+                if (userId == -1) {
+                    return@withContext Resource.Error("User ID not found")
                 }
+                
+                listingsRepository.toggleFavorite(listingId, userId)
             } catch (e: Exception) {
+                Log.e(tag, "Error toggling favorite", e)
                 Resource.Error(e.message ?: "Network error")
             }
         }
@@ -48,23 +40,14 @@ class FavoritesRepository(context: Context) {
                     return@withContext Resource.Error("Not authenticated")
                 }
                 
-                val response = apiService.getFavorites()
-
-                if (response.isSuccessful) {
-                    val body = response.body()
-                    if (body?.success == true && body.data != null) {
-                        Resource.Success(body.data)
-                    } else {
-                        Resource.Error(body?.message ?: "Failed to load favorites")
-                    }
-                } else {
-                    Resource.Error("HTTP ${response.code()}: ${response.message()}")
+                val userId = tokenManager.getUserId()
+                if (userId == -1) {
+                    return@withContext Resource.Error("User ID not found")
                 }
-            } catch (e: JsonSyntaxException) {
-                Resource.Error("Data format error: The server returned an unexpected response.")
-            } catch (e: IllegalStateException) {
-                Resource.Error("Parsing error: The server response could not be processed.")
+                
+                listingsRepository.getFavorites(userId)
             } catch (e: Exception) {
+                Log.e(tag, "Error fetching favorites", e)
                 Resource.Error(e.message ?: "Network error")
             }
         }

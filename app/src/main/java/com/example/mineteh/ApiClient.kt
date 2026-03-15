@@ -31,16 +31,34 @@ object ApiClient {
         val request = if (token != null) {
             chain.request().newBuilder()
                 .addHeader("Authorization", "Bearer $token")
+                .addHeader("User-Agent", "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36")
                 .build()
         } else {
-            chain.request()
+            chain.request().newBuilder()
+                .addHeader("User-Agent", "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36")
+                .build()
         }
         chain.proceed(request)
+    }
+
+    private val cookieJar = object : okhttp3.CookieJar {
+        private val cookieStore = mutableMapOf<String, List<okhttp3.Cookie>>()
+
+        override fun saveFromResponse(url: okhttp3.HttpUrl, cookies: List<okhttp3.Cookie>) {
+            cookieStore[url.host] = cookies
+        }
+
+        override fun loadForRequest(url: okhttp3.HttpUrl): List<okhttp3.Cookie> {
+            return cookieStore[url.host] ?: emptyList()
+        }
     }
 
     private val okHttpClient = OkHttpClient.Builder()
         .addInterceptor(loggingInterceptor)
         .addInterceptor(authInterceptor)
+        .cookieJar(cookieJar)
+        .followRedirects(true)
+        .followSslRedirects(true)
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
         .writeTimeout(30, TimeUnit.SECONDS)
