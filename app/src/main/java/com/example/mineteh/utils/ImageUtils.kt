@@ -5,19 +5,37 @@ object ImageUtils {
     
     /**
      * Convert image path to full URL
-     * Handles both relative paths and full URLs
+     * Handles relative paths, full URLs, and base64 data URIs
      */
     fun getFullImageUrl(imagePath: String?): String? {
         if (imagePath.isNullOrBlank()) return null
         
-        return when {
+        val result = when {
+            // Base64 data URI - return as-is for direct display
+            imagePath.startsWith("data:image/") -> {
+                android.util.Log.d("ImageUtils", "Handling data URI (${imagePath.length} chars)")
+                imagePath
+            }
             // Already a full URL
-            imagePath.startsWith("http://") || imagePath.startsWith("https://") -> imagePath
+            imagePath.startsWith("http://") || imagePath.startsWith("https://") -> {
+                android.util.Log.d("ImageUtils", "Handling full URL: $imagePath")
+                imagePath
+            }
             // Path already contains "uploads/" - use it directly with base domain
-            imagePath.startsWith("uploads/") -> "https://mineteh.infinityfree.me/home/$imagePath"
+            imagePath.startsWith("uploads/") -> {
+                val url = "https://mineteh.infinityfree.me/home/$imagePath"
+                android.util.Log.d("ImageUtils", "Handling uploads path: $imagePath -> $url")
+                url
+            }
             // Relative path - prepend base URL
-            else -> BASE_IMAGE_URL + imagePath.removePrefix("/")
+            else -> {
+                val url = BASE_IMAGE_URL + imagePath.removePrefix("/")
+                android.util.Log.d("ImageUtils", "Handling relative path: $imagePath -> $url")
+                url
+            }
         }
+        
+        return result
     }
     
     /**

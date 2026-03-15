@@ -268,12 +268,13 @@ class ListingsRepository(private val context: Context) {
     }
 
     /**
-     * Create a new listing with actual image upload to the existing hosting server
+     * Create a new listing with base64 image storage for immediate display
      * 
      * This method now:
-     * 1. Uploads actual image files to https://mineteh.infinityfree.me/home/uploads/
-     * 2. Stores the successful upload paths in the database
-     * 3. Images will display correctly in the app and website
+     * 1. Converts images to base64 data URIs
+     * 2. Stores them directly in the database
+     * 3. Images will display immediately in the app
+     * 4. Bypasses all upload restrictions
      */
     suspend fun createListing(
         title: String,
@@ -300,12 +301,12 @@ class ListingsRepository(private val context: Context) {
             
             Log.d(tag, "Creating listing for user ID: $userId")
             
-            // Step 1: Upload images to the existing hosting server
-            val uploadedImagePaths = mutableListOf<String>()
+            // Step 1: Convert images to base64 data URIs
+            val imageDataUris = mutableListOf<String>()
             
             for ((index, uri) in imageUris.withIndex()) {
                 try {
-                    Log.d(tag, "Uploading image ${index + 1}/${imageUris.size}: $uri")
+                    Log.d(tag, "Converting image ${index + 1}/${imageUris.size} to base64: $uri")
                     
                     // Read image data from URI
                     val inputStream = context.contentResolver.openInputStream(uri)
@@ -317,29 +318,12 @@ class ListingsRepository(private val context: Context) {
                         continue
                     }
                     
-                    // Generate unique filename
-                    val timestamp = System.currentTimeMillis()
-                    val fileName = "img_${timestamp}_${index}.jpg"
+                    // Convert to base64 data URI
+                    val base64Image = android.util.Base64.encodeToString(imageBytes, android.util.Base64.NO_WRAP)
+                    val dataUri = "data:image/jpeg;base64,$base64Image"
+                    imageDataUris.add(dataUri)
                     
-                    Log.d(tag, "About to upload image: $fileName (${imageBytes.size} bytes)")
-                    
-                    try {
-                        // Upload to the existing hosting server
-                        Log.d(tag, "Calling uploadImageToServer for: $fileName")
-                        val uploadSuccess = uploadImageToServer(imageBytes, fileName)
-                        Log.d(tag, "uploadImageToServer returned: $uploadSuccess for $fileName")
-                        
-                        if (uploadSuccess) {
-                            val imagePath = "uploads/$fileName"
-                            uploadedImagePaths.add(imagePath)
-                            Log.d(tag, "Upload successful! Path: $imagePath")
-                        } else {
-                            Log.e(tag, "Failed to upload image: $fileName")
-                        }
-                        
-                    } catch (uploadError: Exception) {
-                        Log.e(tag, "Image upload exception for $fileName", uploadError)
-                    }
+                    Log.d(tag, "Converted image ${index + 1} to data URI (${dataUri.length} chars)")
                     
                 } catch (e: Exception) {
                     Log.e(tag, "Failed to process image ${index + 1}: $uri", e)
@@ -347,12 +331,12 @@ class ListingsRepository(private val context: Context) {
                 }
             }
             
-            if (uploadedImagePaths.isEmpty()) {
-                Log.e(tag, "No images were uploaded successfully")
-                return@withContext Resource.Error("Failed to upload images. Please try again.")
+            if (imageDataUris.isEmpty()) {
+                Log.e(tag, "No images were processed successfully")
+                return@withContext Resource.Error("Failed to process images. Please try again.")
             }
             
-            Log.d(tag, "Successfully uploaded ${uploadedImagePaths.size} images")
+            Log.d(tag, "Successfully converted ${imageDataUris.size} images to base64")
             
             // Step 2: Insert listing into database
             @Serializable
@@ -409,10 +393,10 @@ class ListingsRepository(private val context: Context) {
                 val image_path: String
             )
             
-            val imageRecords = uploadedImagePaths.map { imagePath ->
+            val imageRecords = imageDataUris.map { dataUri ->
                 ImageInsert(
                     listing_id = insertedListing.id,
-                    image_path = imagePath
+                    image_path = dataUri
                 )
             }
             
@@ -468,86 +452,6 @@ class ListingsRepository(private val context: Context) {
             }
             
             Resource.Error(errorMessage)
-        }
-    }
-
-    /**
-     * Upload image to the existing hosting server using base64 encoding
-     */
-    private suspend fun uploadImageToServer(imageBytes: ByteArray, fileName: String): Boolean = withContext(Dispatchers.IO) {
-        try {
-            Log.d(tag, "Starting base64 upload for: $fileName (${imageBytes.size} bytes)")
-            
-            // Convert image to base64
-            val base64Image = android.util.Base64.encodeToString(imageBytes, android.util.Base64.DEFAULT)
-            Log.d(tag, "Converted to base64, length: ${base64Image.length}")
-            
-            // Create JSON payload
-            val jsonPayload = """
-                {
-                    "filename": "$fileName",
-                    "image_data": "$base64Image"
-                }
-            """.trimIndent()
-            
-            // Create connection
-            val url = "https://mineteh.infinityfree.me/home/upload_image.php"
-            val connection = java.net.URL(url).openConnection() as java.net.HttpURLConnection
-            
-            connection.apply {
-                requestMethod = "POST"
-                doOutput = true
-                doInput = true
-                useCaches = false
-                connectTimeout = 30000
-                readTimeout = 30000
-                setRequestProperty("Content-Type", "application/json")
-                setRequestProperty("User-Agent", "MineTeh-Android-App")
-            }
-            
-            Log.d(tag, "Sending JSON payload...")
-            
-            // Send JSON data
-            val outputStream = connection.outputStream
-            outputStream.write(jsonPayload.toByteArray(Charsets.UTF_8))
-            outputStream.flush()
-            outputStream.close()
-            
-            Log.d(tag, "Data sent, getting response...")
-            
-            // Get response
-            val responseCode = connection.responseCode
-            Log.d(tag, "Upload response code: $responseCode")
-            
-            if (responseCode == 200) {
-                val response = connection.inputStream.bufferedReader().readText()
-                Log.d(tag, "Upload response: $response")
-                
-                // Check if response indicates success
-                val success = response.contains("success", ignoreCase = true) && 
-                             response.contains("true", ignoreCase = true)
-                
-                if (success) {
-                    Log.d(tag, "Image uploaded successfully: $fileName")
-                    return@withContext true
-                } else {
-                    Log.e(tag, "Server rejected upload: $response")
-                    return@withContext false
-                }
-            } else {
-                // Try to read error response
-                val errorResponse = try {
-                    connection.errorStream?.bufferedReader()?.readText() ?: "No error details"
-                } catch (e: Exception) {
-                    "Could not read error response: ${e.message}"
-                }
-                Log.e(tag, "Upload failed with response code: $responseCode, error: $errorResponse")
-                return@withContext false
-            }
-            
-        } catch (e: Exception) {
-            Log.e(tag, "Error uploading image: $fileName", e)
-            return@withContext false
         }
     }
 }
