@@ -53,7 +53,7 @@ class ListingsRepository(private val context: Context) {
                         first_name,
                         last_name
                     ),
-                    listing_images:listing_images!listing_id (
+                    listing_images (
                         image_path
                     )
                 """)
@@ -116,10 +116,10 @@ class ListingsRepository(private val context: Context) {
                         first_name,
                         last_name
                     ),
-                    listing_images:listing_images!listing_id (
+                    listing_images (
                         image_path
                     ),
-                    bids:bids!listing_id (
+                    bids (
                         bid_amount,
                         bid_time,
                         accounts!user_id (
@@ -205,7 +205,7 @@ class ListingsRepository(private val context: Context) {
                             first_name,
                             last_name
                         ),
-                        listing_images:listing_images!listing_id (
+                        listing_images (
                             image_path
                         )
                     )
@@ -284,6 +284,10 @@ data class SupabaseListingResponse(
         android.util.Log.d("SupabaseListingResponse", "Images from DB: $imagesList")
         android.util.Log.d("SupabaseListingResponse", "First image: $firstImage")
         
+        // TEMPORARY: Use placeholder if no images
+        val finalImage = firstImage ?: "placeholder.jpg"
+        val finalImages = if (imagesList.isEmpty()) listOf("placeholder.jpg") else imagesList
+        
         return Listing(
             id = id,
             title = title,
@@ -293,8 +297,8 @@ data class SupabaseListingResponse(
             category = category ?: "",
             listingType = listing_type,
             status = status,
-            _image = firstImage,
-            _images = imagesList,
+            _image = finalImage,
+            _images = finalImages,
             seller = accounts?.let {
                 Seller(
                     accountId = it.account_id,
