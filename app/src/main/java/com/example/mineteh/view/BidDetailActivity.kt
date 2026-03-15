@@ -133,7 +133,7 @@ class BidDetailActivity : AppCompatActivity() {
                 }
                 is Resource.Success -> {
                     binding.detailHeart.isEnabled = true
-                    val isFavorited = resource.data?.isFavorited ?: false
+                    val isFavorited = resource.data ?: false
                     updateHeartIcon(isFavorited)
                     Toast.makeText(
                         this,
