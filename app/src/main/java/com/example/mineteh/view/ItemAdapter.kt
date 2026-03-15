@@ -55,15 +55,8 @@ class ItemAdapter(
         android.util.Log.d("ItemAdapter", "  - images list size: ${item.images?.size}")
         android.util.Log.d("ItemAdapter", "  - images list: ${item.images}")
 
-        // Use public website URL for images
-        val websiteUrl = "https://mineteh.infinityfree.me/home"
-        
-        val imageUrl = item.image?.let { imagePath ->
-            when {
-                imagePath.startsWith("http") -> imagePath
-                else -> "$websiteUrl/$imagePath"
-            }
-        }
+        // Use ImageUtils for proper URL construction
+        val imageUrl = com.example.mineteh.utils.ImageUtils.getFullImageUrl(item.image)
 
         android.util.Log.d("ItemAdapter", "  - Final image URL: $imageUrl")
 
@@ -77,14 +70,18 @@ class ItemAdapter(
             )
         }
 
+        // Clear the ImageView first to prevent showing old images
+        holder.itemImage.setImageDrawable(null)
+        
+        Glide.with(holder.itemView.context)
+            .clear(holder.itemImage)
+
         Glide.with(holder.itemView.context)
             .load(glideUrl)
             .placeholder(R.drawable.dummyphoto)
             .error(R.drawable.dummyphoto)
             .transform(com.bumptech.glide.load.resource.bitmap.CenterCrop(), 
                        com.bumptech.glide.load.resource.bitmap.RoundedCorners(48))
-            .skipMemoryCache(true)
-            .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.NONE)
             .addListener(object : com.bumptech.glide.request.RequestListener<android.graphics.drawable.Drawable> {
                 override fun onLoadFailed(
                     e: com.bumptech.glide.load.engine.GlideException?,

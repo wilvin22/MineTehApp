@@ -76,17 +76,11 @@ class ListingsAdapter(
                 auctionTimerLayout.visibility = View.GONE
             }
 
-            // Load image using Glide with public website URL
+            // Load image using Glide with ImageUtils
             android.util.Log.d("ListingsAdapter", "Binding listing ${listing.id}: ${listing.title}")
             android.util.Log.d("ListingsAdapter", "  - image field: ${listing.image}")
             
-            val websiteUrl = "https://mineteh.infinityfree.me/home"
-            val imageUrl = listing.image?.let { imagePath ->
-                when {
-                    imagePath.startsWith("http") -> imagePath
-                    else -> "$websiteUrl/$imagePath"
-                }
-            }
+            val imageUrl = com.example.mineteh.utils.ImageUtils.getFullImageUrl(listing.image)
             
             android.util.Log.d("ListingsAdapter", "  - Final image URL: $imageUrl")
             
@@ -100,14 +94,18 @@ class ListingsAdapter(
                 )
             }
             
+            // Clear the ImageView first to prevent showing old images
+            itemImage.setImageDrawable(null)
+            
+            Glide.with(itemView.context)
+                .clear(itemImage)
+            
             Glide.with(itemView.context)
                 .load(glideUrl)
                 .placeholder(R.drawable.dummyphoto)
                 .error(R.drawable.dummyphoto)
                 .transform(com.bumptech.glide.load.resource.bitmap.CenterCrop(), 
                            com.bumptech.glide.load.resource.bitmap.RoundedCorners(48))
-                .skipMemoryCache(true)
-                .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.NONE)
                 .addListener(object : com.bumptech.glide.request.RequestListener<android.graphics.drawable.Drawable> {
                     override fun onLoadFailed(
                         e: com.bumptech.glide.load.engine.GlideException?,
