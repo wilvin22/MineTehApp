@@ -34,8 +34,13 @@ class ListingsRepository(private val context: Context) {
             
             val response = apiService.getListings(category, type, search, limit, offset)
             
+            Log.d(tag, "Response code: ${response.code()}")
+            Log.d(tag, "Response message: ${response.message()}")
+            
             if (response.isSuccessful) {
                 val body = response.body()
+                Log.d(tag, "Response body: $body")
+                
                 if (body?.success == true && body.data != null) {
                     Log.d(tag, "Successfully fetched ${body.data.size} listings")
                     Resource.Success(body.data)
@@ -45,10 +50,17 @@ class ListingsRepository(private val context: Context) {
                     Resource.Error(errorMsg)
                 }
             } else {
+                // Log the error body
+                val errorBody = response.errorBody()?.string()
+                Log.e(tag, "Error response body: $errorBody")
+                
                 val errorMsg = "HTTP ${response.code()}: ${response.message()}"
                 Log.e(tag, "API request failed: $errorMsg")
                 Resource.Error(errorMsg)
             }
+        } catch (e: com.google.gson.JsonSyntaxException) {
+            Log.e(tag, "JSON parsing error - API might be returning HTML or plain text", e)
+            Resource.Error("Server error: Invalid response format. Please check your internet connection.")
         } catch (e: Exception) {
             Log.e(tag, "Error fetching listings", e)
             Resource.Error(e.message ?: "Failed to load listings")
