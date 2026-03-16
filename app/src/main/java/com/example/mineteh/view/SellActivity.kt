@@ -4,14 +4,17 @@ import android.app.DatePickerDialog
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mineteh.R
+import com.example.mineteh.utils.Categories
 import com.example.mineteh.view.PhotoPreviewAdapter
 import com.example.mineteh.utils.Resource
 import com.example.mineteh.viewmodel.CreateListingViewModel
@@ -50,6 +53,14 @@ class SellActivity : AppCompatActivity() {
                     Toast.LENGTH_SHORT
                 ).show()
             }
+        }
+    }
+
+    // Camera launcher
+    private val takePicture = registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+        if (success) {
+            // Handle camera result - you'll need to implement camera URI handling
+            Toast.makeText(this, "Photo captured successfully", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -132,12 +143,8 @@ class SellActivity : AppCompatActivity() {
     }
 
     private fun setupCategoryDropdown() {
-        val categories = arrayOf(
-            "Electronics", "Vehicles", "Property", "Fashion",
-            "Home & Garden", "Sports", "Books", "Other"
-        )
         categoryDropdown.setAdapter(
-            ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, categories)
+            ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, Categories.ALL_CATEGORIES)
         )
     }
 
@@ -173,7 +180,7 @@ class SellActivity : AppCompatActivity() {
             if (currentPhotoCount >= MAX_PHOTOS) {
                 Toast.makeText(this, "Maximum $MAX_PHOTOS photos allowed", Toast.LENGTH_SHORT).show()
             } else {
-                pickImages.launch("image/*")
+                showPhotoSelectionDialog()
             }
         }
 
@@ -329,6 +336,26 @@ class SellActivity : AppCompatActivity() {
         calendar.add(Calendar.DAY_OF_MONTH, 1)
         datePickerDialog.datePicker.minDate = calendar.timeInMillis
         datePickerDialog.show()
+    }
+
+    private fun showPhotoSelectionDialog() {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_photo_selection, null)
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .create()
+
+        dialogView.findViewById<LinearLayout>(R.id.btnCamera).setOnClickListener {
+            dialog.dismiss()
+            // For now, just show gallery picker - camera implementation would need more setup
+            pickImages.launch("image/*")
+        }
+
+        dialogView.findViewById<LinearLayout>(R.id.btnGallery).setOnClickListener {
+            dialog.dismiss()
+            pickImages.launch("image/*")
+        }
+
+        dialog.show()
     }
 
     private fun setupNavigation() {

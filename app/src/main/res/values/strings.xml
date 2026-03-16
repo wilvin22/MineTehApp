@@ -1,3 +1,148 @@
 <resources>
     <string name="app_name">MineTeh</string>
+    
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_bid">Bid</string>
+    <string name="nav_sell">Sell Items</string>
+    <string name="nav_inbox">Inbox</string>
+    <string name="nav_profile">Me</string>
+    
+    <!-- Common Actions -->
+    <string name="search">Search</string>
+    <string name="filter">Filter</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
+    <string name="back">Back</string>
+    <string name="next">Next</string>
+    <string name="done">Done</string>
+    <string name="retry">Retry</string>
+    
+    <!-- Authentication -->
+    <string name="login">Login</string>
+    <string name="signup">Sign Up</string>
+    <string name="logout">Logout</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="remember_me">Remember me</string>
+    
+    <!-- Listings -->
+    <string name="create_listing">Create Listing</string>
+    <string name="edit_listing">Edit Listing</string>
+    <string name="listing_title">Title</string>
+    <string name="listing_description">Description</string>
+    <string name="listing_price">Price</string>
+    <string name="listing_location">Location</string>
+    <string name="listing_category">Category</string>
+    <string name="listing_type">Listing Type</string>
+    <string name="fixed_price">Fixed Price</string>
+    <string name="auction">Auction</string>
+    <string name="publish_listing">Publish Listing</string>
+    
+    <!-- Bidding -->
+    <string name="place_bid">Place Bid</string>
+    <string name="current_bid">Current Bid</string>
+    <string name="highest_bid">Highest Bid</string>
+    <string name="bid_amount">Bid Amount</string>
+    <string name="auction_ends">Auction Ends</string>
+    <string name="auction_ended">Auction Ended</string>
+    <string name="time_remaining">Time Remaining</string>
+    
+    <!-- Shopping -->
+    <string name="add_to_cart">Add to Cart</string>
+    <string name="buy_now">Buy Now</string>
+    <string name="cart">Cart</string>
+    <string name="checkout">Checkout</string>
+    <string name="total">Total</string>
+    <string name="subtotal">Subtotal</string>
+    <string name="shipping">Shipping</string>
+    <string name="tax">Tax</string>
+    
+    <!-- Profile -->
+    <string name="profile">Profile</string>
+    <string name="account_settings">Account Settings</string>
+    <string name="my_listings">My Listings</string>
+    <string name="my_orders">My Orders</string>
+    <string name="saved_items">Saved Items</string>
+    <string name="notifications">Notifications</string>
+    
+    <!-- Messages -->
+    <string name="loading">Loading...</string>
+    <string name="no_results">No results found</string>
+    <string name="error_occurred">An error occurred</string>
+    <string name="network_error">Network error. Please check your connection.</string>
+    <string name="success">Success</string>
+    
+    <!-- Validation -->
+    <string name="field_required">This field is required</string>
+    <string name="invalid_email">Please enter a valid email</string>
+    <string name="password_too_short">Password must be at least 6 characters</string>
+    <string name="passwords_dont_match">Passwords don\'t match</string>
+    
+    <!-- Currency -->
+    <string name="currency_symbol">₱</string>
+    <string name="price_format">₱%.2f</string>
+    
+    <!-- Time -->
+    <string name="days">days</string>
+    <string name="hours">hours</string>
+    <string name="minutes">minutes</string>
+    <string name="seconds">seconds</string>
+    
+    <!-- Categories -->
+    <string name="all_categories">All</string>
+    <string name="electronics">Electronics</string>
+    <string name="vehicles">Vehicles</string>
+    <string name="properties">Properties</string>
+    <string name="fashion">Fashion</string>
+    <string name="home_garden">Home &amp; Garden</string>
+    <string name="sports">Sports</string>
+    <string name="books">Books</string>
+    <string name="other">Other</string>
+    
+    <!-- Photo Upload -->
+    <string name="add_photos">Add Photos</string>
+    <string name="photo_limit">You can upload up to 5 photos</string>
+    <string name="select_photo">Select Photo</string>
+    <string name="take_photo">Take Photo</string>
+    <string name="remove_photo">Remove Photo</string>
+    
+    <!-- Contact -->
+    <string name="contact_seller">Contact Seller</string>
+    <string name="send_message">Send Message</string>
+    <string name="message">Message</string>
+    
+    <!-- Favorites -->
+    <string name="add_to_favorites">Add to Favorites</string>
+    <string name="remove_from_favorites">Remove from Favorites</string>
+    <string name="added_to_favorites">Added to favorites</string>
+    <string name="removed_from_favorites">Removed from favorites</string>
+    
+    <!-- Auction Duration -->
+    <string name="auction_duration">Auction Duration</string>
+    <string name="one_day">1 day</string>
+    <string name="three_days">3 days</string>
+    <string name="seven_days">7 days</string>
+    <string name="custom_duration">Custom</string>
+    <string name="select_end_date">Select end date</string>
+    
+    <!-- Hints -->
+    <string name="search_hint">Search for items, auctions...</string>
+    <string name="title_hint">Enter a clear, descriptive title</string>
+    <string name="description_hint">Include condition, features, and any defects</string>
+    <string name="price_hint">Enter price (e.g., 5000)</string>
+    <string name="location_hint">City, province or coordinates</string>
+    <string name="bid_hint">Enter your bid amount</string>
+    
+    <!-- Status -->
+    <string name="active">Active</string>
+    <string name="inactive">Inactive</string>
+    <string name="sold">Sold</string>
+    <string name="pending">Pending</string>
+    <string name="live">LIVE</string>
+    <string name="ended">ENDED</string>
 </resources>

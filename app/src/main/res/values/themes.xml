@@ -1,9 +1,120 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.MineTeh" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <!-- Primary colors -->
+        <item name="colorPrimary">@color/purple</item>
+        <item name="colorPrimaryVariant">@color/purple_dark</item>
+        <item name="colorOnPrimary">@color/white</item>
+        
+        <!-- Secondary colors -->
+        <item name="colorSecondary">@color/md_tertiary</item>
+        <item name="colorSecondaryVariant">@color/md_tertiary_light</item>
+        <item name="colorOnSecondary">@color/white</item>
+        
+        <!-- Background colors -->
+        <item name="android:colorBackground">@color/white</item>
+        <item name="colorSurface">@color/white</item>
+        <item name="colorOnBackground">@color/text_primary</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        
+        <!-- Error colors -->
+        <item name="colorError">@color/md_error</item>
+        <item name="colorOnError">@color/white</item>
+        
+        <!-- Status bar -->
+        <item name="android:statusBarColor">@color/purple_dark</item>
+        <item name="android:windowLightStatusBar">false</item>
+        
+        <!-- Navigation bar -->
+        <item name="android:navigationBarColor">@color/purple</item>
+        
+        <!-- Text colors -->
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
     </style>
 
     <style name="Theme.MineTeh" parent="Base.Theme.MineTeh" />
+    
+    <!-- Custom Button Styles -->
+    <style name="MineTeh.Button" parent="Widget.MaterialComponents.Button">
+        <item name="backgroundTint">@color/purple</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="cornerRadius">8dp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    
+    <style name="MineTeh.Button.Outlined" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="strokeColor">@color/purple</item>
+        <item name="android:textColor">@color/purple</item>
+        <item name="cornerRadius">8dp</item>
+        <item name="strokeWidth">2dp</item>
+    </style>
+    
+    <!-- Custom TextInputLayout Styles -->
+    <style name="MineTeh.TextInputLayout" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="boxStrokeColor">@color/purple</item>
+        <item name="hintTextColor">@color/purple</item>
+        <item name="boxCornerRadiusTopStart">8dp</item>
+        <item name="boxCornerRadiusTopEnd">8dp</item>
+        <item name="boxCornerRadiusBottomStart">8dp</item>
+        <item name="boxCornerRadiusBottomEnd">8dp</item>
+    </style>
+    
+    <!-- Custom Card Styles -->
+    <style name="MineTeh.Card" parent="Widget.MaterialComponents.CardView">
+        <item name="cardCornerRadius">12dp</item>
+        <item name="cardElevation">2dp</item>
+        <item name="cardBackgroundColor">@color/white</item>
+    </style>
+    
+    <!-- Custom Toolbar Style -->
+    <style name="MineTeh.Toolbar" parent="Widget.MaterialComponents.Toolbar.Primary">
+        <item name="android:background">@color/purple</item>
+        <item name="titleTextColor">@color/white</item>
+        <item name="navigationIconTint">@color/white</item>
+        <item name="android:elevation">4dp</item>
+    </style>
+    
+    <!-- Bottom Navigation Style -->
+    <style name="MineTeh.BottomNavigation" parent="Widget.MaterialComponents.BottomNavigationView">
+        <item name="android:background">@color/purple</item>
+        <item name="itemIconTint">@color/white</item>
+        <item name="itemTextColor">@color/white</item>
+        <item name="elevation">8dp</item>
+    </style>
+    
+    <!-- Dialog Styles -->
+    <style name="MineTeh.Dialog" parent="ThemeOverlay.MaterialComponents.Dialog">
+        <item name="colorPrimary">@color/purple</item>
+        <item name="android:windowBackground">@drawable/card_background</item>
+    </style>
+    
+    <!-- Chip Styles -->
+    <style name="MineTeh.Chip" parent="Widget.MaterialComponents.Chip.Choice">
+        <item name="chipBackgroundColor">@color/purple_light</item>
+        <item name="android:textColor">@color/purple</item>
+        <item name="chipStrokeColor">@color/purple</item>
+        <item name="chipStrokeWidth">1dp</item>
+    </style>
+    
+    <!-- Progress Bar Style -->
+    <style name="MineTeh.ProgressBar" parent="Widget.AppCompat.ProgressBar">
+        <item name="android:indeterminateTint">@color/purple</item>
+    </style>
+    
+    <!-- Switch Style -->
+    <style name="MineTeh.Switch" parent="Widget.MaterialComponents.CompoundButton.Switch">
+        <item name="thumbTint">@color/purple</item>
+        <item name="trackTint">@color/purple_light</item>
+    </style>
+    
+    <!-- RadioButton Style -->
+    <style name="MineTeh.RadioButton" parent="Widget.MaterialComponents.CompoundButton.RadioButton">
+        <item name="buttonTint">@color/purple</item>
+    </style>
+    
+    <!-- CheckBox Style -->
+    <style name="MineTeh.CheckBox" parent="Widget.MaterialComponents.CompoundButton.CheckBox">
+        <item name="buttonTint">@color/purple</item>
+    </style>
 </resources>
