@@ -7,6 +7,9 @@
     <string name="nav_sell">Sell Items</string>
     <string name="nav_inbox">Inbox</string>
     <string name="nav_profile">Me</string>
+    <string name="nav_search">Search</string>
+    <string name="nav_auctions">Auctions</string>
+    <string name="nav_cart">Cart</string>
     
     <!-- Common Actions -->
     <string name="search">Search</string>
