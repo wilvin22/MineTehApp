@@ -12,8 +12,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mineteh.R
+import com.example.mineteh.utils.Categories
 import com.example.mineteh.utils.Resource
 import com.example.mineteh.viewmodel.HomeViewModel
+import com.google.android.material.button.MaterialButton
 
 class HomeActivity : AppCompatActivity() {
 
@@ -22,6 +24,10 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var progressBar: ProgressBar
     
     private val viewModel: HomeViewModel by viewModels()
+    
+    // Category buttons
+    private lateinit var categoryButtons: List<MaterialButton>
+    private var selectedCategory: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,6 +58,9 @@ class HomeActivity : AppCompatActivity() {
             findViewById<ImageView>(R.id.btnCart).setOnClickListener {
                 startActivity(Intent(this, CartActivity::class.java))
             }
+
+            // Search functionality
+            setupSearchFunctionality()
 
             // Bottom Navigation
             findViewById<LinearLayout>(R.id.nav_home).setOnClickListener {
@@ -116,12 +125,102 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun setupCategoryFilters() {
-        // Simple filter implementation - can be expanded
-        // Assuming the buttons in homepage.xml have IDs or we can find them in the layout
-        // For now, it just demonstrates how to trigger the ViewModel
+        // Initialize category buttons
+        categoryButtons = listOf(
+            findViewById(R.id.btnCategoryAll),
+            findViewById(R.id.btnCategoryElectronics),
+            findViewById(R.id.btnCategoryVehicles),
+            findViewById(R.id.btnCategoryProperty),
+            findViewById(R.id.btnCategoryFashion),
+            findViewById(R.id.btnCategoryHomeGarden),
+            findViewById(R.id.btnCategorySports),
+            findViewById(R.id.btnCategoryBooks),
+            findViewById(R.id.btnCategoryOther)
+        )
+
+        // Set up click listeners for each category button with visual feedback
+        findViewById<MaterialButton>(R.id.btnCategoryAll).setOnClickListener { button ->
+            selectCategory(null, button as MaterialButton)
+        }
         
-        // Example: If you had IDs for category buttons
-        // findViewById<Button>(R.id.btn_all).setOnClickListener { viewModel.fetchListings() }
-        // findViewById<Button>(R.id.btn_items).setOnClickListener { viewModel.fetchListings(category = "Items") }
+        findViewById<MaterialButton>(R.id.btnCategoryElectronics).setOnClickListener { button ->
+            selectCategory("Electronics", button as MaterialButton)
+        }
+        
+        findViewById<MaterialButton>(R.id.btnCategoryVehicles).setOnClickListener { button ->
+            selectCategory("Vehicles", button as MaterialButton)
+        }
+        
+        findViewById<MaterialButton>(R.id.btnCategoryProperty).setOnClickListener { button ->
+            selectCategory("Property", button as MaterialButton)
+        }
+        
+        findViewById<MaterialButton>(R.id.btnCategoryFashion).setOnClickListener { button ->
+            selectCategory("Fashion", button as MaterialButton)
+        }
+        
+        findViewById<MaterialButton>(R.id.btnCategoryHomeGarden).setOnClickListener { button ->
+            selectCategory("Home & Garden", button as MaterialButton)
+        }
+        
+        findViewById<MaterialButton>(R.id.btnCategorySports).setOnClickListener { button ->
+            selectCategory("Sports", button as MaterialButton)
+        }
+        
+        findViewById<MaterialButton>(R.id.btnCategoryBooks).setOnClickListener { button ->
+            selectCategory("Books", button as MaterialButton)
+        }
+        
+        findViewById<MaterialButton>(R.id.btnCategoryOther).setOnClickListener { button ->
+            selectCategory("Other", button as MaterialButton)
+        }
+        
+        // Set "All" as initially selected
+        selectCategory(null, findViewById(R.id.btnCategoryAll))
+    }
+
+    private fun selectCategory(category: String?, selectedButton: MaterialButton) {
+        selectedCategory = category
+        
+        // Update button styles
+        categoryButtons.forEach { button ->
+            if (button == selectedButton) {
+                // Selected style - filled button
+                button.setBackgroundColor(getColor(R.color.purple))
+                button.setTextColor(getColor(R.color.white))
+                button.strokeWidth = 0
+            } else {
+                // Unselected style - outlined button
+                button.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+                button.setTextColor(getColor(R.color.purple))
+                button.strokeWidth = 4 // 2dp in pixels
+                button.strokeColor = getColorStateList(R.color.purple)
+            }
+        }
+        
+        // Show loading while fetching
+        progressBar.visibility = View.VISIBLE
+        
+        // Fetch listings for selected category
+        viewModel.fetchListings(category = Categories.getCategoryForApi(category))
+    }
+
+    private fun setupSearchFunctionality() {
+        // Find the search EditText in the header
+        val searchEditText = findViewById<android.widget.EditText>(R.id.searchEditText) 
+            ?: return // If search field doesn't exist in layout, skip
+
+        searchEditText.setOnClickListener {
+            // Open search activity when search field is clicked
+            startActivity(Intent(this, SearchActivity::class.java))
+        }
+
+        searchEditText.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) {
+                // Open search activity when search field gains focus
+                startActivity(Intent(this, SearchActivity::class.java))
+                searchEditText.clearFocus()
+            }
+        }
     }
 }

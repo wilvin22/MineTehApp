@@ -166,12 +166,14 @@
                 android:scrollbars="none">
 
                 <LinearLayout
+                    android:id="@+id/categoryButtonsContainer"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
                     <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnCategoryAll"
                         style="@style/Widget.MaterialComponents.Button"
                         android:layout_width="wrap_content"
                         android:layout_height="42dp"
@@ -184,19 +186,21 @@
                         app:backgroundTint="@color/purple" />
 
                     <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnCategoryElectronics"
                         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                         android:layout_width="wrap_content"
                         android:layout_height="42dp"
                         android:layout_marginStart="10dp"
                         android:paddingStart="20dp"
                         android:paddingEnd="20dp"
-                        android:text="Items"
+                        android:text="Electronics"
                         android:textColor="@color/purple"
                         android:textSize="13sp"
                         app:strokeColor="@color/purple"
                         app:strokeWidth="2dp" />
 
                     <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnCategoryVehicles"
                         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                         android:layout_width="wrap_content"
                         android:layout_height="42dp"
@@ -211,13 +215,84 @@
                         app:strokeWidth="2dp" />
 
                     <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnCategoryProperty"
                         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                         android:layout_width="wrap_content"
                         android:layout_height="42dp"
                         android:layout_marginStart="10dp"
                         android:paddingStart="20dp"
                         android:paddingEnd="20dp"
-                        android:text="Properties"
+                        android:text="Property"
+                        android:textColor="@color/purple"
+                        android:textSize="13sp"
+                        app:strokeColor="@color/purple"
+                        app:strokeWidth="2dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnCategoryFashion"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="42dp"
+                        android:layout_marginStart="10dp"
+                        android:paddingStart="20dp"
+                        android:paddingEnd="20dp"
+                        android:text="Fashion"
+                        android:textColor="@color/purple"
+                        android:textSize="13sp"
+                        app:strokeColor="@color/purple"
+                        app:strokeWidth="2dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnCategoryHomeGarden"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="42dp"
+                        android:layout_marginStart="10dp"
+                        android:paddingStart="20dp"
+                        android:paddingEnd="20dp"
+                        android:text="Home &amp; Garden"
+                        android:textColor="@color/purple"
+                        android:textSize="13sp"
+                        app:strokeColor="@color/purple"
+                        app:strokeWidth="2dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnCategorySports"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="42dp"
+                        android:layout_marginStart="10dp"
+                        android:paddingStart="20dp"
+                        android:paddingEnd="20dp"
+                        android:text="Sports"
+                        android:textColor="@color/purple"
+                        android:textSize="13sp"
+                        app:strokeColor="@color/purple"
+                        app:strokeWidth="2dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnCategoryBooks"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="42dp"
+                        android:layout_marginStart="10dp"
+                        android:paddingStart="20dp"
+                        android:paddingEnd="20dp"
+                        android:text="Books"
+                        android:textColor="@color/purple"
+                        android:textSize="13sp"
+                        app:strokeColor="@color/purple"
+                        app:strokeWidth="2dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnCategoryOther"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="42dp"
+                        android:layout_marginStart="10dp"
+                        android:paddingStart="20dp"
+                        android:paddingEnd="20dp"
+                        android:text="Other"
                         android:textColor="@color/purple"
                         android:textSize="13sp"
                         app:strokeColor="@color/purple"
