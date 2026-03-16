@@ -3,6 +3,7 @@ package com.example.mineteh.repository
 import com.example.mineteh.models.ApiResponse
 import com.example.mineteh.models.Listing
 import com.example.mineteh.network.ApiResponseDeserializer
+import com.example.mineteh.network.ListingDeserializer
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
@@ -30,10 +31,12 @@ class PreservationPropertyTest {
     private fun createGsonWithCurrentDeserializer(): Gson {
         val listType: Type = object : TypeToken<ApiResponse<List<Listing>>>() {}.type
         return GsonBuilder()
+            .setLenient()
             .registerTypeAdapter(
                 listType,
                 ApiResponseDeserializer()
             )
+            .registerTypeAdapter(Listing::class.java, ListingDeserializer())
             .create()
     }
 
