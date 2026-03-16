@@ -2,31 +2,26 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/nav_home"
-        android:icon="@drawable/ic_home"
-        android:title="@string/nav_home"
-        android:contentDescription="@string/nav_home" />
+        android:icon="@drawable/home"
+        android:title="@string/nav_home" />
     
     <item
         android:id="@+id/nav_search"
-        android:icon="@drawable/ic_search"
-        android:title="@string/nav_search"
-        android:contentDescription="@string/nav_search" />
+        android:icon="@drawable/search"
+        android:title="@string/nav_search" />
     
     <item
         android:id="@+id/nav_auctions"
-        android:icon="@drawable/ic_gavel"
-        android:title="@string/nav_auctions"
-        android:contentDescription="@string/nav_auctions" />
+        android:icon="@drawable/bid"
+        android:title="@string/nav_auctions" />
     
     <item
         android:id="@+id/nav_cart"
-        android:icon="@drawable/ic_shopping_cart"
-        android:title="@string/nav_cart"
-        android:contentDescription="@string/nav_cart" />
+        android:icon="@drawable/cart"
+        android:title="@string/nav_cart" />
     
     <item
         android:id="@+id/nav_profile"
-        android:icon="@drawable/ic_person"
-        android:title="@string/nav_profile"
-        android:contentDescription="@string/nav_profile" />
+        android:icon="@drawable/me"
+        android:title="@string/nav_profile" />
 </menu>
