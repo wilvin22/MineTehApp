@@ -137,7 +137,6 @@ class SearchActivity : AppCompatActivity(), FilterBottomSheetFragment.FilterList
             type = currentFilters.listingType
         )
     }
-    }
 
     private fun performSearch() {
         val query = searchInput.text.toString().trim()
