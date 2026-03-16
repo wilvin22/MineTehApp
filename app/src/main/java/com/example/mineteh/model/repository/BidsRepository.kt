@@ -17,7 +17,7 @@ import kotlinx.serialization.json.jsonPrimitive
 class BidsRepository(private val context: Context) {
     private val tokenManager = TokenManager(context)
     private val listingsRepository = ListingsRepository(context)
-    private val apiService = com.example.mineteh.network.ApiClient.apiService
+    private val apiService by lazy { com.example.mineteh.network.ApiClient.apiService }
     
     companion object {
         private const val TAG = "BidsRepository"
@@ -35,7 +35,7 @@ class BidsRepository(private val context: Context) {
             }
             
             val userId = tokenManager.getUserId()
-            if (userId == null) {
+            if (userId == -1) {
                 Log.w(TAG, "User ID not found")
                 return@withContext Resource.Error("User ID not found")
             }

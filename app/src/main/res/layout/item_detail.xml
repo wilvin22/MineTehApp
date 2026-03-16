@@ -234,7 +234,7 @@
                                 android:layout_width="20dp"
                                 android:layout_height="20dp"
                                 android:src="@android:drawable/ic_lock_idle_alarm"
-                                android:tint="@color/text_secondary"
+                                app:tint="@color/text_secondary"
                                 android:contentDescription="Timer icon" />
 
                             <TextView
