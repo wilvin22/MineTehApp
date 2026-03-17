@@ -9,7 +9,7 @@ import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.mineteh.R
-import com.example.mineteh.Resource
+import com.example.mineteh.utils.Resource
 import com.example.mineteh.utils.TokenManager
 import com.example.mineteh.model.repository.NotificationsRepository
 import com.example.mineteh.view.NotificationsActivity
@@ -142,7 +142,7 @@ class NotificationService {
                 if (listingId != null) {
                     // Create deep link intent
                     Intent(Intent.ACTION_VIEW).apply {
-                        data = android.net.Uri.parse("mineteh://listing/$listingId")
+                        this.data = android.net.Uri.parse("mineteh://listing/$listingId")
                         flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                         setClass(context, ItemDetailActivity::class.java)
                         putExtra("listing_id", listingId)
@@ -155,7 +155,7 @@ class NotificationService {
                 if (messageId != null && senderId != null) {
                     // Create deep link intent for chat
                     Intent(Intent.ACTION_VIEW).apply {
-                        data = android.net.Uri.parse("mineteh://chat/$messageId?sender_id=$senderId")
+                        this.data = android.net.Uri.parse("mineteh://chat/$messageId?sender_id=$senderId")
                         flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                         setClass(context, ChatActivity::class.java)
                         putExtra("message_id", messageId)
@@ -168,7 +168,7 @@ class NotificationService {
             "ITEM_SOLD", "PAYMENT_RECEIVED" -> {
                 // Create deep link intent for orders
                 Intent(Intent.ACTION_VIEW).apply {
-                    data = android.net.Uri.parse("mineteh://orders" + if (listingId != null) "/$listingId" else "")
+                    this.data = android.net.Uri.parse("mineteh://orders" + if (listingId != null) "/$listingId" else "")
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                     setClass(context, MyOrdersActivity::class.java)
                     if (listingId != null) {

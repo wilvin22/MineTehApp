@@ -4,6 +4,28 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 object TimeUtils {
+    fun getRelativeTimeString(date: Date): String {
+        val diffMs = System.currentTimeMillis() - date.time
+        if (diffMs < 0) return "Just now"
+        
+        val seconds = diffMs / 1000
+        val minutes = seconds / 60
+        val hours = minutes / 60
+        val days = hours / 24
+        
+        return when {
+            seconds < 10 -> "Just now"
+            seconds < 60 -> "${seconds}s ago"
+            minutes < 60 -> "${minutes}m ago"
+            hours < 24 -> "${hours}h ago"
+            days < 7 -> "${days}d ago"
+            else -> {
+                val format = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+                format.format(date)
+            }
+        }
+    }
+
     fun formatCountdown(millisRemaining: Long): String {
         if (millisRemaining <= 0) return "Ended"
         

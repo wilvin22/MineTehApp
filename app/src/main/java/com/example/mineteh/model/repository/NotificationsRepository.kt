@@ -2,8 +2,8 @@ package com.example.mineteh.model.repository
 
 import android.content.Context
 import android.util.Log
-import com.example.mineteh.Resource
-import com.example.mineteh.TokenManager
+import com.example.mineteh.utils.Resource
+import com.example.mineteh.utils.TokenManager
 import com.example.mineteh.model.Notification
 import com.example.mineteh.model.NotificationPreferences
 import com.example.mineteh.model.SupabaseNotificationResponse
@@ -11,13 +11,9 @@ import com.example.mineteh.model.SupabaseNotificationPreferencesResponse
 import com.example.mineteh.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
-import io.github.jan.supabase.realtime.PostgresAction
-import io.github.jan.supabase.realtime.createChannel
-import io.github.jan.supabase.realtime.postgresChanges
-import io.github.jan.supabase.realtime.realtime
+import io.github.jan.supabase.postgrest.query.Order
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.serialization.json.Json
 
 class NotificationsRepository(private val context: Context) {
     private val supabase = SupabaseClient.client
@@ -38,7 +34,7 @@ class NotificationsRepository(private val context: Context) {
                     filter {
                         eq("user_id", userId)
                     }
-                    order("created_at", ascending = false)
+                    order("created_at", order = Order.DESCENDING)
                     limit(limit.toLong())
                     range(offset.toLong(), (offset + limit - 1).toLong())
                 }
@@ -59,9 +55,9 @@ class NotificationsRepository(private val context: Context) {
             Log.d(TAG, "Marking notification as read: $notificationId")
             
             supabase.from("notifications")
-                .update(
-                    update = mapOf("is_read" to true)
-                ) {
+                .update({
+                    set("is_read", true)
+                }) {
                     filter {
                         eq("id", notificationId)
                     }
@@ -81,9 +77,9 @@ class NotificationsRepository(private val context: Context) {
             Log.d(TAG, "Marking all notifications as read for user: $userId")
             
             supabase.from("notifications")
-                .update(
-                    update = mapOf("is_read" to true)
-                ) {
+                .update({
+                    set("is_read", true)
+                }) {
                     filter {
                         eq("user_id", userId)
                         eq("is_read", false)
@@ -134,7 +130,7 @@ class NotificationsRepository(private val context: Context) {
                         eq("user_id", userId)
                         eq("type", type)
                     }
-                    order("created_at", ascending = false)
+                    order("created_at", order = Order.DESCENDING)
                     limit(limit.toLong())
                 }
                 .decodeList<SupabaseNotificationResponse>()
@@ -161,7 +157,7 @@ class NotificationsRepository(private val context: Context) {
                         eq("user_id", userId)
                         eq("is_read", isRead)
                     }
-                    order("created_at", ascending = false)
+                    order("created_at", order = Order.DESCENDING)
                     limit(limit.toLong())
                 }
                 .decodeList<SupabaseNotificationResponse>()
@@ -221,7 +217,8 @@ class NotificationsRepository(private val context: Context) {
             )
             
             if (data != null) {
-                notificationData["data"] = Json.encodeToString(kotlinx.serialization.serializer(), data)
+                // Store structured payload; the "data" column should be json/jsonb in Supabase.
+                notificationData["data"] = data
             }
             
             val response = supabase.from("notifications")
@@ -261,7 +258,7 @@ class NotificationsRepository(private val context: Context) {
                             eq("is_read", isRead)
                         }
                     }
-                    order("created_at", ascending = false)
+                    order("created_at", order = Order.DESCENDING)
                     limit(limit.toLong())
                     range(offset.toLong(), (offset + limit - 1).toLong())
                 }
@@ -297,7 +294,7 @@ class NotificationsRepository(private val context: Context) {
                             ilike("message", "%$searchQuery%")
                         }
                     }
-                    order("created_at", ascending = false)
+                    order("created_at", order = Order.DESCENDING)
                     limit(limit.toLong())
                     range(offset.toLong(), (offset + limit - 1).toLong())
                 }
@@ -330,7 +327,7 @@ class NotificationsRepository(private val context: Context) {
                     filter {
                         eq("user_id", userId)
                     }
-                    order("created_at", ascending = false)
+                    order("created_at", order = Order.DESCENDING)
                     limit((pageSize + 1).toLong())
                     range(offset.toLong(), (offset + pageSize).toLong())
                 }
@@ -350,26 +347,7 @@ class NotificationsRepository(private val context: Context) {
 
     fun subscribeToNotifications(userId: Int): Flow<List<Notification>> = flow {
         try {
-            Log.d(TAG, "Starting real-time subscription for user: $userId")
-            
-            val channel = supabase.realtime.createChannel("notifications_$userId") {
-                postgresChanges {
-                    event = PostgresAction.INSERT
-                    schema = "public"
-                    table = "notifications"
-                    filter = "user_id=eq.$userId"
-                }
-                postgresChanges {
-                    event = PostgresAction.UPDATE
-                    schema = "public"
-                    table = "notifications"
-                    filter = "user_id=eq.$userId"
-                }
-            }
-            
-            channel.subscribe { status ->
-                Log.d(TAG, "Real-time subscription status: $status")
-            }
+            Log.d(TAG, "Realtime subscription disabled; doing initial load only for user: $userId")
             
             // Initial load
             val initialNotifications = getNotifications(userId)
@@ -439,7 +417,9 @@ class NotificationsRepository(private val context: Context) {
             )
             
             supabase.from("notification_preferences")
-                .update(updateData) {
+                .update({
+                    updateData.forEach { (key, value) -> set(key, value) }
+                }) {
                     filter {
                         eq("user_id", userId)
                     }
@@ -593,7 +573,7 @@ class NotificationsRepository(private val context: Context) {
                     filter {
                         eq("user_id", userId)
                     }
-                    order("created_at", ascending = false)
+                    order("created_at", order = Order.DESCENDING)
                 }
                 .decodeList<Map<String, Any>>()
             
@@ -613,7 +593,7 @@ class NotificationsRepository(private val context: Context) {
                         supabase.from("notifications")
                             .delete {
                                 filter {
-                                    `in`("id", batch)
+                                    isIn("id", batch)
                                 }
                             }
                         deletedCount += batch.size

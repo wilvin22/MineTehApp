@@ -10,7 +10,7 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.example.mineteh.R
-import com.example.mineteh.Resource
+import com.example.mineteh.utils.Resource
 import com.example.mineteh.model.NotificationPreferences
 import com.example.mineteh.viewmodel.NotificationsViewModel
 import com.google.android.material.switchmaterial.SwitchMaterial
