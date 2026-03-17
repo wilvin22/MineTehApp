@@ -296,7 +296,9 @@ class ListingsRepository(private val context: Context) {
 
             // Insert listing
             val listingRow = supabase.from("listings")
-                .insert(insertData)
+                .insert(insertData) {
+                    select()
+                }
                 .decodeSingle<SupabaseListing>()
 
             Log.d(tag, "Listing inserted with id=${listingRow.id}")
