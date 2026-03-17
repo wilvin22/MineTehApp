@@ -4,7 +4,6 @@ import android.content.Context
 import android.util.Log
 import com.example.mineteh.models.BidData
 import com.example.mineteh.models.BidRequest
-import com.example.mineteh.models.CreateListingRequest
 import com.example.mineteh.models.FavoriteRequest
 import com.example.mineteh.models.Listing
 import com.example.mineteh.models.Seller
@@ -18,9 +17,6 @@ import io.github.jan.supabase.postgrest.query.Order
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.toRequestBody
 
 // Supabase DTOs for listings
 @Serializable
@@ -257,45 +253,70 @@ class ListingsRepository(private val context: Context) {
         imageUris: List<android.net.Uri>
     ): Resource<Listing> = withContext(Dispatchers.IO) {
         try {
-            Log.d(tag, "Creating listing: $title with ${imageUris.size} images")
+            Log.d(tag, "Creating listing in Supabase: $title with ${imageUris.size} images")
 
-            val toBody = { s: String -> s.toRequestBody("text/plain".toMediaTypeOrNull()) }
+            val tokenManager = com.example.mineteh.utils.TokenManager(context)
+            val sellerId = tokenManager.getUserId()
+            if (sellerId == -1) return@withContext Resource.Error("Not authenticated")
 
-            val imageParts = imageUris.mapIndexedNotNull { i, uri ->
+            // Build insert map
+            val insertData = mutableMapOf<String, Any?>(
+                "title" to title,
+                "description" to description,
+                "price" to price,
+                "location" to location,
+                "category" to category,
+                "listing_type" to listingType,
+                "seller_id" to sellerId,
+                "status" to "active"
+            )
+            if (endTime != null) insertData["end_time"] = endTime
+            if (minBidIncrement != null) insertData["min_bid_increment"] = minBidIncrement
+
+            // Insert listing
+            val listingRow = supabase.from("listings")
+                .insert(insertData)
+                .decodeSingle<SupabaseListing>()
+
+            Log.d(tag, "Listing inserted with id=${listingRow.id}")
+
+            // Insert images as base64
+            imageUris.forEachIndexed { index, uri ->
                 try {
-                    val stream = context.contentResolver.openInputStream(uri) ?: return@mapIndexedNotNull null
+                    val stream = context.contentResolver.openInputStream(uri) ?: return@forEachIndexed
                     val bytes = stream.readBytes()
                     stream.close()
-                    val reqBody = bytes.toRequestBody("image/*".toMediaTypeOrNull())
-                    MultipartBody.Part.createFormData("images[]", "image_$i.jpg", reqBody)
+                    val base64 = android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
+                    val mimeType = context.contentResolver.getType(uri) ?: "image/jpeg"
+                    val dataUri = "data:$mimeType;base64,$base64"
+
+                    supabase.from("listing_images").insert(mapOf(
+                        "listing_id" to listingRow.id,
+                        "image_path" to dataUri,
+                        "image_id" to index
+                    ))
                 } catch (e: Exception) {
-                    Log.e(tag, "Failed to read image $i", e)
-                    null
+                    Log.e(tag, "Failed to upload image $index", e)
                 }
             }
 
-            val response = api.createListing(
-                title = toBody(title),
-                description = toBody(description),
-                price = toBody(price.toString()),
-                location = toBody(location),
-                category = toBody(category),
-                listingType = toBody(listingType),
-                endTime = endTime?.let { toBody(it) },
-                minBidIncrement = minBidIncrement?.let { toBody(it.toString()) },
-                images = imageParts
+            val listing = Listing(
+                id = listingRow.id,
+                title = listingRow.title,
+                description = listingRow.description,
+                price = listingRow.price,
+                location = listingRow.location,
+                category = listingRow.category,
+                listingType = listingRow.listing_type,
+                status = listingRow.status,
+                _image = null,
+                _images = null,
+                seller = null,
+                createdAt = listingRow.created_at,
+                endTime = listingRow.end_time
             )
 
-            if (response.isSuccessful) {
-                val body = response.body()
-                if (body?.success == true && body.data != null) {
-                    Resource.Success(body.data)
-                } else {
-                    Resource.Error(body?.message ?: "Failed to create listing")
-                }
-            } else {
-                Resource.Error("Server error: ${response.code()}")
-            }
+            Resource.Success(listing)
         } catch (e: Exception) {
             Log.e(tag, "Error creating listing", e)
             Resource.Error(e.message ?: "Failed to create listing")
