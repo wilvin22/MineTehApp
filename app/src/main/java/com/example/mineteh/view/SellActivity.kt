@@ -4,12 +4,10 @@ import android.app.DatePickerDialog
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -56,13 +54,7 @@ class SellActivity : AppCompatActivity() {
         }
     }
 
-    // Camera launcher
-    private val takePicture = registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
-        if (success) {
-            // Handle camera result - you'll need to implement camera URI handling
-            Toast.makeText(this, "Photo captured successfully", Toast.LENGTH_SHORT).show()
-        }
-    }
+    // Camera launcher removed - using gallery only
 
     // UI Components
     private lateinit var etTitle: TextInputEditText
@@ -180,7 +172,7 @@ class SellActivity : AppCompatActivity() {
             if (currentPhotoCount >= MAX_PHOTOS) {
                 Toast.makeText(this, "Maximum $MAX_PHOTOS photos allowed", Toast.LENGTH_SHORT).show()
             } else {
-                showPhotoSelectionDialog()
+                pickImages.launch("image/*")
             }
         }
 
@@ -336,26 +328,6 @@ class SellActivity : AppCompatActivity() {
         calendar.add(Calendar.DAY_OF_MONTH, 1)
         datePickerDialog.datePicker.minDate = calendar.timeInMillis
         datePickerDialog.show()
-    }
-
-    private fun showPhotoSelectionDialog() {
-        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_photo_selection, null)
-        val dialog = AlertDialog.Builder(this)
-            .setView(dialogView)
-            .create()
-
-        dialogView.findViewById<LinearLayout>(R.id.btnCamera).setOnClickListener {
-            dialog.dismiss()
-            // For now, just show gallery picker - camera implementation would need more setup
-            pickImages.launch("image/*")
-        }
-
-        dialogView.findViewById<LinearLayout>(R.id.btnGallery).setOnClickListener {
-            dialog.dismiss()
-            pickImages.launch("image/*")
-        }
-
-        dialog.show()
     }
 
     private fun setupNavigation() {
