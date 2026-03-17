@@ -5,6 +5,7 @@ import android.util.Log
 import com.example.mineteh.models.BidData
 import com.example.mineteh.models.BidRequest
 import com.example.mineteh.models.FavoriteRequest
+import com.example.mineteh.models.ImageUploadData
 import com.example.mineteh.models.Listing
 import com.example.mineteh.models.Seller
 import com.example.mineteh.models.Bid
@@ -17,6 +18,9 @@ import io.github.jan.supabase.postgrest.query.Order
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.toRequestBody
 
 // Supabase DTOs for listings
 @Serializable
@@ -303,16 +307,15 @@ class ListingsRepository(private val context: Context) {
 
             Log.d(tag, "Listing inserted with id=${listingRow.id}")
 
-            // Insert images as base64 (compressed)
+            // Upload images to server, store returned URLs in Supabase
             imageUris.forEachIndexed { index, uri ->
                 try {
                     val stream = context.contentResolver.openInputStream(uri) ?: return@forEachIndexed
                     val originalBitmap = android.graphics.BitmapFactory.decodeStream(stream)
                     stream.close()
-
                     if (originalBitmap == null) return@forEachIndexed
 
-                    // Scale down to max 800px on longest side
+                    // Scale down to max 800px
                     val maxSize = 800
                     val scale = minOf(maxSize.toFloat() / originalBitmap.width, maxSize.toFloat() / originalBitmap.height, 1f)
                     val scaledBitmap = if (scale < 1f) {
@@ -324,22 +327,28 @@ class ListingsRepository(private val context: Context) {
                         )
                     } else originalBitmap
 
-                    // Compress to JPEG at 70% quality
                     val outputStream = java.io.ByteArrayOutputStream()
-                    scaledBitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 70, outputStream)
+                    scaledBitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 80, outputStream)
                     val bytes = outputStream.toByteArray()
-
                     if (scaledBitmap != originalBitmap) scaledBitmap.recycle()
                     originalBitmap.recycle()
 
-                    val base64 = android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
-                    val dataUri = "data:image/jpeg;base64,$base64"
+                    val reqBody = bytes.toRequestBody("image/jpeg".toMediaTypeOrNull())
+                    val part = MultipartBody.Part.createFormData("image", "image_$index.jpg", reqBody)
 
-                    Log.d(tag, "Image $index compressed to ${bytes.size / 1024}KB")
+                    val uploadResponse = api.uploadImage(part)
+                    val imageUrl = if (uploadResponse.isSuccessful && uploadResponse.body()?.success == true) {
+                        uploadResponse.body()!!.data!!.url
+                    } else {
+                        Log.w(tag, "Image upload failed for index $index, skipping")
+                        return@forEachIndexed
+                    }
+
+                    Log.d(tag, "Image $index uploaded: $imageUrl")
 
                     supabase.from("listing_images").insert(InsertListingImage(
                         listing_id = listingRow.id,
-                        image_path = dataUri,
+                        image_path = imageUrl,
                         image_id = index
                     ))
                 } catch (e: Exception) {

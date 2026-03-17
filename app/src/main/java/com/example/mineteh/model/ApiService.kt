@@ -58,4 +58,11 @@ interface ApiService {
 
     @GET("actions/v1/favorites/index.php")
     suspend fun getFavorites(): Response<ApiResponse<List<Listing>>>
+
+    // Image upload
+    @Multipart
+    @POST("actions/v1/listings/upload-image.php")
+    suspend fun uploadImage(
+        @Part image: MultipartBody.Part
+    ): Response<ApiResponse<ImageUploadData>>
 }

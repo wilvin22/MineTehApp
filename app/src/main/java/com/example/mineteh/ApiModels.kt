@@ -138,3 +138,8 @@ data class FavoriteRequest(
     val listing_id: Int
 )
 
+data class ImageUploadData(
+    val url: String,
+    val filename: String
+)
+
