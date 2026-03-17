@@ -25,12 +25,12 @@ class MyOrdersActivity : AppCompatActivity() {
 
         setupViewPager()
         
-        // Handle deep link or intent data
+        // Handle deep link or intent data - navigate to the relevant tab
         val listingId = getListingIdFromIntent()
         if (listingId != -1) {
-            // TODO: Navigate to specific order or filter by listing ID
-            // For now, just log it
             android.util.Log.d("MyOrdersActivity", "Deep link with listing_id: $listingId")
+            // Switch to "All" tab so the user can see the order related to this listing
+            binding.viewPager.currentItem = 0
         }
     }
 

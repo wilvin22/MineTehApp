@@ -46,8 +46,13 @@ class Login : AppCompatActivity() {
 
         // Check if already logged in (Auto-login)
         if (tokenManager.isLoggedIn()) {
-            navigateToHome()
-            return
+            if (tokenManager.isTokenExpired()) {
+                tokenManager.clearAll()
+                Toast.makeText(this, "Your session has expired. Please log in again.", Toast.LENGTH_LONG).show()
+            } else {
+                navigateToHome()
+                return
+            }
         }
 
         // Load saved email if Remember Me was previously checked

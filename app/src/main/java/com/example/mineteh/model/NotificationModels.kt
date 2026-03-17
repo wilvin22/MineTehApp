@@ -9,10 +9,9 @@ data class Notification(
     val type: NotificationType,
     val title: String,
     val message: String,
-    val data: Map<String, String>? = null,
+    val link: String? = null,
     val isRead: Boolean = false,
-    val createdAt: String,
-    val updatedAt: String
+    val createdAt: String
 )
 
 enum class NotificationType {
@@ -24,7 +23,24 @@ enum class NotificationType {
     ITEM_SOLD,
     NEW_MESSAGE,
     LISTING_APPROVED,
-    PAYMENT_RECEIVED
+    PAYMENT_RECEIVED,
+    UNKNOWN;
+
+    companion object {
+        // Maps DB/website type strings to enum values safely
+        fun fromString(value: String): NotificationType = when (value.lowercase()) {
+            "bid_placed", "bid_received"    -> BID_PLACED
+            "bid_outbid", "outbid"          -> BID_OUTBID
+            "auction_ending"                -> AUCTION_ENDING
+            "auction_won"                   -> AUCTION_WON
+            "auction_lost"                  -> AUCTION_LOST
+            "item_sold", "listing_sold"     -> ITEM_SOLD
+            "new_message"                   -> NEW_MESSAGE
+            "listing_approved"              -> LISTING_APPROVED
+            "payment_received", "order_update" -> PAYMENT_RECEIVED
+            else                            -> UNKNOWN
+        }
+    }
 }
 
 @Serializable
@@ -34,25 +50,26 @@ data class SupabaseNotificationResponse(
     val type: String,
     val title: String,
     val message: String,
-    val data: Map<String, String>? = null,
+    val link: String? = null,
     val is_read: Boolean = false,
-    val created_at: String,
-    val updated_at: String
+    val created_at: String
 ) {
     fun toNotification(): Notification {
         return Notification(
             id = id,
             userId = user_id,
-            type = NotificationType.valueOf(type),
+            type = NotificationType.fromString(type),
             title = title,
             message = message,
-            data = data,
+            link = link,
             isRead = is_read,
-            createdAt = created_at,
-            updatedAt = updated_at
+            createdAt = created_at
         )
     }
 }
+
+@Serializable
+data class NotificationIdOnly(val id: Int)
 
 @Serializable
 data class NotificationPreferences(
@@ -69,9 +86,7 @@ data class NotificationPreferences(
     val paymentReceivedEnabled: Boolean = true,
     val pushNotificationsEnabled: Boolean = true,
     val quietHoursStart: String? = null,
-    val quietHoursEnd: String? = null,
-    val createdAt: String = "",
-    val updatedAt: String = ""
+    val quietHoursEnd: String? = null
 )
 
 @Serializable
@@ -89,9 +104,7 @@ data class SupabaseNotificationPreferencesResponse(
     val payment_received_enabled: Boolean = true,
     val push_notifications_enabled: Boolean = true,
     val quiet_hours_start: String? = null,
-    val quiet_hours_end: String? = null,
-    val created_at: String,
-    val updated_at: String
+    val quiet_hours_end: String? = null
 ) {
     fun toNotificationPreferences(): NotificationPreferences {
         return NotificationPreferences(
@@ -108,9 +121,7 @@ data class SupabaseNotificationPreferencesResponse(
             paymentReceivedEnabled = payment_received_enabled,
             pushNotificationsEnabled = push_notifications_enabled,
             quietHoursStart = quiet_hours_start,
-            quietHoursEnd = quiet_hours_end,
-            createdAt = created_at,
-            updatedAt = updated_at
+            quietHoursEnd = quiet_hours_end
         )
     }
 }
@@ -124,35 +135,3 @@ data class NotificationContext(
     val amount: Double? = null,
     val additionalData: Map<String, String> = emptyMap()
 )
-
-data class NotificationTemplate(
-    val type: NotificationType,
-    val titleTemplate: String,
-    val messageTemplate: String
-) {
-    fun generateNotification(context: NotificationContext, templateData: Map<String, String>): Notification {
-        val title = titleTemplate.replace(templateData)
-        val message = messageTemplate.replace(templateData)
-        
-        return Notification(
-            id = 0, // Will be set by database
-            userId = context.userId,
-            type = type,
-            title = title,
-            message = message,
-            data = context.additionalData,
-            isRead = false,
-            createdAt = "", // Will be set by database
-            updatedAt = ""
-        )
-    }
-}
-
-// Extension function to replace template placeholders
-private fun String.replace(templateData: Map<String, String>): String {
-    var result = this
-    templateData.forEach { (key, value) ->
-        result = result.replace("{$key}", value)
-    }
-    return result
-}

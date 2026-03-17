@@ -2,37 +2,23 @@ package com.example.mineteh.model.repository
 
 import android.content.Context
 import android.util.Log
+import com.example.mineteh.models.BidData
+import com.example.mineteh.models.BidRequest
+import com.example.mineteh.models.CreateListingRequest
+import com.example.mineteh.models.FavoriteRequest
 import com.example.mineteh.models.Listing
-import com.example.mineteh.models.Seller
-import com.example.mineteh.supabase.SupabaseClient
+import com.example.mineteh.network.ApiClient
 import com.example.mineteh.utils.Resource
-import io.github.jan.supabase.postgrest.from
-import io.github.jan.supabase.postgrest.query.Columns
-import io.github.jan.supabase.postgrest.query.filter.FilterOperator
-import io.github.jan.supabase.postgrest.query.filter.PostgrestFilterBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
-
-// Configure Json to ignore unknown keys
-private val json = Json {
-    ignoreUnknownKeys = true
-    isLenient = true
-}
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.toRequestBody
 
 class ListingsRepository(private val context: Context) {
     private val tag = "ListingsRepository"
-    private val supabase = SupabaseClient.client
-    
-    init {
-        Log.d(tag, "=== SUPABASE REPOSITORY INITIALIZED (NEW CODE) ===")
-        Log.d(tag, "Using direct Supabase connection, NOT PHP API")
-    }
+    private val api = ApiClient.apiService
 
-    /**
-     * Get all listings from Supabase with optional filters
-     */
     suspend fun getListings(
         category: String? = null,
         type: String? = null,
@@ -41,279 +27,51 @@ class ListingsRepository(private val context: Context) {
         offset: Int = 0
     ): Resource<List<Listing>> = withContext(Dispatchers.IO) {
         try {
-            Log.d(tag, "Fetching listings from Supabase: category=$category, type=$type, search=$search")
-            
-            // Check network connectivity first
-            val hasNetwork = com.example.mineteh.utils.NetworkUtils.isNetworkAvailable(context)
-            Log.d(tag, "Network available: $hasNetwork")
-            
-            if (!hasNetwork) {
-                Log.e(tag, "No network connection available")
-                return@withContext Resource.Error("No internet connection. Please check your network settings.")
+            Log.d(tag, "Fetching listings: category=$category, type=$type, search=$search")
+            val response = api.getListings(category, type, search, limit, offset)
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body?.success == true) {
+                    Resource.Success(body.data ?: emptyList())
+                } else {
+                    Resource.Error(body?.message ?: "Failed to load listings")
+                }
+            } else {
+                Resource.Error("Server error: ${response.code()}")
             }
-            
-            // Test DNS resolution
-            val canResolve = com.example.mineteh.utils.NetworkUtils.testSupabaseConnection()
-            Log.d(tag, "Can resolve Supabase hostname: $canResolve")
-            
-            if (!canResolve) {
-                Log.e(tag, "Cannot resolve Supabase hostname")
-                return@withContext Resource.Error("Cannot connect to server. Please check your internet connection.")
-            }
-            
-            // Build query with filters - Try WITHOUT the foreign key hint first
-            val response = supabase.from("listings").select(
-                columns = Columns.raw("""
-                    *,
-                    accounts!seller_id (
-                        account_id,
-                        username,
-                        first_name,
-                        last_name
-                    )
-                """)
-            ) {
-                // Apply filters
-                if (category != null) {
-                    filter {
-                        eq("category", category)
-                    }
-                }
-                if (type != null) {
-                    filter {
-                        eq("listing_type", type)
-                    }
-                }
-                if (search != null) {
-                    filter {
-                        ilike("title", "%$search%")
-                    }
-                }
-                
-                // Apply limit and range
-                limit(limit.toLong())
-                range(offset.toLong(), (offset + limit - 1).toLong())
-            }.decodeList<SupabaseListingResponse>()
-            
-            Log.d(tag, "Raw response size: ${response.size}")
-            
-            // Manually fetch images for each listing
-            val listingsWithImages = response.map { listing ->
-                try {
-                    // Fetch images for this specific listing
-                    val images = supabase.from("listing_images")
-                        .select() {
-                            filter {
-                                eq("listing_id", listing.id)
-                            }
-                        }
-                        .decodeList<SupabaseListingImage>()
-                    
-                    Log.d(tag, "Listing ${listing.id} (${listing.title}) has ${images.size} images: ${images.map { it.image_path }}")
-                    listing.copy(listing_images = images.ifEmpty { null })
-                } catch (e: Exception) {
-                    Log.e(tag, "Error fetching images for listing ${listing.id}", e)
-                    listing
-                }
-            }
-            
-            // Convert to app models
-            val listings = listingsWithImages.map { it.toListing() }
-            
-            Log.d(tag, "Successfully fetched ${listings.size} listings from Supabase")
-            Log.d(tag, "First listing image check: ${listings.firstOrNull()?.image}")
-            Resource.Success(listings)
-            
         } catch (e: Exception) {
-            Log.e(tag, "Error fetching listings from Supabase", e)
-            
-            // Provide more specific error messages
-            val errorMessage = when {
-                e.message?.contains("Unable to resolve host") == true -> 
-                    "Cannot connect to server. Please check your internet connection and try again."
-                e.message?.contains("timeout") == true -> 
-                    "Connection timeout. Please check your internet connection."
+            Log.e(tag, "Error fetching listings", e)
+            val msg = when {
+                e.message?.contains("Unable to resolve host") == true ->
+                    "Cannot connect to server. Please check your internet connection."
+                e.message?.contains("timeout") == true ->
+                    "Connection timeout. Please try again."
                 else -> e.message ?: "Failed to load listings"
             }
-            
-            Resource.Error(errorMessage)
+            Resource.Error(msg)
         }
     }
 
-    /**
-     * Get a single listing by ID from Supabase
-     */
     suspend fun getListing(id: Int): Resource<Listing> = withContext(Dispatchers.IO) {
         try {
-            Log.d(tag, "Fetching listing with id=$id from Supabase")
-            
-            // First, get the listing without images
-            val response = supabase.from("listings").select(
-                columns = Columns.raw("""
-                    *,
-                    accounts!seller_id (
-                        account_id,
-                        username,
-                        first_name,
-                        last_name
-                    )
-                """)
-            ) {
-                filter {
-                    eq("id", id)
+            Log.d(tag, "Fetching listing id=$id")
+            val response = api.getListing(id)
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body?.success == true && body.data != null) {
+                    Resource.Success(body.data)
+                } else {
+                    Resource.Error(body?.message ?: "Listing not found")
                 }
-            }.decodeSingle<SupabaseListingResponse>()
-            
-            Log.d(tag, "Fetched listing: ${response.title}")
-            
-            // Manually fetch images for this specific listing
-            val images = try {
-                supabase.from("listing_images")
-                    .select() {
-                        filter {
-                            eq("listing_id", id)
-                        }
-                    }
-                    .decodeList<SupabaseListingImage>()
-            } catch (e: Exception) {
-                Log.e(tag, "Error fetching images for listing $id", e)
-                emptyList()
+            } else {
+                Resource.Error("Server error: ${response.code()}")
             }
-            
-            Log.d(tag, "Listing $id (${response.title}) has ${images.size} images: ${images.map { it.image_path }}")
-            
-            // Add images to the response
-            val responseWithImages = response.copy(listing_images = images.ifEmpty { null })
-            
-            // Manually fetch bids for this specific listing
-            val bids = try {
-                supabase.from("bids").select(
-                    columns = Columns.raw("""
-                        bid_amount,
-                        bid_time,
-                        accounts!user_id (
-                            username
-                        )
-                    """)
-                ) {
-                    filter {
-                        eq("listing_id", id)
-                    }
-                    order("bid_amount", order = io.github.jan.supabase.postgrest.query.Order.DESCENDING)
-                }.decodeList<SupabaseBid>()
-            } catch (e: Exception) {
-                Log.e(tag, "Error fetching bids for listing $id", e)
-                emptyList()
-            }
-            
-            Log.d(tag, "Listing $id has ${bids.size} bids")
-            
-            // Add bids to the response
-            val responseWithImagesAndBids = responseWithImages.copy(bids = bids.ifEmpty { null })
-            
-            val listing = responseWithImagesAndBids.toListing()
-            
-            Log.d(tag, "Successfully fetched listing: ${listing.title} with ${listing.images?.size ?: 0} images")
-            Resource.Success(listing)
-            
         } catch (e: Exception) {
-            Log.e(tag, "Error fetching listing from Supabase", e)
+            Log.e(tag, "Error fetching listing $id", e)
             Resource.Error(e.message ?: "Failed to load listing")
         }
     }
 
-    /**
-     * Toggle favorite status for a listing
-     */
-    suspend fun toggleFavorite(listingId: Int, userId: Int): Resource<Boolean> = withContext(Dispatchers.IO) {
-        try {
-            Log.d(tag, "Toggling favorite: listingId=$listingId, userId=$userId")
-            
-            // Check if already favorited
-            val existing = supabase.from("favorites").select() {
-                filter {
-                    eq("user_id", userId)
-                    eq("listing_id", listingId)
-                }
-            }.decodeList<SupabaseFavorite>()
-            
-            val isFavorited = if (existing.isEmpty()) {
-                // Add to favorites
-                supabase.from("favorites").insert(
-                    mapOf(
-                        "user_id" to userId,
-                        "listing_id" to listingId
-                    )
-                )
-                true
-            } else {
-                // Remove from favorites
-                supabase.from("favorites").delete {
-                    filter {
-                        eq("user_id", userId)
-                        eq("listing_id", listingId)
-                    }
-                }
-                false
-            }
-            
-            Log.d(tag, "Favorite toggled: isFavorited=$isFavorited")
-            Resource.Success(isFavorited)
-            
-        } catch (e: Exception) {
-            Log.e(tag, "Error toggling favorite", e)
-            Resource.Error(e.message ?: "Failed to toggle favorite")
-        }
-    }
-
-    /**
-     * Get user's favorite listings
-     */
-    suspend fun getFavorites(userId: Int): Resource<List<Listing>> = withContext(Dispatchers.IO) {
-        try {
-            Log.d(tag, "Fetching favorites for userId=$userId")
-            
-            val response = supabase.from("favorites").select(
-                columns = Columns.raw("""
-                    listings!listing_id (
-                        *,
-                        accounts!seller_id (
-                            account_id,
-                            username,
-                            first_name,
-                            last_name
-                        ),
-                        listing_images!listing_id (
-                            image_path
-                        )
-                    )
-                """)
-            ) {
-                filter {
-                    eq("user_id", userId)
-                }
-            }.decodeList<SupabaseFavoriteWithListing>()
-            
-            val listings = response.mapNotNull { it.listings?.toListing() }
-            
-            Log.d(tag, "Successfully fetched ${listings.size} favorites")
-            Resource.Success(listings)
-            
-        } catch (e: Exception) {
-            Log.e(tag, "Error fetching favorites", e)
-            Resource.Error(e.message ?: "Failed to load favorites")
-        }
-    }
-
-    /**
-     * Create a new listing with base64 image storage for immediate display
-     * 
-     * This method now:
-     * 1. Converts images to base64 data URIs
-     * 2. Stores them directly in the database
-     * 3. Images will display immediately in the app
-     * 4. Bypasses all upload restrictions
-     */
     suspend fun createListing(
         title: String,
         description: String,
@@ -327,269 +85,107 @@ class ListingsRepository(private val context: Context) {
     ): Resource<Listing> = withContext(Dispatchers.IO) {
         try {
             Log.d(tag, "Creating listing: $title with ${imageUris.size} images")
-            
-            // Get current user ID from TokenManager
-            val tokenManager = com.example.mineteh.utils.TokenManager(context)
-            val userId = tokenManager.getUserId()
-            
-            if (userId == -1) {
-                Log.e(tag, "User not logged in")
-                return@withContext Resource.Error("Please log in to create a listing")
-            }
-            
-            Log.d(tag, "Creating listing for user ID: $userId")
-            
-            // Step 1: Convert images to base64 data URIs
-            val imageDataUris = mutableListOf<String>()
-            
-            for ((index, uri) in imageUris.withIndex()) {
+
+            val toBody = { s: String -> s.toRequestBody("text/plain".toMediaTypeOrNull()) }
+
+            val imageParts = imageUris.mapIndexedNotNull { i, uri ->
                 try {
-                    Log.d(tag, "Converting image ${index + 1}/${imageUris.size} to base64: $uri")
-                    
-                    // Read image data from URI
-                    val inputStream = context.contentResolver.openInputStream(uri)
-                    val imageBytes = inputStream?.readBytes()
-                    inputStream?.close()
-                    
-                    if (imageBytes == null) {
-                        Log.e(tag, "Failed to read image data from URI: $uri")
-                        continue
-                    }
-                    
-                    // Convert to base64 data URI
-                    val base64Image = android.util.Base64.encodeToString(imageBytes, android.util.Base64.NO_WRAP)
-                    val dataUri = "data:image/jpeg;base64,$base64Image"
-                    imageDataUris.add(dataUri)
-                    
-                    Log.d(tag, "Converted image ${index + 1} to data URI (${dataUri.length} chars)")
-                    
+                    val stream = context.contentResolver.openInputStream(uri) ?: return@mapIndexedNotNull null
+                    val bytes = stream.readBytes()
+                    stream.close()
+                    val reqBody = bytes.toRequestBody("image/*".toMediaTypeOrNull())
+                    MultipartBody.Part.createFormData("images[]", "image_$i.jpg", reqBody)
                 } catch (e: Exception) {
-                    Log.e(tag, "Failed to process image ${index + 1}: $uri", e)
-                    continue
+                    Log.e(tag, "Failed to read image $i", e)
+                    null
                 }
             }
-            
-            if (imageDataUris.isEmpty()) {
-                Log.e(tag, "No images were processed successfully")
-                return@withContext Resource.Error("Failed to process images. Please try again.")
-            }
-            
-            Log.d(tag, "Successfully converted ${imageDataUris.size} images to base64")
-            
-            // Step 2: Insert listing into database
-            @Serializable
-            data class ListingInsert(
-                val seller_id: Int,
-                val title: String,
-                val description: String,
-                val price: Double,
-                val location: String,
-                val category: String,
-                val listing_type: String,
-                val status: String,
-                val end_time: String?
+
+            val response = api.createListing(
+                title = toBody(title),
+                description = toBody(description),
+                price = toBody(price.toString()),
+                location = toBody(location),
+                category = toBody(category),
+                listingType = toBody(listingType),
+                endTime = endTime?.let { toBody(it) },
+                minBidIncrement = minBidIncrement?.let { toBody(it.toString()) },
+                images = imageParts
             )
-            
-            val listingData = ListingInsert(
-                seller_id = userId,
-                title = title,
-                description = description,
-                price = price,
-                location = location,
-                category = category,
-                listing_type = listingType,
-                status = "active",
-                end_time = endTime
-            )
-            
-            Log.d(tag, "Inserting listing data: $listingData")
-            
-            // Insert the listing (without trying to get it back immediately)
-            supabase.from("listings")
-                .insert(listingData)
-            
-            Log.d(tag, "Listing inserted successfully")
-            
-            // Get the most recently inserted listing for this user
-            val insertedListing = supabase.from("listings")
-                .select(columns = Columns.raw("*")) {
-                    filter {
-                        eq("seller_id", userId)
-                        eq("title", title)
-                    }
-                    order("created_at", order = io.github.jan.supabase.postgrest.query.Order.DESCENDING)
-                    limit(1)
+
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body?.success == true && body.data != null) {
+                    Resource.Success(body.data)
+                } else {
+                    Resource.Error(body?.message ?: "Failed to create listing")
                 }
-                .decodeSingle<SupabaseListingResponse>()
-            
-            Log.d(tag, "Retrieved inserted listing with ID: ${insertedListing.id}")
-            
-            // Step 3: Insert image records into listing_images table
-            @Serializable
-            data class ImageInsert(
-                val listing_id: Int,
-                val image_path: String
-            )
-            
-            val imageRecords = imageDataUris.map { dataUri ->
-                ImageInsert(
-                    listing_id = insertedListing.id,
-                    image_path = dataUri
-                )
+            } else {
+                Resource.Error("Server error: ${response.code()}")
             }
-            
-            Log.d(tag, "Inserting ${imageRecords.size} image records")
-            
-            if (imageRecords.isNotEmpty()) {
-                supabase.from("listing_images")
-                    .insert(imageRecords)
-            }
-            
-            Log.d(tag, "Image records inserted successfully")
-            
-            // Add a small delay to ensure images are committed to database
-            kotlinx.coroutines.delay(500)
-            
-            // Step 4: Fetch the complete listing with images and seller info
-            val completeListing = supabase.from("listings").select(
-                columns = Columns.raw("""
-                    *,
-                    accounts!seller_id (
-                        account_id,
-                        username,
-                        first_name,
-                        last_name
-                    ),
-                    listing_images!listing_id (
-                        image_path
-                    )
-                """)
-            ) {
-                filter {
-                    eq("id", insertedListing.id)
-                }
-            }.decodeSingle<SupabaseListingResponse>()
-            
-            val listing = completeListing.toListing()
-            
-            Log.d(tag, "Successfully created listing: ${listing.title} with ${listing.images?.size ?: 0} images")
-            Resource.Success(listing)
-            
         } catch (e: Exception) {
             Log.e(tag, "Error creating listing", e)
-            
-            // Provide more specific error messages
-            val errorMessage = when {
-                e.message?.contains("duplicate key") == true -> 
-                    "A listing with this information already exists"
-                e.message?.contains("foreign key") == true -> 
-                    "Invalid user account. Please log in again."
-                e.message?.contains("timeout") == true -> 
-                    "Connection timeout. Please check your internet connection."
-                else -> e.message ?: "Failed to create listing"
+            Resource.Error(e.message ?: "Failed to create listing")
+        }
+    }
+
+    suspend fun toggleFavorite(listingId: Int): Resource<Boolean> = withContext(Dispatchers.IO) {
+        try {
+            Log.d(tag, "Toggling favorite for listing $listingId")
+            val response = api.toggleFavorite(FavoriteRequest(listing_id = listingId))
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body?.success == true && body.data != null) {
+                    Resource.Success(body.data.isFavorited)
+                } else {
+                    Resource.Error(body?.message ?: "Failed to toggle favorite")
+                }
+            } else {
+                Resource.Error("Server error: ${response.code()}")
             }
-            
-            Resource.Error(errorMessage)
+        } catch (e: Exception) {
+            Log.e(tag, "Error toggling favorite", e)
+            Resource.Error(e.message ?: "Failed to toggle favorite")
+        }
+    }
+
+    suspend fun getFavorites(): Resource<List<Listing>> = withContext(Dispatchers.IO) {
+        try {
+            Log.d(tag, "Fetching favorites")
+            val response = api.getFavorites()
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body?.success == true) {
+                    Resource.Success(body.data ?: emptyList())
+                } else {
+                    Resource.Error(body?.message ?: "Failed to load favorites")
+                }
+            } else {
+                Resource.Error("Server error: ${response.code()}")
+            }
+        } catch (e: Exception) {
+            Log.e(tag, "Error fetching favorites", e)
+            Resource.Error(e.message ?: "Failed to load favorites")
+        }
+    }
+
+    suspend fun placeBid(listingId: Int, bidAmount: Double): Resource<BidData> = withContext(Dispatchers.IO) {
+        try {
+            Log.d(tag, "Placing bid: listingId=$listingId, amount=$bidAmount")
+            val response = api.placeBid(BidRequest(listing_id = listingId, bid_amount = bidAmount))
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body?.success == true && body.data != null) {
+                    Resource.Success(body.data)
+                } else {
+                    Resource.Error(body?.message ?: "Failed to place bid")
+                }
+            } else {
+                Resource.Error("Server error: ${response.code()}")
+            }
+        } catch (e: Exception) {
+            Log.e(tag, "Error placing bid", e)
+            Resource.Error(e.message ?: "Failed to place bid")
         }
     }
 }
-
-// Supabase response models
-@Serializable
-data class SupabaseListingResponse(
-    val id: Int,
-    val title: String,
-    val description: String? = null,
-    val price: Double,
-    val location: String? = null,
-    val category: String? = null,
-    val listing_type: String = "FIXED",
-    val status: String = "active",
-    val end_time: String? = null,
-    val created_at: String,
-    val accounts: SupabaseAccount? = null,
-    @kotlinx.serialization.SerialName("listing_images")
-    val listing_images: List<SupabaseListingImage>? = null,
-    val bids: List<SupabaseBid>? = null
-) {
-    fun toListing(): Listing {
-        val imagesList = listing_images?.map { it.image_path } ?: emptyList()
-        val firstImage = imagesList.firstOrNull()
-        
-        // Calculate highest bid
-        val highestBidAmount = bids?.maxOfOrNull { it.bid_amount }
-        
-        android.util.Log.d("SupabaseListingResponse", "Converting listing: id=$id, title=$title")
-        android.util.Log.d("SupabaseListingResponse", "Raw listing_images object: $listing_images")
-        android.util.Log.d("SupabaseListingResponse", "Images from DB: $imagesList")
-        android.util.Log.d("SupabaseListingResponse", "First image: $firstImage")
-        
-        return Listing(
-            id = id,
-            title = title,
-            description = description ?: "",
-            price = price,
-            location = location ?: "",
-            category = category ?: "",
-            listingType = listing_type,
-            status = status,
-            _image = firstImage ?: "",
-            _images = imagesList,
-            seller = accounts?.let {
-                Seller(
-                    accountId = it.account_id,
-                    username = it.username,
-                    firstName = it.first_name,
-                    lastName = it.last_name
-                )
-            },
-            createdAt = created_at,
-            isFavorited = false, // Will be updated separately
-            highestBidAmount = highestBidAmount,
-            endTime = end_time,
-            bids = bids?.map { bid ->
-                com.example.mineteh.models.Bid(
-                    bidAmount = bid.bid_amount,
-                    bidTime = bid.bid_time,
-                    bidder = bid.accounts?.let { acc ->
-                        com.example.mineteh.models.Bidder(username = acc.username)
-                    }
-                )
-            }
-        )
-    }
-}
-
-@Serializable
-data class SupabaseAccount(
-    val account_id: Int,
-    val username: String,
-    val first_name: String,
-    val last_name: String
-)
-
-@Serializable
-data class SupabaseListingImage(
-    val image_id: Int? = null,
-    val listing_id: Int,
-    val image_path: String
-)
-
-@Serializable
-data class SupabaseBid(
-    val bid_amount: Double,
-    val bid_time: String,
-    val accounts: SupabaseAccount? = null
-)
-
-@Serializable
-data class SupabaseFavorite(
-    val favorite_id: Int,
-    val user_id: Int,
-    val listing_id: Int
-)
-
-@Serializable
-data class SupabaseFavoriteWithListing(
-    val listings: SupabaseListingResponse? = null
-)
