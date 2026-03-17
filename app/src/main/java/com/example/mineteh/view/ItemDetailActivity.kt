@@ -286,9 +286,15 @@ class ItemDetailActivity : AppCompatActivity() {
             // Check if current user is the owner
             val tokenManager = com.example.mineteh.utils.TokenManager(this)
             val currentUserId = tokenManager.getUserId()
-            val isOwner = currentUserId != -1 && listing.seller?.accountId == currentUserId
+            val sellerId = listing.seller?.accountId
+            val isOwner = currentUserId != -1 && sellerId != null && sellerId == currentUserId
             
-            Log.d("ItemDetailActivity", "Current user ID: $currentUserId, Seller ID: ${listing.seller?.accountId}, Is owner: $isOwner")
+            Log.d("ItemDetailActivity", "=== OWNER CHECK ===")
+            Log.d("ItemDetailActivity", "Current user ID: $currentUserId")
+            Log.d("ItemDetailActivity", "Seller ID: $sellerId")
+            Log.d("ItemDetailActivity", "Seller object: ${listing.seller}")
+            Log.d("ItemDetailActivity", "Is owner: $isOwner")
+            Log.d("ItemDetailActivity", "==================")
             
             if (isOwner) {
                 // Show owner management UI
@@ -473,6 +479,16 @@ class ItemDetailActivity : AppCompatActivity() {
             binding.divider3.visibility = View.GONE
             binding.divider3Owner.visibility = View.VISIBLE
             
+            // Show/hide Close Auction button based on listing type
+            if (listing.listingType == "BID") {
+                binding.btnCloseAuction.visibility = View.VISIBLE
+                binding.btnCloseAuction.setOnClickListener {
+                    showCloseAuctionDialog(listing)
+                }
+            } else {
+                binding.btnCloseAuction.visibility = View.GONE
+            }
+            
             // Setup toggle status button
             val isActive = listing.status.equals("active", ignoreCase = true)
             binding.btnToggleStatus.text = if (isActive) "🚫 Disable Listing" else "✅ Enable Listing"
@@ -511,6 +527,21 @@ class ItemDetailActivity : AppCompatActivity() {
             }
             .setNegativeButton("Cancel", null)
             .show()
+    }
+    
+    private fun showCloseAuctionDialog(listing: Listing) {
+        AlertDialog.Builder(this)
+            .setTitle("Close Auction")
+            .setMessage("Close this auction? The highest bidder will win.")
+            .setPositiveButton("Close") { _, _ ->
+                closeAuction(listing.id)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+    
+    private fun closeAuction(listingId: Int) {
+        viewModel.updateListingStatus(listingId, "CLOSED")
     }
     
     private fun showEnableListingDialog(listing: Listing) {
