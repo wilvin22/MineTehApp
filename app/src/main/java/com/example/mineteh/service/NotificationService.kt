@@ -16,16 +16,19 @@ import com.example.mineteh.view.NotificationsActivity
 import com.example.mineteh.view.ItemDetailActivity
 import com.example.mineteh.view.ChatActivity
 import com.example.mineteh.MyOrdersActivity
-import com.google.firebase.messaging.FirebaseMessagingService
-import com.google.firebase.messaging.RemoteMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import java.text.SimpleDateFormat
 import java.util.*
 
-class NotificationService : FirebaseMessagingService() {
+/**
+ * NotificationService - Supabase-only implementation
+ * 
+ * This service handles local push notifications using Android's notification system
+ * combined with Supabase Realtime for real-time updates. No Firebase required.
+ */
+class NotificationService {
 
     companion object {
         private const val TAG = "NotificationService"
@@ -37,80 +40,48 @@ class NotificationService : FirebaseMessagingService() {
     private lateinit var notificationsRepository: NotificationsRepository
     private lateinit var tokenManager: TokenManager
 
-    override fun onCreate() {
-        super.onCreate()
-        createNotificationChannel()
-        notificationsRepository = NotificationsRepository(this)
-        tokenManager = TokenManager(this)
+    fun initialize(context: Context) {
+        createNotificationChannel(context)
+        notificationsRepository = NotificationsRepository(context)
+        tokenManager = TokenManager(context)
     }
 
-    override fun onMessageReceived(remoteMessage: RemoteMessage) {
-        super.onMessageReceived(remoteMessage)
-        
-        Log.d(TAG, "From: ${remoteMessage.from}")
-        
-        // Check if message contains a data payload
-        if (remoteMessage.data.isNotEmpty()) {
-            Log.d(TAG, "Message data payload: ${remoteMessage.data}")
-            handleDataMessage(remoteMessage.data)
+    /**
+     * Show a local notification based on notification data
+     * This is called when a new notification is received via Supabase Realtime
+     */
+    fun showLocalNotification(context: Context, title: String, message: String, data: Map<String, String>) {
+        val userId = tokenManager.getUserId()
+        if (userId == -1) {
+            Log.w(TAG, "No user ID found, cannot check notification preferences")
+            return
         }
 
-        // Check if message contains a notification payload
-        remoteMessage.notification?.let {
-            Log.d(TAG, "Message Notification Body: ${it.body}")
-            showNotification(
-                title = it.title ?: "MineTeh",
-                message = it.body ?: "",
-                data = remoteMessage.data
-            )
-        }
-    }
-
-    override fun onNewToken(token: String) {
-        super.onNewToken(token)
-        Log.d(TAG, "Refreshed token: $token")
-        
-        // Send token to server
-        sendTokenToServer(token)
-    }
-
-    private fun handleDataMessage(data: Map<String, String>) {
-        val title = data["title"] ?: "MineTeh"
-        val message = data["message"] ?: ""
-        val type = data["type"] ?: ""
-        val userId = data["user_id"]?.toIntOrNull()
-        
-        Log.d(TAG, "Handling data message - Type: $type, Title: $title, UserId: $userId")
-        
         // Check user preferences before showing notification
-        if (userId != null) {
-            CoroutineScope(Dispatchers.IO).launch {
-                if (shouldShowNotification(userId, type)) {
-                    showNotification(title, message, data)
-                } else {
-                    Log.d(TAG, "Notification blocked by user preferences - Type: $type, UserId: $userId")
-                }
+        CoroutineScope(Dispatchers.IO).launch {
+            val type = data["type"] ?: ""
+            if (shouldShowNotification(userId, type)) {
+                showNotification(context, title, message, data)
+            } else {
+                Log.d(TAG, "Notification blocked by user preferences - Type: $type, UserId: $userId")
             }
-        } else {
-            // If no user ID, show notification (fallback)
-            showNotification(title, message, data)
         }
     }
 
-    private fun showNotification(title: String, message: String, data: Map<String, String>) {
-        val intent = createDeepLinkIntent(data)
+    private fun showNotification(context: Context, title: String, message: String, data: Map<String, String>) {
+        val intent = createDeepLinkIntent(context, data)
         val pendingIntent = PendingIntent.getActivity(
-            this, 
+            context, 
             System.currentTimeMillis().toInt(), 
             intent, 
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val notificationBuilder = NotificationCompat.Builder(this, CHANNEL_ID)
+        val notificationBuilder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setContentTitle(title)
             .setContentText(message)
             .setSmallIcon(R.drawable.ic_notifications)
-            .setColor(getColor(R.color.purple))
+            .setColor(context.getColor(R.color.purple))
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
@@ -121,46 +92,46 @@ class NotificationService : FirebaseMessagingService() {
         when (type) {
             "BID_PLACED" -> {
                 notificationBuilder.setSmallIcon(R.drawable.ic_gavel)
-                notificationBuilder.setColor(getColor(R.color.blue))
+                notificationBuilder.setColor(context.getColor(R.color.blue))
             }
             "BID_OUTBID" -> {
                 notificationBuilder.setSmallIcon(R.drawable.ic_trending_up)
-                notificationBuilder.setColor(getColor(R.color.orange))
+                notificationBuilder.setColor(context.getColor(R.color.orange))
             }
             "AUCTION_ENDING" -> {
                 notificationBuilder.setSmallIcon(R.drawable.ic_timer)
-                notificationBuilder.setColor(getColor(R.color.red))
+                notificationBuilder.setColor(context.getColor(R.color.red))
                 notificationBuilder.setPriority(NotificationCompat.PRIORITY_HIGH)
             }
             "AUCTION_WON" -> {
                 notificationBuilder.setSmallIcon(R.drawable.ic_trophy)
-                notificationBuilder.setColor(getColor(R.color.green))
+                notificationBuilder.setColor(context.getColor(R.color.green))
             }
             "AUCTION_LOST" -> {
                 notificationBuilder.setSmallIcon(R.drawable.ic_close_circle)
-                notificationBuilder.setColor(getColor(R.color.gray))
+                notificationBuilder.setColor(context.getColor(R.color.gray))
             }
             "ITEM_SOLD" -> {
                 notificationBuilder.setSmallIcon(R.drawable.ic_check_circle)
-                notificationBuilder.setColor(getColor(R.color.green))
+                notificationBuilder.setColor(context.getColor(R.color.green))
             }
             "NEW_MESSAGE" -> {
                 notificationBuilder.setSmallIcon(R.drawable.ic_message)
-                notificationBuilder.setColor(getColor(R.color.purple))
+                notificationBuilder.setColor(context.getColor(R.color.purple))
             }
             "PAYMENT_RECEIVED" -> {
                 notificationBuilder.setSmallIcon(R.drawable.ic_payment)
-                notificationBuilder.setColor(getColor(R.color.green))
+                notificationBuilder.setColor(context.getColor(R.color.green))
             }
         }
 
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.notify(System.currentTimeMillis().toInt(), notificationBuilder.build())
         
         Log.d(TAG, "Notification shown: $title")
     }
 
-    private fun createDeepLinkIntent(data: Map<String, String>): Intent {
+    private fun createDeepLinkIntent(context: Context, data: Map<String, String>): Intent {
         val type = data["type"]
         val listingId = data["listing_id"]?.toIntOrNull()
         val messageId = data["message_id"]?.toIntOrNull()
@@ -173,11 +144,11 @@ class NotificationService : FirebaseMessagingService() {
                     Intent(Intent.ACTION_VIEW).apply {
                         data = android.net.Uri.parse("mineteh://listing/$listingId")
                         flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-                        setClass(this@NotificationService, ItemDetailActivity::class.java)
+                        setClass(context, ItemDetailActivity::class.java)
                         putExtra("listing_id", listingId)
                     }
                 } else {
-                    createDefaultIntent()
+                    createDefaultIntent(context)
                 }
             }
             "NEW_MESSAGE" -> {
@@ -186,12 +157,12 @@ class NotificationService : FirebaseMessagingService() {
                     Intent(Intent.ACTION_VIEW).apply {
                         data = android.net.Uri.parse("mineteh://chat/$messageId?sender_id=$senderId")
                         flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-                        setClass(this@NotificationService, ChatActivity::class.java)
+                        setClass(context, ChatActivity::class.java)
                         putExtra("message_id", messageId)
                         putExtra("sender_id", senderId)
                     }
                 } else {
-                    createDefaultIntent()
+                    createDefaultIntent(context)
                 }
             }
             "ITEM_SOLD", "PAYMENT_RECEIVED" -> {
@@ -199,25 +170,25 @@ class NotificationService : FirebaseMessagingService() {
                 Intent(Intent.ACTION_VIEW).apply {
                     data = android.net.Uri.parse("mineteh://orders" + if (listingId != null) "/$listingId" else "")
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-                    setClass(this@NotificationService, MyOrdersActivity::class.java)
+                    setClass(context, MyOrdersActivity::class.java)
                     if (listingId != null) {
                         putExtra("listing_id", listingId)
                     }
                 }
             }
-            else -> createDefaultIntent()
+            else -> createDefaultIntent(context)
         }
     }
 
-    private fun createDefaultIntent(): Intent {
+    private fun createDefaultIntent(context: Context): Intent {
         return Intent(Intent.ACTION_VIEW).apply {
             data = android.net.Uri.parse("mineteh://notifications")
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            setClass(this@NotificationService, NotificationsActivity::class.java)
+            setClass(context, NotificationsActivity::class.java)
         }
     }
 
-    private fun createNotificationChannel() {
+    private fun createNotificationChannel(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
@@ -226,12 +197,12 @@ class NotificationService : FirebaseMessagingService() {
             ).apply {
                 description = CHANNEL_DESCRIPTION
                 enableLights(true)
-                lightColor = getColor(R.color.purple)
+                lightColor = context.getColor(R.color.purple)
                 enableVibration(true)
                 vibrationPattern = longArrayOf(0, 250, 250, 250)
             }
 
-            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
             
             Log.d(TAG, "Notification channel created: $CHANNEL_ID")
@@ -239,24 +210,21 @@ class NotificationService : FirebaseMessagingService() {
     }
 
     private fun sendTokenToServer(token: String) {
+        // Note: This method is kept for future Firebase integration if needed
+        // For Supabase-only approach, we don't need FCM tokens
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val userId = tokenManager.getUserId()
                 
                 if (userId != -1) {
-                    // TODO: Send token to Supabase or your backend
-                    // This would typically involve calling an API endpoint to store the FCM token
-                    // associated with the user ID for sending targeted notifications
-                    
-                    Log.d(TAG, "FCM token for user $userId: $token")
-                    
-                    // For now, just store it locally
+                    Log.d(TAG, "User $userId logged in - Supabase Realtime handles notifications")
+                    // Store locally for potential future use
                     tokenManager.saveFcmToken(token)
                 } else {
-                    Log.w(TAG, "No user ID found, cannot associate FCM token")
+                    Log.w(TAG, "No user ID found")
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Error sending token to server", e)
+                Log.e(TAG, "Error handling token", e)
             }
         }
     }

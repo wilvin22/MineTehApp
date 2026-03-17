@@ -17,6 +17,7 @@ import com.example.mineteh.R
 import com.example.mineteh.Resource
 import com.example.mineteh.model.Notification
 import com.example.mineteh.viewmodel.NotificationsViewModel
+import com.example.mineteh.MyOrdersActivity
 
 class NotificationsActivity : AppCompatActivity() {
 

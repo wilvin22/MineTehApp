@@ -4,7 +4,8 @@ plugins {
     id("kotlin-parcelize")
     alias(libs.plugins.ksp)
     kotlin("plugin.serialization") version "1.9.22"
-    id("com.google.gms.google-services") version "4.4.0"
+    // Temporarily disabled for development - uncomment when Firebase is set up
+    // id("com.google.gms.google-services") version "4.4.0"
 }
 
 android {
@@ -99,7 +100,9 @@ dependencies {
     // BCrypt for password verification
     implementation("at.favre.lib:bcrypt:0.10.2")
     
-    // Firebase Cloud Messaging
-    implementation("com.google.firebase:firebase-messaging:23.4.0")
-    implementation("com.google.firebase:firebase-analytics:21.5.0")
+    // Supabase Realtime for notifications (replaces Firebase)
+    implementation("io.github.jan-tennert.supabase:realtime-kt:2.0.0")
+    
+    // For local push notifications (no Firebase needed)
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
 }

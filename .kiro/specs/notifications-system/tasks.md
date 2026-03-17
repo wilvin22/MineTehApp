@@ -266,13 +266,13 @@ The implementation is structured to minimize risk by building incrementally, tes
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 15. Performance Optimization and Cleanup
-  - [ ] 15.1 Implement automatic notification cleanup
+  - [x] 15.1 Implement automatic notification cleanup
     - Create cleanup job for notifications older than 90 days
     - Preserve 50 most recent notifications per user
     - Schedule cleanup during low-usage periods
     - _Requirements: 11.1, 11.2, 11.3_
   
-  - [ ] 15.2 Add notification caching and optimization
+  - [x] 15.2 Add notification caching and optimization
     - Implement local caching for frequently accessed notifications
     - Add database query optimization and proper indexing
     - Handle large notification lists with pagination

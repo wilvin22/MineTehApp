@@ -538,4 +538,124 @@ class NotificationsRepository(private val context: Context) {
             Resource.Success(true) // Default to enabled on error
         }
     }
+
+    // Notification Cleanup Methods
+    suspend fun cleanupOldNotifications(userId: Int, daysToKeep: Int = 90): Resource<Int> {
+        return try {
+            Log.d(TAG, "Cleaning up notifications older than $daysToKeep days for user: $userId")
+            
+            // Calculate the cutoff date
+            val cutoffDate = java.time.LocalDateTime.now().minusDays(daysToKeep.toLong())
+            val cutoffDateString = cutoffDate.format(java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            
+            // Get count of notifications to be deleted
+            val countResponse = supabase.from("notifications")
+                .select(columns = Columns.list("id")) {
+                    filter {
+                        eq("user_id", userId)
+                        lt("created_at", cutoffDateString)
+                    }
+                }
+                .decodeList<Map<String, Any>>()
+            
+            val deleteCount = countResponse.size
+            
+            if (deleteCount > 0) {
+                // Delete old notifications
+                supabase.from("notifications")
+                    .delete {
+                        filter {
+                            eq("user_id", userId)
+                            lt("created_at", cutoffDateString)
+                        }
+                    }
+                
+                Log.d(TAG, "Successfully deleted $deleteCount old notifications for user $userId")
+            } else {
+                Log.d(TAG, "No old notifications to delete for user $userId")
+            }
+            
+            Resource.Success(deleteCount)
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "Error cleaning up old notifications", e)
+            Resource.Error("Failed to cleanup old notifications: ${e.message}")
+        }
+    }
+
+    suspend fun cleanupOldNotificationsKeepRecent(userId: Int, maxNotificationsToKeep: Int = 50): Resource<Int> {
+        return try {
+            Log.d(TAG, "Cleaning up notifications, keeping $maxNotificationsToKeep most recent for user: $userId")
+            
+            // Get all notification IDs ordered by creation date (newest first)
+            val allNotifications = supabase.from("notifications")
+                .select(columns = Columns.list("id")) {
+                    filter {
+                        eq("user_id", userId)
+                    }
+                    order("created_at", ascending = false)
+                }
+                .decodeList<Map<String, Any>>()
+            
+            val totalCount = allNotifications.size
+            
+            if (totalCount > maxNotificationsToKeep) {
+                // Get IDs of notifications to delete (everything after the first maxNotificationsToKeep)
+                val notificationsToDelete = allNotifications.drop(maxNotificationsToKeep)
+                val idsToDelete = notificationsToDelete.mapNotNull { it["id"] as? Int }
+                
+                if (idsToDelete.isNotEmpty()) {
+                    // Delete notifications in batches to avoid query size limits
+                    val batchSize = 100
+                    var deletedCount = 0
+                    
+                    idsToDelete.chunked(batchSize).forEach { batch ->
+                        supabase.from("notifications")
+                            .delete {
+                                filter {
+                                    `in`("id", batch)
+                                }
+                            }
+                        deletedCount += batch.size
+                    }
+                    
+                    Log.d(TAG, "Successfully deleted $deletedCount excess notifications for user $userId")
+                    Resource.Success(deletedCount)
+                } else {
+                    Log.d(TAG, "No excess notifications to delete for user $userId")
+                    Resource.Success(0)
+                }
+            } else {
+                Log.d(TAG, "User $userId has $totalCount notifications, no cleanup needed")
+                Resource.Success(0)
+            }
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "Error cleaning up excess notifications", e)
+            Resource.Error("Failed to cleanup excess notifications: ${e.message}")
+        }
+    }
+
+    suspend fun performAutomaticCleanup(userId: Int): Resource<Pair<Int, Int>> {
+        return try {
+            Log.d(TAG, "Performing automatic cleanup for user: $userId")
+            
+            // First cleanup by age (90 days)
+            val ageCleanupResult = cleanupOldNotifications(userId, 90)
+            val ageDeletedCount = if (ageCleanupResult is Resource.Success) ageCleanupResult.data!! else 0
+            
+            // Then cleanup by count (keep 50 most recent)
+            val countCleanupResult = cleanupOldNotificationsKeepRecent(userId, 50)
+            val countDeletedCount = if (countCleanupResult is Resource.Success) countCleanupResult.data!! else 0
+            
+            val totalDeleted = ageDeletedCount + countDeletedCount
+            Log.d(TAG, "Automatic cleanup completed for user $userId: $totalDeleted notifications deleted")
+            
+            Resource.Success(Pair(ageDeletedCount, countDeletedCount))
+            
+        } catch (e: Exception) {
+            Log.e(TAG, "Error performing automatic cleanup", e)
+            Resource.Error("Failed to perform automatic cleanup: ${e.message}")
+        }
+    }
 }

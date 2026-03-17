@@ -26,8 +26,6 @@
         tools:targetApi="31">
         <activity android:name=".view.SavedItemsActivity" />
         <activity android:name=".view.SearchActivity" />
-        <activity android:name=".view.NotificationsActivity" />
-        <activity android:name=".view.NotificationPreferencesActivity" />
         <activity
             android:name=".Login"
             android:exported="true">
@@ -37,6 +35,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        
+        <!-- Notification activities -->
+        <activity android:name=".view.NotificationsActivity" />
+        <activity android:name=".view.NotificationPreferencesActivity" />
         
         <!-- Deep linking support for notifications -->
         <activity android:name=".view.NotificationsActivity"
@@ -94,26 +96,6 @@
         <activity android:name=".MyOrdersActivity" />
         <activity android:name=".view.MyListingsActivity" />
         <activity android:name=".view.ChatActivity" />
-
-        <!-- Firebase Cloud Messaging Service -->
-        <service
-            android:name=".service.NotificationService"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT" />
-            </intent-filter>
-        </service>
-
-        <!-- Firebase default notification channel -->
-        <meta-data
-            android:name="com.google.firebase.messaging.default_notification_icon"
-            android:resource="@drawable/ic_notifications" />
-        <meta-data
-            android:name="com.google.firebase.messaging.default_notification_color"
-            android:resource="@color/purple" />
-        <meta-data
-            android:name="com.google.firebase.messaging.default_notification_channel_id"
-            android:value="@string/default_notification_channel_id" />
 
     </application>
 
