@@ -5,6 +5,7 @@ import android.util.Log
 import com.example.mineteh.utils.Resource
 import com.example.mineteh.utils.TokenManager
 import com.example.mineteh.model.Notification
+import com.example.mineteh.model.NotificationIdOnly
 import com.example.mineteh.model.NotificationPreferences
 import com.example.mineteh.model.SupabaseNotificationResponse
 import com.example.mineteh.model.SupabaseNotificationPreferencesResponse
