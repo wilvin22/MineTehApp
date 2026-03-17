@@ -29,7 +29,7 @@ class NotificationsRepository(private val context: Context) {
             
             val response = supabase.from("notifications")
                 .select(columns = Columns.list(
-                    "id", "user_id", "type", "title", "message", "data", "is_read", "created_at", "updated_at"
+                    "id", "user_id", "type", "title", "message", "link", "is_read", "created_at"
                 )) {
                     filter {
                         eq("user_id", userId)
@@ -106,7 +106,7 @@ class NotificationsRepository(private val context: Context) {
                         eq("is_read", false)
                     }
                 }
-                .decodeList<Map<String, Any>>()
+                .decodeList<NotificationIdOnly>()
 
             val count = response.size
             Log.d(TAG, "Unread count for user $userId: $count")
@@ -124,7 +124,7 @@ class NotificationsRepository(private val context: Context) {
             
             val response = supabase.from("notifications")
                 .select(columns = Columns.list(
-                    "id", "user_id", "type", "title", "message", "is_read", "created_at", "updated_at"
+                    "id", "user_id", "type", "title", "message", "link", "is_read", "created_at"
                 )) {
                     filter {
                         eq("user_id", userId)
@@ -151,7 +151,7 @@ class NotificationsRepository(private val context: Context) {
             
             val response = supabase.from("notifications")
                 .select(columns = Columns.list(
-                    "id", "user_id", "type", "title", "message", "is_read", "created_at", "updated_at"
+                    "id", "user_id", "type", "title", "message", "link", "is_read", "created_at"
                 )) {
                     filter {
                         eq("user_id", userId)
@@ -197,29 +197,25 @@ class NotificationsRepository(private val context: Context) {
         type: String,
         title: String,
         message: String,
-        data: Map<String, String>? = null
+        link: String? = null
     ): Resource<Notification> {
         return try {
             Log.d(TAG, "Creating notification for user: $userId, type: $type")
             
-            // Check if this notification type is enabled for the user
             val typeEnabledResult = isNotificationTypeEnabled(userId, type)
             if (typeEnabledResult is Resource.Success && !typeEnabledResult.data!!) {
                 Log.d(TAG, "Notification type $type is disabled for user $userId, skipping creation")
                 return Resource.Error("Notification type disabled by user preferences")
             }
             
-            val notificationData = mutableMapOf<String, Any>(
+            val notificationData = mutableMapOf<String, Any?>(
                 "user_id" to userId,
                 "type" to type,
                 "title" to title,
-                "message" to message
+                "message" to message,
+                "link" to link,
+                "is_read" to false
             )
-            
-            if (data != null) {
-                // Optional payload: only include if your DB has a `data` json/jsonb column.
-                // (Some deployments may not have this column.)
-            }
             
             val response = supabase.from("notifications")
                 .insert(notificationData)
@@ -247,7 +243,7 @@ class NotificationsRepository(private val context: Context) {
             
             val response = supabase.from("notifications")
                 .select(columns = Columns.list(
-                    "id", "user_id", "type", "title", "message", "is_read", "created_at", "updated_at"
+                    "id", "user_id", "type", "title", "message", "link", "is_read", "created_at"
                 )) {
                     filter {
                         eq("user_id", userId)
@@ -285,7 +281,7 @@ class NotificationsRepository(private val context: Context) {
             
             val response = supabase.from("notifications")
                 .select(columns = Columns.list(
-                    "id", "user_id", "type", "title", "message", "is_read", "created_at", "updated_at"
+                    "id", "user_id", "type", "title", "message", "link", "is_read", "created_at"
                 )) {
                     filter {
                         eq("user_id", userId)
@@ -322,7 +318,7 @@ class NotificationsRepository(private val context: Context) {
             // Fetch one extra item to check if there are more pages
             val response = supabase.from("notifications")
                 .select(columns = Columns.list(
-                    "id", "user_id", "type", "title", "message", "is_read", "created_at", "updated_at"
+                    "id", "user_id", "type", "title", "message", "link", "is_read", "created_at"
                 )) {
                     filter {
                         eq("user_id", userId)
@@ -536,7 +532,7 @@ class NotificationsRepository(private val context: Context) {
                         lt("created_at", cutoffDateString)
                     }
                 }
-                .decodeList<Map<String, Any>>()
+                .decodeList<NotificationIdOnly>()
             
             val deleteCount = countResponse.size
             
@@ -575,14 +571,13 @@ class NotificationsRepository(private val context: Context) {
                     }
                     order("created_at", order = Order.DESCENDING)
                 }
-                .decodeList<Map<String, Any>>()
+                .decodeList<NotificationIdOnly>()
             
             val totalCount = allNotifications.size
             
             if (totalCount > maxNotificationsToKeep) {
-                // Get IDs of notifications to delete (everything after the first maxNotificationsToKeep)
                 val notificationsToDelete = allNotifications.drop(maxNotificationsToKeep)
-                val idsToDelete = notificationsToDelete.mapNotNull { it["id"] as? Int }
+                val idsToDelete = notificationsToDelete.map { it.id }
                 
                 if (idsToDelete.isNotEmpty()) {
                     // Delete notifications in batches to avoid query size limits

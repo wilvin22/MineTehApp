@@ -17,16 +17,23 @@ class TokenManager(context: Context) {
         private const val KEY_USER_EMAIL = "user_email"
         private const val KEY_REMEMBER_ME = "remember_me"
         private const val KEY_SAVED_EMAIL = "saved_email"
-        
+        private const val KEY_TOKEN_SAVED_AT = "token_saved_at"
+
         // New keys for Supabase session management
         private const val KEY_ACCESS_TOKEN = "access_token"
         private const val KEY_REFRESH_TOKEN = "refresh_token"
         private const val KEY_SESSION = "supabase_session"
         private const val KEY_FCM_TOKEN = "fcm_token"
+
+        // Tokens expire after 30 days
+        private const val TOKEN_EXPIRY_MS = 30L * 24 * 60 * 60 * 1000
     }
 
     fun saveToken(token: String) {
-        prefs.edit().putString(KEY_TOKEN, token).apply()
+        prefs.edit()
+            .putString(KEY_TOKEN, token)
+            .putLong(KEY_TOKEN_SAVED_AT, System.currentTimeMillis())
+            .apply()
     }
 
     fun getToken(): String? {
@@ -127,6 +134,12 @@ class TokenManager(context: Context) {
     fun isLoggedIn(): Boolean {
         // Check both legacy token and new access token for backward compatibility
         return getToken() != null || getAccessToken() != null
+    }
+
+    fun isTokenExpired(): Boolean {
+        val savedAt = prefs.getLong(KEY_TOKEN_SAVED_AT, 0L)
+        if (savedAt == 0L) return false // no timestamp means old session, treat as valid
+        return System.currentTimeMillis() - savedAt > TOKEN_EXPIRY_MS
     }
 
     /**

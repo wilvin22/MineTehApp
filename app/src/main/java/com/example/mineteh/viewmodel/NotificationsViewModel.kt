@@ -60,19 +60,15 @@ class NotificationsViewModel(application: Application) : AndroidViewModel(applic
                 _isLoading.value = true
                 val userId = tokenManager.getUserId()
                 
-                if (userId != null) {
+                if (userId != -1) {
                     Log.d(TAG, "Loading notifications for user: $userId")
-                    
                     val result = repository.getNotifications(userId, limit = 50)
                     _notifications.value = result
-                    
                     if (result is Resource.Success) {
                         allNotifications.clear()
                         allNotifications.addAll(result.data ?: emptyList())
-                        Log.d(TAG, "Successfully loaded ${result.data?.size ?: 0} notifications")
                     }
                 } else {
-                    Log.w(TAG, "No user ID found, cannot load notifications")
                     _notifications.value = Resource.Error("User not authenticated")
                 }
             } catch (e: Exception) {
@@ -91,7 +87,7 @@ class NotificationsViewModel(application: Application) : AndroidViewModel(applic
             try {
                 val userId = tokenManager.getUserId()
                 
-                if (userId != null) {
+                if (userId != -1) {
                     Log.d(TAG, "Loading more notifications for user: $userId, page: ${currentPage + 1}")
                     
                     val result = repository.getNotificationsPaginated(userId, currentPage + 1, pageSize)
@@ -122,7 +118,7 @@ class NotificationsViewModel(application: Application) : AndroidViewModel(applic
                 
                 val userId = tokenManager.getUserId()
                 
-                if (userId != null) {
+                if (userId != -1) {
                     Log.d(TAG, "Refreshing notifications for user: $userId")
                     
                     val result = repository.getNotificationsPaginated(userId, 0, pageSize)
@@ -188,7 +184,7 @@ class NotificationsViewModel(application: Application) : AndroidViewModel(applic
             try {
                 val userId = tokenManager.getUserId()
                 
-                if (userId != null) {
+                if (userId != -1) {
                     Log.d(TAG, "Marking all notifications as read for user: $userId")
                     
                     val result = repository.markAllAsRead(userId)
@@ -221,7 +217,7 @@ class NotificationsViewModel(application: Application) : AndroidViewModel(applic
             try {
                 val userId = tokenManager.getUserId()
                 
-                if (userId != null) {
+                if (userId != -1) {
                     Log.d(TAG, "Loading unread count for user: $userId")
                     
                     val result = repository.getUnreadCount(userId)
@@ -247,7 +243,7 @@ class NotificationsViewModel(application: Application) : AndroidViewModel(applic
                 _isLoading.value = true
                 val userId = tokenManager.getUserId()
                 
-                if (userId != null) {
+                if (userId != -1) {
                     Log.d(TAG, "Filtering notifications for user: $userId, type: $type, isRead: $isRead")
                     
                     val result = repository.getFilteredNotifications(userId, type, isRead)
@@ -274,7 +270,7 @@ class NotificationsViewModel(application: Application) : AndroidViewModel(applic
                 _isLoading.value = true
                 val userId = tokenManager.getUserId()
                 
-                if (userId != null) {
+                if (userId != -1) {
                     Log.d(TAG, "Searching notifications for user: $userId, query: $query")
                     
                     val result = repository.searchNotifications(userId, query)
@@ -300,7 +296,7 @@ class NotificationsViewModel(application: Application) : AndroidViewModel(applic
             try {
                 val userId = tokenManager.getUserId()
                 
-                if (userId != null) {
+                if (userId != -1) {
                     Log.d(TAG, "Loading notification preferences for user: $userId")
                     
                     val result = repository.getPreferences(userId)
@@ -322,7 +318,7 @@ class NotificationsViewModel(application: Application) : AndroidViewModel(applic
             try {
                 val userId = tokenManager.getUserId()
                 
-                if (userId != null) {
+                if (userId != -1) {
                     Log.d(TAG, "Updating notification preferences for user: $userId")
                     
                     val result = repository.updatePreferences(userId, preferences)

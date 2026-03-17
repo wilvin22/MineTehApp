@@ -211,11 +211,11 @@ class NotificationsActivity : AppCompatActivity() {
 
     private fun navigateToRelevantScreen(notification: Notification) {
         try {
-            val data = notification.data
-            
             when (notification.type.name) {
                 "BID_PLACED", "BID_OUTBID", "AUCTION_ENDING", "AUCTION_WON", "AUCTION_LOST" -> {
-                    val listingId = data?.get("listing_id")?.toIntOrNull()
+                    // Try to extract listing_id from the link field (e.g. "listing-details.php?id=5")
+                    val listingId = notification.link
+                        ?.substringAfter("id=")?.toIntOrNull()
                     if (listingId != null) {
                         val intent = Intent(this, ItemDetailActivity::class.java)
                         intent.putExtra("listing_id", listingId)
@@ -225,43 +225,22 @@ class NotificationsActivity : AppCompatActivity() {
                     }
                 }
                 "NEW_MESSAGE" -> {
-                    val messageId = data?.get("message_id")?.toIntOrNull()
-                    val senderId = data?.get("sender_id")?.toIntOrNull()
-                    if (messageId != null && senderId != null) {
-                        val intent = Intent(this, ChatActivity::class.java)
-                        intent.putExtra("message_id", messageId)
-                        intent.putExtra("sender_id", senderId)
-                        startActivity(intent)
-                    } else {
-                        // Fallback to inbox if specific message data is missing
-                        startActivity(Intent(this, InboxActivity::class.java))
-                    }
+                    startActivity(Intent(this, InboxActivity::class.java))
                 }
-                "ITEM_SOLD" -> {
-                    val listingId = data?.get("listing_id")?.toIntOrNull()
-                    val intent = Intent(this, MyOrdersActivity::class.java)
-                    if (listingId != null) {
-                        intent.putExtra("listing_id", listingId)
-                    }
-                    startActivity(intent)
-                }
-                "PAYMENT_RECEIVED" -> {
+                "ITEM_SOLD", "PAYMENT_RECEIVED" -> {
                     startActivity(Intent(this, MyOrdersActivity::class.java))
                 }
                 "LISTING_APPROVED" -> {
-                    val listingId = data?.get("listing_id")?.toIntOrNull()
+                    val listingId = notification.link
+                        ?.substringAfter("id=")?.toIntOrNull()
                     if (listingId != null) {
                         val intent = Intent(this, ItemDetailActivity::class.java)
                         intent.putExtra("listing_id", listingId)
                         startActivity(intent)
-                    } else {
-                        // Fallback to user's listings
-                        Toast.makeText(this, "Listing approved successfully", Toast.LENGTH_SHORT).show()
                     }
                 }
                 else -> {
-                    // Default action - show notification details
-                    showNotificationDetails(notification)
+                    Toast.makeText(this, notification.title, Toast.LENGTH_SHORT).show()
                 }
             }
         } catch (e: Exception) {
