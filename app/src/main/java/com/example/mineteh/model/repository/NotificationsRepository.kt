@@ -521,9 +521,11 @@ class NotificationsRepository(private val context: Context) {
         return try {
             Log.d(TAG, "Cleaning up notifications older than $daysToKeep days for user: $userId")
             
-            // Calculate the cutoff date
-            val cutoffDate = java.time.LocalDateTime.now().minusDays(daysToKeep.toLong())
-            val cutoffDateString = cutoffDate.format(java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            // Calculate the cutoff date (compatible with API 24+)
+            val calendar = java.util.Calendar.getInstance()
+            calendar.add(java.util.Calendar.DAY_OF_YEAR, -daysToKeep)
+            val sdf = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault())
+            val cutoffDateString = sdf.format(calendar.time)
             
             // Get count of notifications to be deleted
             val countResponse = supabase.from("notifications")
