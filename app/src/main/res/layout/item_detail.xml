@@ -391,6 +391,18 @@
                             android:layout_marginBottom="12dp" />
 
                         <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnCloseAuction"
+                            android:layout_width="match_parent"
+                            android:layout_height="56dp"
+                            android:text="🔨 Close Auction"
+                            android:textSize="16sp"
+                            android:textAllCaps="false"
+                            android:visibility="gone"
+                            app:backgroundTint="#ffc107"
+                            app:cornerRadius="8dp"
+                            android:layout_marginBottom="12dp" />
+
+                        <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnToggleStatus"
                             android:layout_width="match_parent"
                             android:layout_height="56dp"
