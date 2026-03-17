@@ -26,6 +26,9 @@ class ListingDetailViewModel(application: Application) : AndroidViewModel(applic
 
     private val _favoriteResult = MutableLiveData<Resource<Boolean>?>()
     val favoriteResult: LiveData<Resource<Boolean>?> = _favoriteResult
+    
+    private val _statusUpdateResult = MutableLiveData<Resource<Boolean>?>()
+    val statusUpdateResult: LiveData<Resource<Boolean>?> = _statusUpdateResult
 
     fun loadListing(listingId: Int) {
         _listing.value = Resource.Loading()
@@ -82,5 +85,23 @@ class ListingDetailViewModel(application: Application) : AndroidViewModel(applic
 
     fun resetFavoriteResult() {
         _favoriteResult.value = null
+    }
+    
+    fun updateListingStatus(listingId: Int, status: String) {
+        _statusUpdateResult.value = Resource.Loading()
+        
+        viewModelScope.launch {
+            val result = listingsRepository.updateListingStatus(listingId, status)
+            _statusUpdateResult.value = result
+            
+            // Reload listing to get updated status
+            if (result is Resource.Success) {
+                loadListing(listingId)
+            }
+        }
+    }
+    
+    fun resetStatusUpdateResult() {
+        _statusUpdateResult.value = null
     }
 }
