@@ -37,7 +37,6 @@
         </activity>
         
         <!-- Notification activities -->
-        <activity android:name=".view.NotificationsActivity" />
         <activity android:name=".view.NotificationPreferencesActivity" />
         
         <!-- Deep linking support for notifications -->
@@ -88,14 +87,11 @@
         <activity android:name=".view.SellActivity"/>
         <activity android:name=".view.InboxActivity" />
         <activity android:name=".view.ProfileActivity" />
-        <activity android:name=".view.ItemDetailActivity" />
         <activity android:name=".view.BidDetailActivity" />
         <activity android:name=".view.CartActivity" />
         <activity android:name=".view.CheckoutActivity" />
         <activity android:name=".view.YourAuctionsActivity" />
-        <activity android:name=".MyOrdersActivity" />
         <activity android:name=".view.MyListingsActivity" />
-        <activity android:name=".view.ChatActivity" />
 
     </application>
 

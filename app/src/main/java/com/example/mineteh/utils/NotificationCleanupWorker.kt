@@ -4,8 +4,8 @@ import android.content.Context
 import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.example.mineteh.Resource
-import com.example.mineteh.TokenManager
+import com.example.mineteh.utils.Resource
+import com.example.mineteh.utils.TokenManager
 import com.example.mineteh.model.repository.NotificationsRepository
 
 /**

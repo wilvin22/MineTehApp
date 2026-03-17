@@ -6,7 +6,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.example.mineteh.Resource
+import com.example.mineteh.utils.Resource
 import com.example.mineteh.utils.TokenManager
 import com.example.mineteh.model.Notification
 import com.example.mineteh.model.NotificationPreferences
@@ -135,7 +135,7 @@ class NotificationsViewModel(application: Application) : AndroidViewModel(applic
                         _notifications.value = Resource.Success(allNotifications.toList())
                         Log.d(TAG, "Successfully refreshed ${newNotifications.size} notifications")
                     } else {
-                        _notifications.value = result
+                        _notifications.value = Resource.Error(result.message ?: "Failed to refresh notifications")
                     }
                     
                     // Also refresh unread count

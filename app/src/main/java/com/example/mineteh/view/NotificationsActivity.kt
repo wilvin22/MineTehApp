@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.mineteh.R
-import com.example.mineteh.Resource
+import com.example.mineteh.utils.Resource
 import com.example.mineteh.model.Notification
 import com.example.mineteh.viewmodel.NotificationsViewModel
 import com.example.mineteh.MyOrdersActivity

@@ -5,11 +5,8 @@ import android.util.Log
 import com.example.mineteh.model.Notification
 import com.example.mineteh.model.SupabaseNotificationResponse
 import com.example.mineteh.supabase.SupabaseClient
-import io.github.jan.supabase.realtime.PostgresAction
-import io.github.jan.supabase.realtime.RealtimeChannel
-import io.github.jan.supabase.realtime.createChannel
-import io.github.jan.supabase.realtime.postgresChanges
-import io.github.jan.supabase.realtime.realtime
+import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.postgrest.query.Columns
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -30,9 +27,6 @@ class NotificationRealtimeManager(private val context: Context) {
     
     // Coroutine scope for managing subscriptions
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    
-    // Realtime channel for notifications
-    private var notificationChannel: RealtimeChannel? = null
     
     // Flow for new notifications
     private val _newNotifications = MutableSharedFlow<Notification>()
@@ -66,41 +60,11 @@ class NotificationRealtimeManager(private val context: Context) {
         
         scope.launch {
             try {
-                Log.d(TAG, "Starting real-time subscription for user: $userId")
-                
-                // Create channel for notifications
-                notificationChannel = supabase.realtime.createChannel("notifications_$userId") {
-                    // Listen for new notifications
-                    postgresChanges {
-                        event = PostgresAction.INSERT
-                        schema = "public"
-                        table = "notifications"
-                        filter = "user_id=eq.$userId"
-                    }
-                    
-                    // Listen for notification updates (read status changes)
-                    postgresChanges {
-                        event = PostgresAction.UPDATE
-                        schema = "public"
-                        table = "notifications"
-                        filter = "user_id=eq.$userId"
-                    }
-                }
-                
-                // Subscribe to the channel
-                notificationChannel?.subscribe { status ->
-                    Log.d(TAG, "Real-time subscription status: $status")
-                    isConnected = status == io.github.jan.supabase.realtime.RealtimeChannel.Status.SUBSCRIBED
-                    
-                    if (isConnected) {
-                        Log.d(TAG, "Successfully connected to real-time notifications for user $userId")
-                    }
-                }
-                
-                // Handle incoming changes
-                notificationChannel?.postgresChanges?.collect { change ->
-                    handleNotificationChange(change)
-                }
+                // Realtime subscription is temporarily disabled until the Realtime API is
+                // finalized for the currently pinned Supabase SDK version.
+                Log.d(TAG, "Realtime disabled; emitting unread count snapshot for user: $userId")
+                isConnected = false
+                updateUnreadCount()
                 
             } catch (e: Exception) {
                 Log.e(TAG, "Error starting real-time subscription", e)
@@ -116,9 +80,7 @@ class NotificationRealtimeManager(private val context: Context) {
         scope.launch {
             try {
                 Log.d(TAG, "Stopping real-time subscription")
-                
-                notificationChannel?.unsubscribe()
-                notificationChannel = null
+
                 isConnected = false
                 currentUserId = null
                 
@@ -138,48 +100,6 @@ class NotificationRealtimeManager(private val context: Context) {
             Log.d(TAG, "Restarting subscription for user $userId")
             stopSubscription()
             startSubscription(userId)
-        }
-    }
-    
-    /**
-     * Handle notification changes from real-time subscription
-     */
-    private suspend fun handleNotificationChange(change: io.github.jan.supabase.realtime.PostgresChangePayload) {
-        try {
-            Log.d(TAG, "Received notification change: ${change.eventType}")
-            
-            when (change.eventType) {
-                PostgresAction.INSERT -> {
-                    // New notification received
-                    val notificationData = change.decodeRecord<SupabaseNotificationResponse>()
-                    val notification = notificationData.toNotification()
-                    
-                    Log.d(TAG, "New notification received: ${notification.title}")
-                    _newNotifications.emit(notification)
-                    
-                    // Update unread count
-                    updateUnreadCount()
-                }
-                
-                PostgresAction.UPDATE -> {
-                    // Notification updated (likely read status change)
-                    val notificationData = change.decodeRecord<SupabaseNotificationResponse>()
-                    val notification = notificationData.toNotification()
-                    
-                    Log.d(TAG, "Notification updated: ${notification.id}, isRead: ${notification.isRead}")
-                    _notificationUpdates.emit(notification)
-                    
-                    // Update unread count
-                    updateUnreadCount()
-                }
-                
-                else -> {
-                    Log.d(TAG, "Unhandled change type: ${change.eventType}")
-                }
-            }
-            
-        } catch (e: Exception) {
-            Log.e(TAG, "Error handling notification change", e)
         }
     }
     
