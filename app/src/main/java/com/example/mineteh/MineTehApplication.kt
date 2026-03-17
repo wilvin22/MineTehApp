@@ -3,6 +3,7 @@ package com.example.mineteh
 import android.app.Application
 import com.example.mineteh.network.ApiClient
 import com.example.mineteh.supabase.SupabaseClient
+import com.example.mineteh.utils.NotificationCleanupManager
 
 class MineTehApplication : Application() {
     override fun onCreate() {
@@ -15,6 +16,11 @@ class MineTehApplication : Application() {
         
         ApiClient.initialize(this)
         SupabaseClient.initialize()
+        
+        // Initialize notification cleanup manager
+        val cleanupManager = NotificationCleanupManager(this)
+        cleanupManager.schedulePeriodicCleanup()
+        android.util.Log.d("MineTehApp", "Notification cleanup scheduled")
         
         android.util.Log.d("MineTehApp", "Application initialization complete")
     }
