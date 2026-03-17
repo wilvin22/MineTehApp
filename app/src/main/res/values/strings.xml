@@ -3,10 +3,14 @@
     
     <!-- Navigation -->
     <string name="nav_home">Home</string>
-    <string name="nav_bid">Bid</string>
+    <string name="nav_notifications">Notifications</string>
     <string name="nav_sell">Sell Items</string>
     <string name="nav_inbox">Inbox</string>
     <string name="nav_profile">Me</string>
+    
+    <!-- Notification channels -->
+    <string name="default_notification_channel_id">mineteh_notifications</string>
+    <string name="default_notification_channel_name">MineTeh Notifications</string>
     <string name="nav_search">Search</string>
     <string name="nav_auctions">Auctions</string>
     <string name="nav_cart">Cart</string>

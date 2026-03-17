@@ -364,8 +364,8 @@ class SellActivity : AppCompatActivity() {
             overridePendingTransition(0, 0)
             finish()
         }
-        findViewById<LinearLayout>(R.id.nav_bid)?.setOnClickListener {
-            startActivity(Intent(this, BidActivity::class.java))
+        findViewById<LinearLayout>(R.id.nav_notifications)?.setOnClickListener {
+            startActivity(Intent(this, NotificationsActivity::class.java))
             overridePendingTransition(0, 0)
             finish()
         }

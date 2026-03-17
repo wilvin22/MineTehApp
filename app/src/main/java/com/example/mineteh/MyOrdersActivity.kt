@@ -24,6 +24,14 @@ class MyOrdersActivity : AppCompatActivity() {
         binding.toolbar.setNavigationOnClickListener { finish() }
 
         setupViewPager()
+        
+        // Handle deep link or intent data
+        val listingId = getListingIdFromIntent()
+        if (listingId != -1) {
+            // TODO: Navigate to specific order or filter by listing ID
+            // For now, just log it
+            android.util.Log.d("MyOrdersActivity", "Deep link with listing_id: $listingId")
+        }
     }
 
     private fun setupViewPager() {
@@ -76,5 +84,20 @@ class MyOrdersActivity : AppCompatActivity() {
             // Populate with dummy data if needed
         }
         override fun getItemCount(): Int = 1
+    }
+
+    private fun getListingIdFromIntent(): Int {
+        // First check for deep link URI
+        intent.data?.let { uri ->
+            if (uri.scheme == "mineteh" && uri.host == "orders") {
+                val pathSegments = uri.pathSegments
+                if (pathSegments.isNotEmpty()) {
+                    return pathSegments[0].toIntOrNull() ?: -1
+                }
+            }
+        }
+        
+        // Fallback to regular intent extra
+        return intent.getIntExtra("listing_id", -1)
     }
 }

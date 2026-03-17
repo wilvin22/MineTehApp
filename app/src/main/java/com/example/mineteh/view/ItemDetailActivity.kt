@@ -45,8 +45,8 @@ class ItemDetailActivity : AppCompatActivity() {
             setupObservers()
             Log.d("ItemDetailActivity", "Observers setup complete")
             
-            // Get listing_id from Intent
-            val listingId = intent.getIntExtra("listing_id", -1)
+            // Get listing_id from Intent (regular intent or deep link)
+            val listingId = getListingIdFromIntent()
             Log.d("ItemDetailActivity", "Received listing_id: $listingId")
             
             if (listingId == -1) {
@@ -512,6 +512,21 @@ class ItemDetailActivity : AppCompatActivity() {
         } catch (e: Exception) {
             Log.e("ItemDetailActivity", "Error in showError", e)
         }
+    }
+
+    private fun getListingIdFromIntent(): Int {
+        // First check for deep link URI
+        intent.data?.let { uri ->
+            if (uri.scheme == "mineteh" && uri.host == "listing") {
+                val pathSegments = uri.pathSegments
+                if (pathSegments.isNotEmpty()) {
+                    return pathSegments[0].toIntOrNull() ?: -1
+                }
+            }
+        }
+        
+        // Fallback to regular intent extra
+        return intent.getIntExtra("listing_id", -1)
     }
 
     override fun onDestroy() {

@@ -19,7 +19,8 @@ class ChatActivity : AppCompatActivity() {
         binding = ChatBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Get intent data
+        // Get intent data (regular intent or deep link)
+        val (messageId, senderId) = getMessageDataFromIntent()
         val senderName = intent.getStringExtra("senderName") ?: "User"
         val profileImage = intent.getIntExtra("profileImage", R.drawable.ic_launcher_background)
 
@@ -65,5 +66,25 @@ class ChatActivity : AppCompatActivity() {
         adapter.notifyDataSetChanged()
         binding.etMessage.text.clear()
         binding.chatRecyclerView.scrollToPosition(chatMessages.size - 1)
+    }
+
+    private fun getMessageDataFromIntent(): Pair<Int?, Int?> {
+        // First check for deep link URI
+        intent.data?.let { uri ->
+            if (uri.scheme == "mineteh" && uri.host == "chat") {
+                val pathSegments = uri.pathSegments
+                val messageId = if (pathSegments.isNotEmpty()) {
+                    pathSegments[0].toIntOrNull()
+                } else null
+                
+                val senderId = uri.getQueryParameter("sender_id")?.toIntOrNull()
+                return Pair(messageId, senderId)
+            }
+        }
+        
+        // Fallback to regular intent extras
+        val messageId = intent.getIntExtra("message_id", -1).takeIf { it != -1 }
+        val senderId = intent.getIntExtra("sender_id", -1).takeIf { it != -1 }
+        return Pair(messageId, senderId)
     }
 }
