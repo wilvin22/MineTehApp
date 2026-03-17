@@ -18,9 +18,6 @@ import io.github.jan.supabase.postgrest.query.Order
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.toRequestBody
 
 // Supabase DTOs for listings
 @Serializable
@@ -307,7 +304,7 @@ class ListingsRepository(private val context: Context) {
 
             Log.d(tag, "Listing inserted with id=${listingRow.id}")
 
-            // Upload images to server, store returned URLs in Supabase
+            // Upload images to Supabase Storage, store public URLs in listing_images
             imageUris.forEachIndexed { index, uri ->
                 try {
                     val stream = context.contentResolver.openInputStream(uri) ?: return@forEachIndexed
@@ -333,22 +330,18 @@ class ListingsRepository(private val context: Context) {
                     if (scaledBitmap != originalBitmap) scaledBitmap.recycle()
                     originalBitmap.recycle()
 
-                    val reqBody = bytes.toRequestBody("image/jpeg".toMediaTypeOrNull())
-                    val part = MultipartBody.Part.createFormData("image", "image_$index.jpg", reqBody)
-
-                    val uploadResponse = api.uploadImage(part)
-                    val imageUrl = if (uploadResponse.isSuccessful && uploadResponse.body()?.success == true) {
-                        uploadResponse.body()!!.data!!.url
-                    } else {
-                        Log.w(tag, "Image upload failed for index $index, skipping")
-                        return@forEachIndexed
+                    // Upload to Supabase Storage bucket "listing-images"
+                    val fileName = "listing_${listingRow.id}_${index}_${System.currentTimeMillis()}.jpg"
+                    supabase.storage.from("images").upload(fileName, bytes) {
+                        upsert = true
                     }
+                    val publicUrl = supabase.storage.from("images").publicUrl(fileName)
 
-                    Log.d(tag, "Image $index uploaded: $imageUrl")
+                    Log.d(tag, "Image $index uploaded to storage: $publicUrl")
 
                     supabase.from("listing_images").insert(InsertListingImage(
                         listing_id = listingRow.id,
-                        image_path = imageUrl,
+                        image_path = publicUrl,
                         image_id = index
                     ))
                 } catch (e: Exception) {
