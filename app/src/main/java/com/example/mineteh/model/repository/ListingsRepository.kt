@@ -55,6 +55,27 @@ private data class SupabaseBid(
     val bid_amount: Double
 )
 
+@Serializable
+private data class InsertListing(
+    val title: String,
+    val description: String,
+    val price: Double,
+    val location: String,
+    val category: String,
+    val listing_type: String,
+    val seller_id: Int,
+    val status: String,
+    val end_time: String? = null,
+    val min_bid_increment: Double? = null
+)
+
+@Serializable
+private data class InsertListingImage(
+    val listing_id: Int,
+    val image_path: String,
+    val image_id: Int
+)
+
 class ListingsRepository(private val context: Context) {
     private val tag = "ListingsRepository"
     private val api = ApiClient.apiService
@@ -260,18 +281,18 @@ class ListingsRepository(private val context: Context) {
             if (sellerId == -1) return@withContext Resource.Error("Not authenticated")
 
             // Build insert map
-            val insertData = mutableMapOf<String, Any?>(
-                "title" to title,
-                "description" to description,
-                "price" to price,
-                "location" to location,
-                "category" to category,
-                "listing_type" to listingType,
-                "seller_id" to sellerId,
-                "status" to "active"
+            val insertData = InsertListing(
+                title = title,
+                description = description,
+                price = price,
+                location = location,
+                category = category,
+                listing_type = listingType,
+                seller_id = sellerId,
+                status = "active",
+                end_time = endTime,
+                min_bid_increment = minBidIncrement
             )
-            if (endTime != null) insertData["end_time"] = endTime
-            if (minBidIncrement != null) insertData["min_bid_increment"] = minBidIncrement
 
             // Insert listing
             val listingRow = supabase.from("listings")
@@ -290,10 +311,10 @@ class ListingsRepository(private val context: Context) {
                     val mimeType = context.contentResolver.getType(uri) ?: "image/jpeg"
                     val dataUri = "data:$mimeType;base64,$base64"
 
-                    supabase.from("listing_images").insert(mapOf(
-                        "listing_id" to listingRow.id,
-                        "image_path" to dataUri,
-                        "image_id" to index
+                    supabase.from("listing_images").insert(InsertListingImage(
+                        listing_id = listingRow.id,
+                        image_path = dataUri,
+                        image_id = index
                     ))
                 } catch (e: Exception) {
                     Log.e(tag, "Failed to upload image $index", e)
