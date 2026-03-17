@@ -15,6 +15,7 @@ import com.example.mineteh.utils.Resource
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.postgrest.query.Order
+import io.github.jan.supabase.storage.storage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
@@ -330,11 +331,13 @@ class ListingsRepository(private val context: Context) {
                     if (scaledBitmap != originalBitmap) scaledBitmap.recycle()
                     originalBitmap.recycle()
 
-                    // Upload to Supabase Storage bucket "listing-images"
+                    // Upload to Supabase Storage bucket "images"
                     val fileName = "listing_${listingRow.id}_${index}_${System.currentTimeMillis()}.jpg"
-                    supabase.storage.from("images").upload(fileName, bytes) {
+                    supabase.storage.from("images").upload(
+                        path = fileName,
+                        data = bytes,
                         upsert = true
-                    }
+                    )
                     val publicUrl = supabase.storage.from("images").publicUrl(fileName)
 
                     Log.d(tag, "Image $index uploaded to storage: $publicUrl")
