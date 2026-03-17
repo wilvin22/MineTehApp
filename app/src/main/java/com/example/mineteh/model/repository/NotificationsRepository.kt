@@ -124,7 +124,7 @@ class NotificationsRepository(private val context: Context) {
             
             val response = supabase.from("notifications")
                 .select(columns = Columns.list(
-                    "id", "user_id", "type", "title", "message", "data", "is_read", "created_at", "updated_at"
+                    "id", "user_id", "type", "title", "message", "is_read", "created_at", "updated_at"
                 )) {
                     filter {
                         eq("user_id", userId)
@@ -151,7 +151,7 @@ class NotificationsRepository(private val context: Context) {
             
             val response = supabase.from("notifications")
                 .select(columns = Columns.list(
-                    "id", "user_id", "type", "title", "message", "data", "is_read", "created_at", "updated_at"
+                    "id", "user_id", "type", "title", "message", "is_read", "created_at", "updated_at"
                 )) {
                     filter {
                         eq("user_id", userId)
@@ -217,8 +217,8 @@ class NotificationsRepository(private val context: Context) {
             )
             
             if (data != null) {
-                // Store structured payload; the "data" column should be json/jsonb in Supabase.
-                notificationData["data"] = data
+                // Optional payload: only include if your DB has a `data` json/jsonb column.
+                // (Some deployments may not have this column.)
             }
             
             val response = supabase.from("notifications")
@@ -247,7 +247,7 @@ class NotificationsRepository(private val context: Context) {
             
             val response = supabase.from("notifications")
                 .select(columns = Columns.list(
-                    "id", "user_id", "type", "title", "message", "data", "is_read", "created_at", "updated_at"
+                    "id", "user_id", "type", "title", "message", "is_read", "created_at", "updated_at"
                 )) {
                     filter {
                         eq("user_id", userId)
@@ -285,7 +285,7 @@ class NotificationsRepository(private val context: Context) {
             
             val response = supabase.from("notifications")
                 .select(columns = Columns.list(
-                    "id", "user_id", "type", "title", "message", "data", "is_read", "created_at", "updated_at"
+                    "id", "user_id", "type", "title", "message", "is_read", "created_at", "updated_at"
                 )) {
                     filter {
                         eq("user_id", userId)
@@ -322,7 +322,7 @@ class NotificationsRepository(private val context: Context) {
             // Fetch one extra item to check if there are more pages
             val response = supabase.from("notifications")
                 .select(columns = Columns.list(
-                    "id", "user_id", "type", "title", "message", "data", "is_read", "created_at", "updated_at"
+                    "id", "user_id", "type", "title", "message", "is_read", "created_at", "updated_at"
                 )) {
                     filter {
                         eq("user_id", userId)
