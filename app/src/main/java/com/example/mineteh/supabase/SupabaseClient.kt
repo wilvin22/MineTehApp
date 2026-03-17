@@ -7,6 +7,9 @@ import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.storage.Storage
 import io.github.jan.supabase.storage.storage
 import io.github.jan.supabase.serializer.KotlinXSerializer
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.android.Android
+import io.ktor.client.plugins.HttpTimeout
 import kotlinx.serialization.json.Json
 
 /**
@@ -33,6 +36,14 @@ object SupabaseClient {
             supabaseUrl = "https://didpavzminvohszuuowu.supabase.co",
             supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpZHBhdnptaW52b2hzenV1b3d1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMTYwNDgsImV4cCI6MjA4NzU5MjA0OH0.iueZB9z5Z5YvKM98Gsy-ll--kLipCKXtmT0V7jHBA0Y"
         ) {
+            httpEngine = Android.create()
+            httpConfig {
+                install(HttpTimeout) {
+                    requestTimeoutMillis = 60_000
+                    connectTimeoutMillis = 30_000
+                    socketTimeoutMillis = 60_000
+                }
+            }
             install(Postgrest)
             install(Storage)
             
