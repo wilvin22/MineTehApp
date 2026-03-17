@@ -74,8 +74,7 @@ private data class InsertListing(
 @Serializable
 private data class InsertListingImage(
     val listing_id: Int,
-    val image_path: String,
-    val image_id: Int
+    val image_path: String
 )
 
 class ListingsRepository(private val context: Context) {
@@ -344,8 +343,7 @@ class ListingsRepository(private val context: Context) {
 
                     supabase.from("listing_images").insert(InsertListingImage(
                         listing_id = listingRow.id,
-                        image_path = publicUrl,
-                        image_id = index
+                        image_path = publicUrl
                     ))
                 } catch (e: Exception) {
                     Log.e(tag, "Failed to upload image $index", e)
