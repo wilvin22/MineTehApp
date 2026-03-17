@@ -432,4 +432,29 @@ class ListingsRepository(private val context: Context) {
             Resource.Error(e.message ?: "Failed to place bid")
         }
     }
+    
+    suspend fun updateListingStatus(listingId: Int, status: String): Resource<Boolean> = withContext(Dispatchers.IO) {
+        try {
+            Log.d(tag, "Updating listing status: listingId=$listingId, status=$status")
+            
+            val tokenManager = com.example.mineteh.utils.TokenManager(context)
+            val userId = tokenManager.getUserId()
+            if (userId == -1) return@withContext Resource.Error("Not authenticated")
+            
+            // Update status in Supabase
+            supabase.from("listings")
+                .update(mapOf("status" to status)) {
+                    filter {
+                        eq("id", listingId)
+                        eq("seller_id", userId) // Ensure user owns the listing
+                    }
+                }
+            
+            Log.d(tag, "Listing status updated successfully")
+            Resource.Success(true)
+        } catch (e: Exception) {
+            Log.e(tag, "Error updating listing status", e)
+            Resource.Error(e.message ?: "Failed to update listing status")
+        }
+    }
 }
