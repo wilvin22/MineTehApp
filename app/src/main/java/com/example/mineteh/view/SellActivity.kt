@@ -73,6 +73,7 @@ class SellActivity : AppCompatActivity() {
     private lateinit var rbCustom: RadioButton
     private lateinit var layoutCustomDate: TextInputLayout
     private lateinit var etCustomDate: EditText
+    private lateinit var etMinBidIncrement: TextInputEditText
     private lateinit var categoryDropdown: AutoCompleteTextView
     private lateinit var btnSubmit: Button
     private lateinit var btnAddPhoto: Button
@@ -115,6 +116,7 @@ class SellActivity : AppCompatActivity() {
         rbCustom = findViewById(R.id.rbCustom)
         layoutCustomDate = findViewById(R.id.layoutCustomDate)
         etCustomDate = findViewById(R.id.etCustomDate)
+        etMinBidIncrement = findViewById(R.id.etMinBidIncrement)
         categoryDropdown = findViewById(R.id.spinnerCategory)
         btnSubmit = findViewById(R.id.btnSubmit)
         btnAddPhoto = findViewById(R.id.btnAddPhoto)
@@ -220,7 +222,12 @@ class SellActivity : AppCompatActivity() {
                 Toast.makeText(this, "Please select auction duration", Toast.LENGTH_SHORT).show()
                 return
             }
-            minBidIncrement = 1.0
+            val minBidStr = etMinBidIncrement.text.toString().trim()
+            minBidIncrement = minBidStr.toDoubleOrNull()
+            if (minBidIncrement == null || minBidIncrement!! <= 0) {
+                Toast.makeText(this, "Please enter a valid minimum bid increment", Toast.LENGTH_SHORT).show()
+                return
+            }
         }
 
         // Create the listing

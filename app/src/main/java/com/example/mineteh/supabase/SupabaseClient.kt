@@ -28,15 +28,13 @@ object SupabaseClient {
     fun initialize() {
         android.util.Log.d("SupabaseClient", "=== INITIALIZING SUPABASE CLIENT (NEW CODE) ===")
         android.util.Log.d("SupabaseClient", "URL: https://didpavzminvohszuuowu.supabase.co")
-        
+
         client = createSupabaseClient(
             supabaseUrl = "https://didpavzminvohszuuowu.supabase.co",
             supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpZHBhdnptaW52b2hzenV1b3d1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMTYwNDgsImV4cCI6MjA4NzU5MjA0OH0.iueZB9z5Z5YvKM98Gsy-ll--kLipCKXtmT0V7jHBA0Y"
         ) {
             install(Postgrest)
             install(Storage)
-            
-            // Configure default serializer to ignore unknown keys
             defaultSerializer = KotlinXSerializer(
                 Json {
                     ignoreUnknownKeys = true

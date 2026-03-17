@@ -303,15 +303,39 @@ class ListingsRepository(private val context: Context) {
 
             Log.d(tag, "Listing inserted with id=${listingRow.id}")
 
-            // Insert images as base64
+            // Insert images as base64 (compressed)
             imageUris.forEachIndexed { index, uri ->
                 try {
                     val stream = context.contentResolver.openInputStream(uri) ?: return@forEachIndexed
-                    val bytes = stream.readBytes()
+                    val originalBitmap = android.graphics.BitmapFactory.decodeStream(stream)
                     stream.close()
+
+                    if (originalBitmap == null) return@forEachIndexed
+
+                    // Scale down to max 800px on longest side
+                    val maxSize = 800
+                    val scale = minOf(maxSize.toFloat() / originalBitmap.width, maxSize.toFloat() / originalBitmap.height, 1f)
+                    val scaledBitmap = if (scale < 1f) {
+                        android.graphics.Bitmap.createScaledBitmap(
+                            originalBitmap,
+                            (originalBitmap.width * scale).toInt(),
+                            (originalBitmap.height * scale).toInt(),
+                            true
+                        )
+                    } else originalBitmap
+
+                    // Compress to JPEG at 70% quality
+                    val outputStream = java.io.ByteArrayOutputStream()
+                    scaledBitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 70, outputStream)
+                    val bytes = outputStream.toByteArray()
+
+                    if (scaledBitmap != originalBitmap) scaledBitmap.recycle()
+                    originalBitmap.recycle()
+
                     val base64 = android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
-                    val mimeType = context.contentResolver.getType(uri) ?: "image/jpeg"
-                    val dataUri = "data:$mimeType;base64,$base64"
+                    val dataUri = "data:image/jpeg;base64,$base64"
+
+                    Log.d(tag, "Image $index compressed to ${bytes.size / 1024}KB")
 
                     supabase.from("listing_images").insert(InsertListingImage(
                         listing_id = listingRow.id,
