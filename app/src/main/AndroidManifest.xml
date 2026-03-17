@@ -6,6 +6,8 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/> <!-- For Android 13+ -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
 
 
@@ -25,6 +27,7 @@
         <activity android:name=".view.SavedItemsActivity" />
         <activity android:name=".view.SearchActivity" />
         <activity android:name=".view.NotificationsActivity" />
+        <activity android:name=".view.NotificationPreferencesActivity" />
         <activity
             android:name=".Login"
             android:exported="true">
@@ -32,6 +35,47 @@
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        
+        <!-- Deep linking support for notifications -->
+        <activity android:name=".view.NotificationsActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="mineteh" android:host="notifications" />
+            </intent-filter>
+        </activity>
+        
+        <activity android:name=".view.ItemDetailActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="mineteh" android:host="listing" />
+            </intent-filter>
+        </activity>
+        
+        <activity android:name=".view.ChatActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="mineteh" android:host="chat" />
+            </intent-filter>
+        </activity>
+        
+        <activity android:name=".MyOrdersActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="mineteh" android:host="orders" />
             </intent-filter>
         </activity>
         <activity android:name=".MainActivity"/>
@@ -50,6 +94,26 @@
         <activity android:name=".MyOrdersActivity" />
         <activity android:name=".view.MyListingsActivity" />
         <activity android:name=".view.ChatActivity" />
+
+        <!-- Firebase Cloud Messaging Service -->
+        <service
+            android:name=".service.NotificationService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <!-- Firebase default notification channel -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_notifications" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/purple" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="@string/default_notification_channel_id" />
 
     </application>
 

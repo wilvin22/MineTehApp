@@ -1,105 +1,83 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="8dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="2dp">
+    android:orientation="horizontal"
+    android:padding="16dp"
+    android:background="?attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
+    <!-- Notification Icon -->
+    <ImageView
+        android:id="@+id/notificationIcon"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginEnd="16dp"
+        android:layout_gravity="top"
+        android:src="@drawable/ic_notifications"
+        android:contentDescription="Notification icon" />
+
+    <!-- Content Container -->
+    <LinearLayout
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:layout_weight="1"
+        android:orientation="vertical">
 
-        <!-- Notification Icon -->
-        <ImageView
-            android:id="@+id/notificationIcon"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@drawable/ic_notifications"
-            android:background="@drawable/circle_background"
-            android:padding="8dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <!-- Unread Indicator -->
-        <View
-            android:id="@+id/unreadIndicator"
-            android:layout_width="8dp"
-            android:layout_height="8dp"
-            android:background="@drawable/circle_background_red"
-            android:visibility="gone"
-            app:layout_constraintEnd_toEndOf="@id/notificationIcon"
-            app:layout_constraintTop_toTopOf="@id/notificationIcon" />
-
-        <!-- Notification Content -->
+        <!-- Title and Timestamp Row -->
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginStart="12dp"
-            android:layout_marginEnd="8dp"
-            app:layout_constraintStart_toEndOf="@id/notificationIcon"
-            app:layout_constraintEnd_toStartOf="@id/deleteButton"
-            app:layout_constraintTop_toTopOf="@id/notificationIcon">
+            android:orientation="horizontal"
+            android:layout_marginBottom="4dp">
 
             <TextView
                 android:id="@+id/notificationTitle"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="New bid on your listing"
+                android:layout_weight="1"
+                android:text="Notification Title"
                 android:textSize="16sp"
-                android:textStyle="bold"
                 android:textColor="@color/text_primary"
-                android:layout_marginBottom="4dp" />
+                android:textStyle="bold"
+                android:maxLines="2"
+                android:ellipsize="end" />
 
             <TextView
-                android:id="@+id/notificationMessage"
-                android:layout_width="match_parent"
+                android:id="@+id/notificationTimestamp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Someone placed a bid of ₱1,500 on your iPhone 12"
-                android:textSize="14sp"
-                android:textColor="@color/text_secondary"
-                android:layout_marginBottom="8dp" />
-
-            <TextView
-                android:id="@+id/notificationTime"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="2 hours ago"
+                android:layout_marginStart="8dp"
+                android:text="2m ago"
                 android:textSize="12sp"
-                android:textColor="@color/text_tertiary" />
+                android:textColor="@color/text_secondary" />
 
         </LinearLayout>
 
-        <!-- Delete Button -->
-        <ImageView
-            android:id="@+id/deleteButton"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/ic_delete"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:padding="4dp"
-            android:contentDescription="Delete notification"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <!-- Action Button (optional) -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/actionButton"
-            android:layout_width="wrap_content"
+        <!-- Message -->
+        <TextView
+            android:id="@+id/notificationMessage"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="View Listing"
-            android:textSize="12sp"
-            android:layout_marginTop="8dp"
-            android:visibility="gone"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            app:cornerRadius="6dp"
-            app:layout_constraintStart_toEndOf="@id/notificationIcon"
-            app:layout_constraintTop_toBottomOf="@id/notificationIcon"
-            android:layout_marginStart="12dp" />
+            android:text="Notification message content goes here"
+            android:textSize="14sp"
+            android:textColor="@color/text_secondary"
+            android:maxLines="3"
+            android:ellipsize="end"
+            android:lineSpacingExtra="2dp" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
 
-</androidx.cardview.widget.CardView>
+    <!-- Unread Indicator -->
+    <View
+        android:id="@+id/unreadIndicator"
+        android:layout_width="8dp"
+        android:layout_height="8dp"
+        android:layout_marginStart="12dp"
+        android:layout_gravity="center_vertical"
+        android:background="@drawable/unread_indicator"
+        android:visibility="gone" />
+
+</LinearLayout>

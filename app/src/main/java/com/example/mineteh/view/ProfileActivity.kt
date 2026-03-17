@@ -48,7 +48,7 @@ class ProfileActivity : AppCompatActivity() {
 
         // Bottom Navigation
         val navHome = findViewById<LinearLayout>(R.id.nav_home)
-        val navBid = findViewById<LinearLayout>(R.id.nav_bid)
+        val navNotifications = findViewById<LinearLayout>(R.id.nav_notifications)
         val navSell = findViewById<LinearLayout>(R.id.nav_sell)
         val navInbox = findViewById<LinearLayout>(R.id.nav_inbox)
         val navMe = findViewById<LinearLayout>(R.id.nav_profile)
@@ -59,8 +59,8 @@ class ProfileActivity : AppCompatActivity() {
             finish()
         }
 
-        navBid.setOnClickListener {
-            startActivity(Intent(this, BidActivity::class.java))
+        navNotifications.setOnClickListener {
+            startActivity(Intent(this, NotificationsActivity::class.java))
             overridePendingTransition(0, 0)
             finish()
         }

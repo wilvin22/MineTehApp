@@ -22,6 +22,7 @@ class TokenManager(context: Context) {
         private const val KEY_ACCESS_TOKEN = "access_token"
         private const val KEY_REFRESH_TOKEN = "refresh_token"
         private const val KEY_SESSION = "supabase_session"
+        private const val KEY_FCM_TOKEN = "fcm_token"
     }
 
     fun saveToken(token: String) {
@@ -126,5 +127,30 @@ class TokenManager(context: Context) {
     fun isLoggedIn(): Boolean {
         // Check both legacy token and new access token for backward compatibility
         return getToken() != null || getAccessToken() != null
+    }
+
+    /**
+     * Saves the FCM token for push notifications.
+     * 
+     * @param token The FCM token to save
+     */
+    fun saveFcmToken(token: String) {
+        prefs.edit().putString(KEY_FCM_TOKEN, token).apply()
+    }
+
+    /**
+     * Retrieves the stored FCM token.
+     * 
+     * @return FCM token string if available, null otherwise
+     */
+    fun getFcmToken(): String? {
+        return prefs.getString(KEY_FCM_TOKEN, null)
+    }
+
+    /**
+     * Clears the stored FCM token.
+     */
+    fun clearFcmToken() {
+        prefs.edit().remove(KEY_FCM_TOKEN).apply()
     }
 }

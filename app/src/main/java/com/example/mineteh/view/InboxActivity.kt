@@ -11,8 +11,14 @@ import com.example.mineteh.view.ProfileActivity
 import com.example.mineteh.R
 import com.example.mineteh.view.SellActivity
 import com.example.mineteh.model.MessageModel
+import com.example.mineteh.utils.NotificationBadgeManager
+import com.example.mineteh.viewmodel.NotificationsViewModel
+import androidx.activity.viewModels
+import android.widget.TextView
 
 class InboxActivity : AppCompatActivity() {
+
+    private val notificationsViewModel: NotificationsViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,14 +56,18 @@ class InboxActivity : AppCompatActivity() {
 
         recyclerView.adapter = MessageAdapter(messageList)
 
+        // Setup notification badge
+        val notificationBadge = findViewById<TextView>(R.id.notificationBadge)
+        NotificationBadgeManager.setupBadge(this, this, notificationsViewModel, notificationBadge)
+
         // Navigation setup
         findViewById<LinearLayout>(R.id.nav_home).setOnClickListener {
             startActivity(Intent(this, HomeActivity::class.java))
             overridePendingTransition(0, 0)
             finish()
         }
-        findViewById<LinearLayout>(R.id.nav_bid).setOnClickListener {
-            startActivity(Intent(this, BidActivity::class.java))
+        findViewById<LinearLayout>(R.id.nav_notifications).setOnClickListener {
+            startActivity(Intent(this, NotificationsActivity::class.java))
             overridePendingTransition(0, 0)
             finish()
         }

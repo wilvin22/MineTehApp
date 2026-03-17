@@ -14,7 +14,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.mineteh.R
 import com.example.mineteh.utils.Categories
 import com.example.mineteh.utils.Resource
+import com.example.mineteh.utils.NotificationBadgeManager
 import com.example.mineteh.viewmodel.HomeViewModel
+import com.example.mineteh.viewmodel.NotificationsViewModel
 import com.google.android.material.button.MaterialButton
 
 class HomeActivity : AppCompatActivity() {
@@ -24,6 +26,7 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var progressBar: ProgressBar
     
     private val viewModel: HomeViewModel by viewModels()
+    private val notificationsViewModel: NotificationsViewModel by viewModels()
     
     // Category buttons
     private lateinit var categoryButtons: List<MaterialButton>
@@ -67,8 +70,8 @@ class HomeActivity : AppCompatActivity() {
                 // Already here
             }
 
-            findViewById<LinearLayout>(R.id.nav_bid).setOnClickListener {
-                startActivity(Intent(this, BidActivity::class.java))
+            findViewById<LinearLayout>(R.id.nav_notifications).setOnClickListener {
+                startActivity(Intent(this, NotificationsActivity::class.java))
                 overridePendingTransition(0, 0)
             }
 
@@ -89,6 +92,10 @@ class HomeActivity : AppCompatActivity() {
             
             // Category filters
             setupCategoryFilters()
+            
+            // Setup notification badge
+            val notificationBadge = findViewById<TextView>(R.id.notificationBadge)
+            NotificationBadgeManager.setupBadge(this, this, notificationsViewModel, notificationBadge)
             
             android.util.Log.d("HomeActivity", "onCreate() completed successfully")
         } catch (e: Exception) {
