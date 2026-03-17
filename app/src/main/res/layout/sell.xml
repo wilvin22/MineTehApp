@@ -402,6 +402,39 @@
                         android:paddingStart="16dp"
                         android:paddingEnd="16dp"/>
                 </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Minimum Bid Increment -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Minimum Bid Increment *"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginBottom="8dp"/>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:boxBackgroundMode="outline"
+                    app:boxStrokeColor="@color/purple"
+                    app:boxCornerRadiusBottomEnd="12dp"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusTopEnd="12dp"
+                    app:boxCornerRadiusTopStart="12dp"
+                    app:prefixText="₱">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etMinBidIncrement"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:hint="e.g. 50"
+                        android:inputType="numberDecimal"
+                        android:textSize="14sp"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"/>
+                </com.google.android.material.textfield.TextInputLayout>
             </LinearLayout>
 
             <!-- LOCATION SECTION -->
