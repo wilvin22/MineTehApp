@@ -25,7 +25,7 @@ class FavoritesRepository(private val context: Context) {
                     return@withContext Resource.Error("User ID not found")
                 }
                 
-                listingsRepository.toggleFavorite(listingId, userId)
+                listingsRepository.toggleFavorite(listingId)
             } catch (e: Exception) {
                 Log.e(tag, "Error toggling favorite", e)
                 Resource.Error(e.message ?: "Network error")
@@ -45,7 +45,7 @@ class FavoritesRepository(private val context: Context) {
                     return@withContext Resource.Error("User ID not found")
                 }
                 
-                listingsRepository.getFavorites(userId)
+                listingsRepository.getFavorites()
             } catch (e: Exception) {
                 Log.e(tag, "Error fetching favorites", e)
                 Resource.Error(e.message ?: "Network error")

@@ -84,6 +84,7 @@ class NotificationsAdapter(
             NotificationType.NEW_MESSAGE -> R.drawable.ic_message
             NotificationType.LISTING_APPROVED -> R.drawable.ic_verified
             NotificationType.PAYMENT_RECEIVED -> R.drawable.ic_payment
+            NotificationType.UNKNOWN -> R.drawable.ic_notifications
         }
         
         iconView.setImageResource(iconRes)
@@ -99,6 +100,7 @@ class NotificationsAdapter(
             NotificationType.NEW_MESSAGE -> R.color.purple
             NotificationType.LISTING_APPROVED -> R.color.green
             NotificationType.PAYMENT_RECEIVED -> R.color.green
+            NotificationType.UNKNOWN -> R.color.gray
         }
         
         iconView.setColorFilter(ContextCompat.getColor(iconView.context, colorRes))
