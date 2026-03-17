@@ -178,21 +178,21 @@ class ItemDetailActivity : AppCompatActivity() {
             viewModel.statusUpdateResult.observe(this) { resource ->
                 when (resource) {
                     is Resource.Loading -> {
-                        binding.btnAddToCart.isEnabled = false
-                        binding.btnAddToCart.text = "Updating..."
+                        binding.btnToggleStatus.isEnabled = false
+                        binding.btnToggleStatus.text = "Updating..."
                     }
                     is Resource.Success -> {
-                        binding.btnAddToCart.isEnabled = true
+                        binding.btnToggleStatus.isEnabled = true
                         Toast.makeText(this, "Listing status updated successfully", Toast.LENGTH_SHORT).show()
                         viewModel.resetStatusUpdateResult()
                     }
                     is Resource.Error -> {
-                        binding.btnAddToCart.isEnabled = true
+                        binding.btnToggleStatus.isEnabled = true
                         Toast.makeText(this, resource.message ?: "Failed to update listing status", Toast.LENGTH_SHORT).show()
                         viewModel.resetStatusUpdateResult()
                     }
                     null -> {
-                        binding.btnAddToCart.isEnabled = true
+                        binding.btnToggleStatus.isEnabled = true
                     }
                 }
             }
@@ -298,6 +298,11 @@ class ItemDetailActivity : AppCompatActivity() {
             
             // Hide owner badge for non-owners
             binding.ownerBadge.visibility = View.GONE
+            binding.ownerManagementCard.visibility = View.GONE
+            
+            // Show buyer divider
+            binding.divider3.visibility = View.VISIBLE
+            binding.divider3Owner.visibility = View.GONE
             
             when (listing.listingType) {
                 "FIXED" -> {
@@ -454,41 +459,42 @@ class ItemDetailActivity : AppCompatActivity() {
                 }
             }
             
-            // Hide buyer action buttons
+            // Hide all buyer action buttons and favorite
             binding.btnAddToCart.visibility = View.GONE
             binding.btnBuyNow.visibility = View.GONE
             binding.btnPlaceBid.visibility = View.GONE
             binding.detailHeart.visibility = View.GONE
+            binding.btnContactSeller.visibility = View.GONE
             
-            // Show owner management buttons
-            binding.btnContactSeller.text = "Your Listings"
-            binding.btnContactSeller.visibility = View.VISIBLE
-            binding.btnContactSeller.setOnClickListener {
-                val intent = Intent(this, MyListingsActivity::class.java)
-                startActivity(intent)
-            }
+            // Show owner management card
+            binding.ownerManagementCard.visibility = View.VISIBLE
             
-            // Reuse btnAddToCart for "Disable Listing"
-            binding.btnAddToCart.text = if (listing.status.equals("active", ignoreCase = true)) {
-                "Disable Listing"
-            } else {
-                "Enable Listing"
-            }
-            binding.btnAddToCart.visibility = View.VISIBLE
-            binding.btnAddToCart.setBackgroundColor(getColor(if (listing.status.equals("active", ignoreCase = true)) R.color.red else R.color.green))
-            binding.btnAddToCart.setOnClickListener {
-                if (listing.status.equals("active", ignoreCase = true)) {
+            // Toggle dividers
+            binding.divider3.visibility = View.GONE
+            binding.divider3Owner.visibility = View.VISIBLE
+            
+            // Setup toggle status button
+            val isActive = listing.status.equals("active", ignoreCase = true)
+            binding.btnToggleStatus.text = if (isActive) "🚫 Disable Listing" else "✅ Enable Listing"
+            binding.btnToggleStatus.setBackgroundColor(getColor(if (isActive) R.color.red else R.color.green))
+            
+            binding.btnToggleStatus.setOnClickListener {
+                if (isActive) {
                     showDisableListingDialog(listing)
                 } else {
                     showEnableListingDialog(listing)
                 }
             }
             
-            // Show "Edit Listing" button (reuse btnBuyNow)
-            binding.btnBuyNow.text = "Edit Listing"
-            binding.btnBuyNow.visibility = View.VISIBLE
-            binding.btnBuyNow.setOnClickListener {
+            // Setup edit listing button
+            binding.btnEditListing.setOnClickListener {
                 Toast.makeText(this, "Edit listing feature coming soon", Toast.LENGTH_SHORT).show()
+            }
+            
+            // Setup your listings button
+            binding.btnViewYourListings.setOnClickListener {
+                val intent = Intent(this, MyListingsActivity::class.java)
+                startActivity(intent)
             }
             
         } catch (e: Exception) {
