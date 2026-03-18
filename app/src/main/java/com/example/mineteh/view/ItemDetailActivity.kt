@@ -281,7 +281,10 @@ class ItemDetailActivity : AppCompatActivity() {
 
     private fun setupActionButtons(listing: Listing) {
         try {
-            Log.d("ItemDetailActivity", "Setting up action buttons for type: ${listing.listingType}")
+            Log.d("ItemDetailActivity", "=== SETUP ACTION BUTTONS START ===")
+            Log.d("ItemDetailActivity", "Listing type: ${listing.listingType}")
+            Log.d("ItemDetailActivity", "Listing ID: ${listing.id}")
+            Log.d("ItemDetailActivity", "Listing title: ${listing.title}")
             
             // Check if current user is the owner
             val tokenManager = com.example.mineteh.utils.TokenManager(this)
@@ -297,10 +300,13 @@ class ItemDetailActivity : AppCompatActivity() {
             Log.d("ItemDetailActivity", "==================")
             
             if (isOwner) {
+                Log.d("ItemDetailActivity", "USER IS OWNER - Calling setupOwnerManagementUI")
                 // Show owner management UI
                 setupOwnerManagementUI(listing)
                 return
             }
+            
+            Log.d("ItemDetailActivity", "USER IS NOT OWNER - Setting up buyer UI")
             
             // Hide owner badge for non-owners
             binding.ownerBadge.visibility = View.GONE
@@ -308,6 +314,7 @@ class ItemDetailActivity : AppCompatActivity() {
             
             // Show buyer divider
             binding.divider3.visibility = View.VISIBLE
+            binding.divider3Owner.visibility = View.GONE
             binding.divider3Owner.visibility = View.GONE
             
             when (listing.listingType) {
@@ -446,14 +453,17 @@ class ItemDetailActivity : AppCompatActivity() {
 
     private fun setupOwnerManagementUI(listing: Listing) {
         try {
-            Log.d("ItemDetailActivity", "Setting up owner management UI")
+            Log.d("ItemDetailActivity", "=== SETUP OWNER MANAGEMENT UI START ===")
+            Log.d("ItemDetailActivity", "Listing type: ${listing.listingType}")
             
             // Show owner badge
             binding.ownerBadge.visibility = View.VISIBLE
+            Log.d("ItemDetailActivity", "Owner badge set to VISIBLE")
             
             // Show price/bid info based on type
             when (listing.listingType) {
                 "FIXED" -> {
+                    Log.d("ItemDetailActivity", "Setting up FIXED listing for owner")
                     binding.detailItemPrice.text = "₱ ${String.format("%.2f", listing.price)}"
                     binding.detailItemPrice.visibility = View.VISIBLE
                     binding.bidInfoCard.visibility = View.GONE
@@ -464,6 +474,7 @@ class ItemDetailActivity : AppCompatActivity() {
                     binding.sellerAvatarCard.layoutParams = params
                 }
                 "BID" -> {
+                    Log.d("ItemDetailActivity", "Setting up BID listing for owner")
                     binding.detailItemPrice.visibility = View.GONE
                     binding.bidInfoCard.visibility = View.VISIBLE
                     binding.auctionStatusBadge.visibility = View.VISIBLE
@@ -491,14 +502,17 @@ class ItemDetailActivity : AppCompatActivity() {
             }
             
             // Hide all buyer action buttons and favorite
+            Log.d("ItemDetailActivity", "Hiding all buyer buttons")
             binding.btnAddToCart.visibility = View.GONE
             binding.btnBuyNow.visibility = View.GONE
             binding.btnPlaceBid.visibility = View.GONE
             binding.detailHeart.visibility = View.GONE
             binding.btnContactSeller.visibility = View.GONE
+            Log.d("ItemDetailActivity", "All buyer buttons hidden")
             
             // Show owner management card
             binding.ownerManagementCard.visibility = View.VISIBLE
+            Log.d("ItemDetailActivity", "Owner management card set to VISIBLE")
             
             // Toggle dividers
             binding.divider3.visibility = View.GONE
@@ -507,11 +521,13 @@ class ItemDetailActivity : AppCompatActivity() {
             // Show/hide Close Auction button based on listing type
             if (listing.listingType == "BID") {
                 binding.btnCloseAuction.visibility = View.VISIBLE
+                Log.d("ItemDetailActivity", "Close Auction button set to VISIBLE")
                 binding.btnCloseAuction.setOnClickListener {
                     showCloseAuctionDialog(listing)
                 }
             } else {
                 binding.btnCloseAuction.visibility = View.GONE
+                Log.d("ItemDetailActivity", "Close Auction button set to GONE")
             }
             
             // Setup toggle status button
@@ -537,6 +553,8 @@ class ItemDetailActivity : AppCompatActivity() {
                 val intent = Intent(this, MyListingsActivity::class.java)
                 startActivity(intent)
             }
+            
+            Log.d("ItemDetailActivity", "=== SETUP OWNER MANAGEMENT UI COMPLETE ===")
             
         } catch (e: Exception) {
             Log.e("ItemDetailActivity", "Error in setupOwnerManagementUI", e)
