@@ -1,28 +1,53 @@
 package com.example.mineteh.view
 
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
+import android.view.View
+import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.mineteh.view.ChatAdapter
 import com.example.mineteh.R
 import com.example.mineteh.databinding.ChatBinding
 import com.example.mineteh.model.ChatMessageModel
+import com.example.mineteh.models.Message
+import com.example.mineteh.utils.Resource
+import com.example.mineteh.viewmodel.MessagingViewModel
+import java.text.SimpleDateFormat
+import java.util.*
 
 class ChatActivity : AppCompatActivity() {
 
     private lateinit var binding: ChatBinding
     private val chatMessages = mutableListOf<ChatMessageModel>()
     private lateinit var adapter: ChatAdapter
+    private val viewModel: MessagingViewModel by viewModels()
+    
+    private var conversationId: Int = -1
+    private var otherUserId: Int = -1
+    private var listingId: Int? = null
+    private var currentUserId: Int = -1
+    
+    private val handler = Handler(Looper.getMainLooper())
+    private val refreshRunnable = object : Runnable {
+        override fun run() {
+            if (conversationId != -1) {
+                viewModel.loadMessages(conversationId)
+            }
+            handler.postDelayed(this, 3000) // Refresh every 3 seconds
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ChatBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Get intent data (regular intent or deep link)
-        val (messageId, senderId) = getMessageDataFromIntent()
-        val senderName = intent.getStringExtra("senderName") ?: "User"
-        val profileImage = intent.getIntExtra("profileImage", R.drawable.ic_launcher_background)
+        // Get current user ID
+        val tokenManager = com.example.mineteh.utils.TokenManager(this)
+        currentUserId = tokenManager.getUserId()
 
         // Setup Toolbar
         setSupportActionBar(binding.toolbar)
@@ -30,16 +55,34 @@ class ChatActivity : AppCompatActivity() {
         supportActionBar?.title = ""
         binding.toolbar.setNavigationOnClickListener { finish() }
 
-        binding.chatUserName.text = senderName
-        binding.chatProfileImage.setImageResource(profileImage)
+        // Get intent data
+        conversationId = intent.getIntExtra("conversation_id", -1)
+        otherUserId = intent.getIntExtra("other_user_id", -1)
+        listingId = intent.getIntExtra("listing_id", -1).takeIf { it != -1 }
+        
+        val otherUserName = intent.getStringExtra("other_user_name") ?: "User"
+        binding.chatUserName.text = otherUserName
 
         setupRecyclerView()
-        loadDummyMessages()
+        setupObservers()
+        
+        // If we have conversation ID, load messages
+        if (conversationId != -1) {
+            viewModel.loadMessages(conversationId)
+            startAutoRefresh()
+        } else if (otherUserId != -1) {
+            // Create or get conversation
+            viewModel.getOrCreateConversation(otherUserId, listingId)
+        } else {
+            Toast.makeText(this, "Invalid conversation data", Toast.LENGTH_SHORT).show()
+            finish()
+        }
 
         binding.btnSend.setOnClickListener {
             val content = binding.etMessage.text.toString().trim()
-            if (content.isNotEmpty()) {
-                sendMessage(content)
+            if (content.isNotEmpty() && conversationId != -1) {
+                viewModel.sendMessage(conversationId, content)
+                binding.etMessage.text.clear()
             }
         }
     }
@@ -47,25 +90,103 @@ class ChatActivity : AppCompatActivity() {
     private fun setupRecyclerView() {
         adapter = ChatAdapter(chatMessages)
         binding.chatRecyclerView.layoutManager = LinearLayoutManager(this).apply {
-            stackFromEnd = true // Start from bottom
+            stackFromEnd = true
         }
         binding.chatRecyclerView.adapter = adapter
     }
-
-    private fun loadDummyMessages() {
-        chatMessages.add(ChatMessageModel("Hello! Is this still available?", false, "10:00 AM"))
-        chatMessages.add(ChatMessageModel("Yes, it is! Are you interested?", true, "10:05 AM"))
-        chatMessages.add(ChatMessageModel("Yes, I'd like to place a bid.", false, "10:10 AM"))
-        adapter.notifyDataSetChanged()
-        binding.chatRecyclerView.scrollToPosition(chatMessages.size - 1)
+    
+    private fun setupObservers() {
+        // Observe conversation creation
+        viewModel.conversation.observe(this) { resource ->
+            when (resource) {
+                is Resource.Success -> {
+                    resource.data?.let { conv ->
+                        conversationId = conv.conversationId
+                        viewModel.loadMessages(conversationId)
+                        startAutoRefresh()
+                    }
+                    viewModel.resetConversationResult()
+                }
+                is Resource.Error -> {
+                    Toast.makeText(this, resource.message ?: "Failed to create conversation", Toast.LENGTH_SHORT).show()
+                    viewModel.resetConversationResult()
+                }
+                else -> {}
+            }
+        }
+        
+        // Observe messages
+        viewModel.messages.observe(this) { resource ->
+            when (resource) {
+                is Resource.Loading -> {
+                    // Show loading if needed
+                }
+                is Resource.Success -> {
+                    resource.data?.let { messages ->
+                        displayMessages(messages)
+                    }
+                }
+                is Resource.Error -> {
+                    Toast.makeText(this, resource.message ?: "Failed to load messages", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+        
+        // Observe send message result
+        viewModel.sendMessageResult.observe(this) { resource ->
+            when (resource) {
+                is Resource.Loading -> {
+                    binding.btnSend.isEnabled = false
+                }
+                is Resource.Success -> {
+                    binding.btnSend.isEnabled = true
+                    viewModel.resetSendMessageResult()
+                }
+                is Resource.Error -> {
+                    binding.btnSend.isEnabled = true
+                    Toast.makeText(this, resource.message ?: "Failed to send message", Toast.LENGTH_SHORT).show()
+                    viewModel.resetSendMessageResult()
+                }
+                null -> {
+                    binding.btnSend.isEnabled = true
+                }
+            }
+        }
     }
-
-    private fun sendMessage(content: String) {
-        val newMessage = ChatMessageModel(content, true, "Now")
-        chatMessages.add(newMessage)
+    
+    private fun displayMessages(messages: List<Message>) {
+        chatMessages.clear()
+        messages.forEach { msg ->
+            val isSent = msg.senderId == currentUserId
+            val time = formatTime(msg.sentAt)
+            chatMessages.add(ChatMessageModel(msg.messageText, isSent, time))
+        }
         adapter.notifyDataSetChanged()
-        binding.etMessage.text.clear()
-        binding.chatRecyclerView.scrollToPosition(chatMessages.size - 1)
+        if (chatMessages.isNotEmpty()) {
+            binding.chatRecyclerView.scrollToPosition(chatMessages.size - 1)
+        }
+    }
+    
+    private fun formatTime(timestamp: String): String {
+        return try {
+            val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+            inputFormat.timeZone = TimeZone.getTimeZone("UTC")
+            val date = inputFormat.parse(timestamp)
+            val outputFormat = SimpleDateFormat("h:mm a", Locale.getDefault())
+            date?.let { outputFormat.format(it) } ?: "Now"
+        } catch (e: Exception) {
+            Log.e("ChatActivity", "Error formatting time", e)
+            "Now"
+        }
+    }
+    
+    private fun startAutoRefresh() {
+        handler.postDelayed(refreshRunnable, 3000)
+    }
+    
+    override fun onDestroy() {
+        super.onDestroy()
+        handler.removeCallbacks(refreshRunnable)
     }
 
     private fun getMessageDataFromIntent(): Pair<Int?, Int?> {

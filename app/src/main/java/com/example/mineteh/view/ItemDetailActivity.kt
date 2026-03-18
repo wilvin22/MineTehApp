@@ -410,9 +410,18 @@ class ItemDetailActivity : AppCompatActivity() {
                 }
             }
 
-            // Contact Seller button (always visible)
+            // Contact Seller button
             binding.btnContactSeller.setOnClickListener {
-                Toast.makeText(this, "Contact seller feature coming soon", Toast.LENGTH_SHORT).show()
+                listing.seller?.accountId?.let { sellerId ->
+                    val intent = Intent(this, ChatActivity::class.java).apply {
+                        putExtra("other_user_id", sellerId)
+                        putExtra("other_user_name", listing.seller?.username ?: "Seller")
+                        putExtra("listing_id", listing.id)
+                    }
+                    startActivity(intent)
+                } ?: run {
+                    Toast.makeText(this, "Seller information not available", Toast.LENGTH_SHORT).show()
+                }
             }
         } catch (e: Exception) {
             Log.e("ItemDetailActivity", "Error in setupActionButtons", e)
