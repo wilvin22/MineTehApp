@@ -395,17 +395,33 @@ class ItemDetailActivity : AppCompatActivity() {
                     val currentBid = listing.highestBid?.bidAmount ?: listing.price
                     binding.currentBidAmount.text = "₱ ${String.format("%.2f", currentBid)}"
                     
-                    // Show BID buttons - hide Add to Cart, Contact Seller, and Buy Now
+                    // Show BID buttons - hide Add to Cart and Buy Now, show Contact Seller
                     binding.btnAddToCart.visibility = View.GONE
                     binding.btnBuyNow.visibility = View.GONE
-                    binding.btnContactSeller.visibility = View.GONE
+                    binding.btnContactSeller.visibility = View.VISIBLE
                     binding.btnPlaceBid.visibility = View.VISIBLE
+                    
+                    // Hide FIXED divider, show BID divider
+                    binding.divider3.visibility = View.GONE
 
                     // Setup auction countdown
                     setupAuctionTimer(listing.endTime)
 
                     binding.btnPlaceBid.setOnClickListener {
                         showBidDialog(listing)
+                    }
+                    
+                    binding.btnContactSeller.setOnClickListener {
+                        listing.seller?.accountId?.let { sellerId ->
+                            val intent = Intent(this, ChatActivity::class.java).apply {
+                                putExtra("other_user_id", sellerId)
+                                putExtra("other_user_name", listing.seller?.username ?: "Seller")
+                                putExtra("listing_id", listing.id)
+                            }
+                            startActivity(intent)
+                        } ?: run {
+                            Toast.makeText(this, "Seller information not available", Toast.LENGTH_SHORT).show()
+                        }
                     }
                 }
             }

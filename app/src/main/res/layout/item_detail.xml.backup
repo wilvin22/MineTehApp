@@ -1,0 +1,524 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:orientation="vertical"
+    tools:context=".view.ItemDetailActivity">
+
+    <!-- Toolbar with Back Navigation -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/white"
+        app:navigationIcon="?attr/homeAsUpIndicator"
+        app:navigationIconTint="@color/black" />
+
+    <!-- Top Purple Line from Guide -->
+    <View
+        android:id="@+id/topPurpleLine"
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="@color/purple_light" />
+
+    <!-- Content Container -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- Loading State -->
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone" />
+
+        <!-- Error State -->
+        <LinearLayout
+            android:id="@+id/errorLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="32dp"
+            android:visibility="gone">
+            
+            <TextView
+                android:id="@+id/errorMessage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Failed to load listing"
+                android:textSize="16sp"
+                android:textColor="@color/text_secondary"
+                android:gravity="center" />
+            
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnRetry"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Retry"
+                app:backgroundTint="@color/purple" />
+        </LinearLayout>
+
+        <!-- Content State -->
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/contentLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+            android:visibility="gone">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp">
+
+                <!-- Image Carousel -->
+                <FrameLayout
+                    android:id="@+id/imageCarouselContainer"
+                    android:layout_width="0dp"
+                    android:layout_height="320dp"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent">
+
+                    <androidx.viewpager2.widget.ViewPager2
+                        android:id="@+id/imageCarousel"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" />
+
+                    <TextView
+                        android:id="@+id/imagePosition"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="bottom|end"
+                        android:layout_margin="16dp"
+                        android:text="1 / 1"
+                        android:background="@drawable/circle_background_red"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="6dp"
+                        android:textColor="@color/white"
+                        android:textSize="12sp" />
+                </FrameLayout>
+
+                <!-- Product Info Section -->
+                <LinearLayout
+                    android:id="@+id/titleContainer"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:orientation="vertical"
+                    app:layout_constraintTop_toBottomOf="@id/imageCarouselContainer"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:id="@+id/detailItemName"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Loading..."
+                            android:textColor="@color/black"
+                            android:textSize="22sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/auctionStatusBadge"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="LIVE"
+                            android:textColor="@color/white"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="4dp"
+                            android:background="@drawable/circle_background_red"
+                            android:visibility="gone" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/ownerBadge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="Your Listing"
+                        android:textColor="@color/purple"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="3dp"
+                        android:background="@drawable/circle_background_red"
+                        android:backgroundTint="@color/purple_light"
+                        android:visibility="gone" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/detailItemLocation"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text=""
+                    android:textColor="@color/text_secondary"
+                    android:textSize="16sp"
+                    app:layout_constraintTop_toBottomOf="@id/titleContainer"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent" />
+
+                <View
+                    android:id="@+id/divider1"
+                    android:layout_width="match_parent"
+                    android:layout_height="1.5dp"
+                    android:background="@color/black"
+                    android:layout_marginTop="12dp"
+                    app:layout_constraintTop_toBottomOf="@id/detailItemLocation" />
+
+                <!-- Price (for FIXED items) -->
+                <TextView
+                    android:id="@+id/detailItemPrice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="₱0.00"
+                    android:textColor="@color/purple"
+                    android:textSize="32sp"
+                    android:textStyle="bold"
+                    android:visibility="gone"
+                    app:layout_constraintTop_toBottomOf="@id/divider1"
+                    app:layout_constraintStart_toStartOf="parent" />
+
+                <!-- Bid-specific UI -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/bidInfoCard"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:visibility="gone"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="2dp"
+                    app:cardBackgroundColor="@color/purple_light"
+                    app:layout_constraintTop_toBottomOf="@id/divider1"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:id="@+id/currentBidLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Current Highest Bid"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/currentBidAmount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="₱0.00"
+                            android:textColor="@color/purple"
+                            android:textSize="32sp"
+                            android:textStyle="bold" />
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_marginTop="12dp"
+                            android:layout_marginBottom="12dp"
+                            android:background="@color/divider" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <ImageView
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:src="@android:drawable/ic_lock_idle_alarm"
+                                app:tint="@color/text_secondary"
+                                android:contentDescription="Timer icon" />
+
+                            <TextView
+                                android:id="@+id/auctionEndTime"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginStart="8dp"
+                                android:text="Ends in: 2d 5h 30m"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </androidx.cardview.widget.CardView>
+
+                <!-- Seller Info -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/sellerAvatarCard"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="16dp"
+                    app:cardCornerRadius="28dp"
+                    app:cardElevation="2dp"
+                    app:layout_constraintTop_toBottomOf="@id/bidInfoCard"
+                    app:layout_constraintStart_toStartOf="parent">
+
+                    <ImageView
+                        android:id="@+id/sellerAvatar"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/ic_launcher_background"
+                        android:contentDescription="Seller avatar" />
+                </androidx.cardview.widget.CardView>
+
+                <TextView
+                    android:id="@+id/sellerName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="Seller"
+                    android:textColor="@color/black"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    app:layout_constraintTop_toTopOf="@id/sellerAvatarCard"
+                    app:layout_constraintStart_toEndOf="@id/sellerAvatarCard"
+                    app:layout_constraintEnd_toEndOf="parent" />
+
+                <TextView
+                    android:id="@+id/sellerUsername"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="@username"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp"
+                    app:layout_constraintTop_toBottomOf="@id/sellerName"
+                    app:layout_constraintStart_toEndOf="@id/sellerAvatarCard"
+                    app:layout_constraintEnd_toEndOf="parent" />
+
+                <View
+                    android:id="@+id/divider2"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/divider"
+                    android:layout_marginTop="12dp"
+                    app:layout_constraintTop_toBottomOf="@id/sellerAvatarCard" />
+
+                <!-- Action Buttons Row -->
+                <ImageView
+                    android:id="@+id/detailHeart"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:layout_marginTop="16dp"
+                    android:src="@drawable/heart"
+                    android:padding="4dp"
+                    android:contentDescription="Favorite"
+                    app:layout_constraintTop_toBottomOf="@id/divider2"
+                    app:layout_constraintStart_toStartOf="parent" />
+
+                <!-- Owner Management Card -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/ownerManagementCard"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:visibility="gone"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="2dp"
+                    app:cardBackgroundColor="@color/purple_light"
+                    app:layout_constraintTop_toBottomOf="@id/divider2"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="20dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Manage Your Listing"
+                            android:textColor="@color/purple"
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            android:layout_marginBottom="16dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnEditListing"
+                            android:layout_width="match_parent"
+                            android:layout_height="56dp"
+                            android:text="✏️ Edit Listing"
+                            android:textSize="16sp"
+                            android:textAllCaps="false"
+                            app:backgroundTint="@color/purple"
+                            app:cornerRadius="8dp"
+                            android:layout_marginBottom="12dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnViewYourListings"
+                            android:layout_width="match_parent"
+                            android:layout_height="56dp"
+                            android:text="📦 Your Listings"
+                            android:textSize="16sp"
+                            android:textAllCaps="false"
+                            app:backgroundTint="@color/purple"
+                            app:cornerRadius="8dp"
+                            android:layout_marginBottom="12dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnCloseAuction"
+                            android:layout_width="match_parent"
+                            android:layout_height="56dp"
+                            android:text="🔨 Close Auction"
+                            android:textSize="16sp"
+                            android:textAllCaps="false"
+                            android:visibility="gone"
+                            app:backgroundTint="#ffc107"
+                            app:cornerRadius="8dp"
+                            android:layout_marginBottom="12dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnToggleStatus"
+                            android:layout_width="match_parent"
+                            android:layout_height="56dp"
+                            android:text="🚫 Disable Listing"
+                            android:textSize="16sp"
+                            android:textAllCaps="false"
+                            app:backgroundTint="#dc3545"
+                            app:cornerRadius="8dp" />
+
+                    </LinearLayout>
+
+                </androidx.cardview.widget.CardView>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAddToCart"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_marginStart="12dp"
+                    android:text="Add to Cart"
+                    android:textAllCaps="false"
+                    android:textSize="13sp"
+                    android:paddingHorizontal="4dp"
+                    app:backgroundTint="@color/purple"
+                    app:cornerRadius="12dp"
+                    app:layout_constraintTop_toTopOf="@id/detailHeart"
+                    app:layout_constraintBottom_toBottomOf="@id/detailHeart"
+                    app:layout_constraintStart_toEndOf="@id/detailHeart"
+                    app:layout_constraintEnd_toStartOf="@id/btnContactSeller"
+                    android:layout_marginEnd="8dp"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnContactSeller"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:text="Contact"
+                    android:textAllCaps="false"
+                    android:textSize="13sp"
+                    android:paddingHorizontal="4dp"
+                    app:backgroundTint="@color/purple"
+                    app:cornerRadius="12dp"
+                    app:layout_constraintTop_toTopOf="@id/detailHeart"
+                    app:layout_constraintBottom_toBottomOf="@id/detailHeart"
+                    app:layout_constraintStart_toEndOf="@id/btnAddToCart"
+                    app:layout_constraintEnd_toEndOf="parent" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnBuyNow"
+                    android:layout_width="0dp"
+                    android:layout_height="60dp"
+                    android:layout_marginTop="16dp"
+                    android:text="Buy Now"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textAllCaps="false"
+                    app:backgroundTint="@color/purple"
+                    app:cornerRadius="12dp"
+                    app:layout_constraintTop_toBottomOf="@id/detailHeart"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnPlaceBid"
+                    android:layout_width="0dp"
+                    android:layout_height="64dp"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginTop="16dp"
+                    android:text="Place Bid"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textAllCaps="false"
+                    android:visibility="gone"
+                    app:icon="@android:drawable/ic_input_add"
+                    app:iconGravity="textStart"
+                    app:iconPadding="8dp"
+                    app:backgroundTint="@color/purple"
+                    app:cornerRadius="12dp"
+                    app:layout_constraintTop_toBottomOf="@id/divider2"
+                    app:layout_constraintStart_toEndOf="@id/detailHeart"
+                    app:layout_constraintEnd_toEndOf="parent" />
+
+                <View
+                    android:id="@+id/divider3"
+                    android:layout_width="match_parent"
+                    android:layout_height="1.5dp"
+                    android:background="@color/black"
+                    android:layout_marginTop="16dp"
+                    app:layout_constraintTop_toBottomOf="@id/btnBuyNow" />
+                
+                <View
+                    android:id="@+id/divider3Owner"
+                    android:layout_width="match_parent"
+                    android:layout_height="1.5dp"
+                    android:background="@color/black"
+                    android:layout_marginTop="16dp"
+                    android:visibility="gone"
+                    app:layout_constraintTop_toBottomOf="@id/ownerManagementCard" />
+
+                <!-- Description / Bullet Points -->
+                <TextView
+                    android:id="@+id/detailItemDescription"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:lineSpacingExtra="6dp"
+                    android:text=""
+                    android:textColor="@color/black"
+                    android:textSize="18sp"
+                    app:layout_constraintTop_toBottomOf="@id/divider3Owner"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:paddingBottom="32dp"/>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.core.widget.NestedScrollView>
+
+    </FrameLayout>
+
+</LinearLayout>
