@@ -41,7 +41,7 @@ private data class SupabaseUser(
 )
 
 @Serializable
-private data class SupabaseListing(
+private data class SupabaseListingPreview(
     val id: Int,
     val title: String,
     val price: Double
@@ -103,7 +103,7 @@ class MessagingRepository(private val context: Context) {
                     .select(columns = Columns.list("id", "title", "price")) {
                         filter { isIn("id", listingIds) }
                     }
-                    .decodeList<SupabaseListing>()
+                    .decodeList<SupabaseListingPreview>()
                 listings.forEach {
                     listingMap[it.id] = ListingPreview(it.id, it.title, it.price)
                 }
