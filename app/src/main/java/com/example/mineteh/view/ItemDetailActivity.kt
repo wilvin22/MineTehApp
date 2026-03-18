@@ -413,8 +413,27 @@ class ItemDetailActivity : AppCompatActivity() {
                     binding.btnContactSeller.visibility = View.VISIBLE
                     binding.btnPlaceBid.visibility = View.VISIBLE
                     
-                    // Hide FIXED divider, show BID divider
+                    // Position Contact Seller button below Place Bid button
+                    val contactParams = binding.btnContactSeller.layoutParams as androidx.constraintlayout.widget.ConstraintLayout.LayoutParams
+                    contactParams.topToBottom = binding.btnPlaceBid.id
+                    contactParams.topMargin = (16 * resources.displayMetrics.density).toInt()
+                    contactParams.startToStart = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
+                    contactParams.endToEnd = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
+                    contactParams.height = (60 * resources.displayMetrics.density).toInt()
+                    contactParams.startToEnd = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.UNSET
+                    contactParams.bottomToBottom = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.UNSET
+                    binding.btnContactSeller.layoutParams = contactParams
+                    binding.btnContactSeller.text = "Contact Seller"
+                    binding.btnContactSeller.textSize = 18f
+                    
+                    // Hide FIXED divider
                     binding.divider3.visibility = View.GONE
+                    
+                    // Description goes after Contact Seller button
+                    val descParams = binding.detailItemDescription.layoutParams as androidx.constraintlayout.widget.ConstraintLayout.LayoutParams
+                    descParams.topToBottom = binding.btnContactSeller.id
+                    descParams.topMargin = (16 * resources.displayMetrics.density).toInt()
+                    binding.detailItemDescription.layoutParams = descParams
 
                     // Setup auction countdown
                     setupAuctionTimer(listing.endTime)

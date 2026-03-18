@@ -296,10 +296,12 @@ class BidDetailActivity : AppCompatActivity() {
         binding.btnContactSeller.visibility = View.VISIBLE
         val contactParams = binding.btnContactSeller.layoutParams as androidx.constraintlayout.widget.ConstraintLayout.LayoutParams
         contactParams.topToBottom = binding.btnPlaceBid.id
-        contactParams.topMargin = 48 // 16dp spacing
+        contactParams.topMargin = (16 * resources.displayMetrics.density).toInt() // 16dp in pixels
         contactParams.startToStart = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
         contactParams.endToEnd = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
-        contactParams.height = 180 // 60dp height
+        contactParams.height = (60 * resources.displayMetrics.density).toInt() // 60dp in pixels
+        contactParams.startToEnd = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.UNSET
+        contactParams.bottomToBottom = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.UNSET
         binding.btnContactSeller.layoutParams = contactParams
         binding.btnContactSeller.text = "Contact Seller"
         binding.btnContactSeller.textSize = 18f
@@ -311,7 +313,7 @@ class BidDetailActivity : AppCompatActivity() {
         // For BID buyers, description goes after contact seller button
         val descParams = binding.detailItemDescription.layoutParams as androidx.constraintlayout.widget.ConstraintLayout.LayoutParams
         descParams.topToBottom = binding.btnContactSeller.id
-        descParams.topMargin = 48 // Add some spacing
+        descParams.topMargin = (16 * resources.displayMetrics.density).toInt() // 16dp in pixels
         binding.detailItemDescription.layoutParams = descParams
         
         Log.d("BidDetailActivity", "Buyer UI setup complete - showing heart, place bid, and contact seller")
