@@ -410,28 +410,16 @@ class ItemDetailActivity : AppCompatActivity() {
                     // Show BID buttons - hide Add to Cart and Buy Now, show Contact Seller
                     binding.btnAddToCart.visibility = View.GONE
                     binding.btnBuyNow.visibility = View.GONE
-                    binding.btnContactSeller.visibility = View.VISIBLE
+                    binding.btnContactSeller.visibility = View.GONE // Hide FIXED contact button
+                    binding.btnContactSellerBid.visibility = View.VISIBLE // Show BID contact button
                     binding.btnPlaceBid.visibility = View.VISIBLE
-                    
-                    // Position Contact Seller button below Place Bid button
-                    val contactParams = binding.btnContactSeller.layoutParams as androidx.constraintlayout.widget.ConstraintLayout.LayoutParams
-                    contactParams.topToBottom = binding.btnPlaceBid.id
-                    contactParams.topMargin = (16 * resources.displayMetrics.density).toInt()
-                    contactParams.startToStart = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
-                    contactParams.endToEnd = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
-                    contactParams.height = (60 * resources.displayMetrics.density).toInt()
-                    contactParams.startToEnd = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.UNSET
-                    contactParams.bottomToBottom = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.UNSET
-                    binding.btnContactSeller.layoutParams = contactParams
-                    binding.btnContactSeller.text = "Contact Seller"
-                    binding.btnContactSeller.textSize = 18f
                     
                     // Hide FIXED divider
                     binding.divider3.visibility = View.GONE
                     
-                    // Description goes after Contact Seller button
+                    // Description goes after Contact Seller BID button
                     val descParams = binding.detailItemDescription.layoutParams as androidx.constraintlayout.widget.ConstraintLayout.LayoutParams
-                    descParams.topToBottom = binding.btnContactSeller.id
+                    descParams.topToBottom = binding.btnContactSellerBid.id
                     descParams.topMargin = (16 * resources.displayMetrics.density).toInt()
                     binding.detailItemDescription.layoutParams = descParams
 
@@ -442,7 +430,7 @@ class ItemDetailActivity : AppCompatActivity() {
                         showBidDialog(listing)
                     }
                     
-                    binding.btnContactSeller.setOnClickListener {
+                    binding.btnContactSellerBid.setOnClickListener {
                         listing.seller?.accountId?.let { sellerId ->
                             val intent = Intent(this, ChatActivity::class.java).apply {
                                 putExtra("other_user_id", sellerId)

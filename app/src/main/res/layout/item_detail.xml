@@ -447,6 +447,23 @@
                     app:layout_constraintBottom_toBottomOf="@id/detailHeart"
                     app:layout_constraintStart_toEndOf="@id/btnAddToCart"
                     app:layout_constraintEnd_toEndOf="parent" />
+                
+                <!-- Contact Seller button for BID items (positioned below Place Bid) -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnContactSellerBid"
+                    android:layout_width="0dp"
+                    android:layout_height="60dp"
+                    android:layout_marginTop="16dp"
+                    android:text="Contact Seller"
+                    android:textAllCaps="false"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:visibility="gone"
+                    app:backgroundTint="@color/purple"
+                    app:cornerRadius="12dp"
+                    app:layout_constraintTop_toBottomOf="@id/btnPlaceBid"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnBuyNow"
