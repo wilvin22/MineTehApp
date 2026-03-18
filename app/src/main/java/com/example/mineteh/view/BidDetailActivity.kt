@@ -152,6 +152,26 @@ class BidDetailActivity : AppCompatActivity() {
                 }
             }
         }
+        
+        // Observe status update result
+        viewModel.statusUpdateResult.observe(this) { resource ->
+            when (resource) {
+                is Resource.Loading -> {
+                    // Show loading if needed
+                }
+                is Resource.Success -> {
+                    Toast.makeText(this, "Listing status updated successfully", Toast.LENGTH_SHORT).show()
+                    viewModel.resetStatusUpdateResult()
+                    // Reload listing
+                    currentListing?.let { viewModel.loadListing(it.id) }
+                }
+                is Resource.Error -> {
+                    Toast.makeText(this, resource.message ?: "Failed to update listing status", Toast.LENGTH_SHORT).show()
+                    viewModel.resetStatusUpdateResult()
+                }
+                null -> {}
+            }
+        }
     }
 
     private fun displayListing(listing: Listing) {
@@ -215,7 +235,33 @@ class BidDetailActivity : AppCompatActivity() {
     }
 
     private fun setupBidActionButtons(listing: Listing) {
-        // Always show BID UI
+        Log.d("BidDetailActivity", "=== SETUP BID ACTION BUTTONS START ===")
+        
+        // Check if current user is the owner
+        val tokenManager = com.example.mineteh.utils.TokenManager(this)
+        val currentUserId = tokenManager.getUserId()
+        val sellerId = listing.seller?.accountId
+        val isOwner = currentUserId != -1 && sellerId != null && sellerId == currentUserId
+        
+        Log.d("BidDetailActivity", "=== OWNER CHECK ===")
+        Log.d("BidDetailActivity", "Current user ID: $currentUserId")
+        Log.d("BidDetailActivity", "Seller ID: $sellerId")
+        Log.d("BidDetailActivity", "Is owner: $isOwner")
+        Log.d("BidDetailActivity", "==================")
+        
+        if (isOwner) {
+            Log.d("BidDetailActivity", "USER IS OWNER - Setting up owner UI")
+            setupOwnerBidUI(listing)
+            return
+        }
+        
+        Log.d("BidDetailActivity", "USER IS NOT OWNER - Setting up buyer UI")
+        
+        // Hide owner elements
+        binding.ownerBadge.visibility = View.GONE
+        binding.ownerManagementCard.visibility = View.GONE
+        
+        // Always show BID UI for buyers
         binding.detailItemPrice.visibility = View.GONE
         binding.bidInfoCard.visibility = View.VISIBLE
         binding.auctionStatusBadge.visibility = View.VISIBLE
@@ -240,10 +286,16 @@ class BidDetailActivity : AppCompatActivity() {
         val currentBid = listing.highestBid?.bidAmount ?: listing.price
         binding.currentBidAmount.text = "₱ ${String.format("%.2f", currentBid)}"
         
+        // Show buyer buttons
         binding.btnAddToCart.visibility = View.GONE
         binding.btnBuyNow.visibility = View.GONE
-        binding.btnContactSeller.visibility = View.GONE
+        binding.btnContactSeller.visibility = View.VISIBLE
         binding.btnPlaceBid.visibility = View.VISIBLE
+        binding.detailHeart.visibility = View.VISIBLE
+        
+        // Show buyer divider
+        binding.divider3.visibility = View.GONE
+        binding.divider3Owner.visibility = View.GONE
 
         // Setup auction countdown
         setupAuctionTimer(listing.endTime)
@@ -251,6 +303,140 @@ class BidDetailActivity : AppCompatActivity() {
         binding.btnPlaceBid.setOnClickListener {
             showBidDialog(listing)
         }
+        
+        binding.btnContactSeller.setOnClickListener {
+            listing.seller?.accountId?.let { sellerId ->
+                val intent = Intent(this, ChatActivity::class.java).apply {
+                    putExtra("other_user_id", sellerId)
+                    putExtra("other_user_name", listing.seller?.username ?: "Seller")
+                    putExtra("listing_id", listing.id)
+                }
+                startActivity(intent)
+            } ?: run {
+                Toast.makeText(this, "Seller information not available", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+    
+    private fun setupOwnerBidUI(listing: Listing) {
+        Log.d("BidDetailActivity", "=== SETUP OWNER BID UI START ===")
+        
+        // Show owner badge
+        binding.ownerBadge.visibility = View.VISIBLE
+        
+        // Show BID info
+        binding.detailItemPrice.visibility = View.GONE
+        binding.bidInfoCard.visibility = View.VISIBLE
+        binding.auctionStatusBadge.visibility = View.VISIBLE
+        
+        val params = binding.sellerAvatarCard.layoutParams as androidx.constraintlayout.widget.ConstraintLayout.LayoutParams
+        params.topToBottom = binding.bidInfoCard.id
+        binding.sellerAvatarCard.layoutParams = params
+        
+        val isActive = listing.status.equals("active", ignoreCase = true)
+        val timeRemaining = com.example.mineteh.utils.TimeUtils.calculateTimeRemaining(listing.endTime ?: "")
+        
+        if (isActive && timeRemaining > 0) {
+            binding.auctionStatusBadge.text = "LIVE"
+            binding.auctionStatusBadge.setBackgroundResource(R.drawable.circle_background_red)
+        } else {
+            binding.auctionStatusBadge.text = "ENDED"
+            binding.auctionStatusBadge.setBackgroundColor(getColor(R.color.text_secondary))
+        }
+        
+        val currentBid = listing.highestBid?.bidAmount ?: listing.price
+        binding.currentBidAmount.text = "₱ ${String.format("%.2f", currentBid)}"
+        
+        setupAuctionTimer(listing.endTime)
+        
+        // Hide all buyer buttons
+        Log.d("BidDetailActivity", "Hiding all buyer buttons")
+        binding.btnAddToCart.visibility = View.GONE
+        binding.btnBuyNow.visibility = View.GONE
+        binding.btnPlaceBid.visibility = View.GONE
+        binding.detailHeart.visibility = View.GONE
+        binding.btnContactSeller.visibility = View.GONE
+        
+        // Show owner management card
+        binding.ownerManagementCard.visibility = View.VISIBLE
+        binding.btnCloseAuction.visibility = View.VISIBLE
+        
+        // Toggle dividers
+        binding.divider3.visibility = View.GONE
+        binding.divider3Owner.visibility = View.VISIBLE
+        
+        // Setup buttons
+        binding.btnCloseAuction.setOnClickListener {
+            showCloseAuctionDialog(listing)
+        }
+        
+        val isActiveStatus = listing.status.equals("active", ignoreCase = true)
+        binding.btnToggleStatus.text = if (isActiveStatus) "🚫 Disable Listing" else "✅ Enable Listing"
+        binding.btnToggleStatus.setBackgroundColor(getColor(if (isActiveStatus) R.color.red else R.color.green))
+        
+        binding.btnToggleStatus.setOnClickListener {
+            if (isActiveStatus) {
+                showDisableListingDialog(listing)
+            } else {
+                showEnableListingDialog(listing)
+            }
+        }
+        
+        binding.btnEditListing.setOnClickListener {
+            Toast.makeText(this, "Edit listing feature coming soon", Toast.LENGTH_SHORT).show()
+        }
+        
+        binding.btnViewYourListings.setOnClickListener {
+            val intent = Intent(this, MyListingsActivity::class.java)
+            startActivity(intent)
+        }
+        
+        Log.d("BidDetailActivity", "=== SETUP OWNER BID UI COMPLETE ===")
+    }
+    
+    private fun showCloseAuctionDialog(listing: Listing) {
+        AlertDialog.Builder(this)
+            .setTitle("Close Auction")
+            .setMessage("Close this auction? The highest bidder will win.")
+            .setPositiveButton("Close") { _, _ ->
+                closeAuction(listing.id)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+    
+    private fun closeAuction(listingId: Int) {
+        viewModel.updateListingStatus(listingId, "CLOSED")
+    }
+    
+    private fun showDisableListingDialog(listing: Listing) {
+        AlertDialog.Builder(this)
+            .setTitle("Disable Listing")
+            .setMessage("Disable this listing? It will be hidden from buyers.")
+            .setPositiveButton("Disable") { _, _ ->
+                disableListing(listing.id)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+    
+    private fun disableListing(listingId: Int) {
+        viewModel.updateListingStatus(listingId, "inactive")
+    }
+    
+    private fun showEnableListingDialog(listing: Listing) {
+        AlertDialog.Builder(this)
+            .setTitle("Enable Listing")
+            .setMessage("Enable this listing? It will be visible to buyers again.")
+            .setPositiveButton("Enable") { _, _ ->
+                enableListing(listing.id)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+    
+    private fun enableListing(listingId: Int) {
+        viewModel.updateListingStatus(listingId, "active")
     }
 
     private fun setupAuctionTimer(endTime: String?) {
