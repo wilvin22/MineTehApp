@@ -47,6 +47,30 @@ private data class SupabaseListingPreview(
     val price: Double
 )
 
+@Serializable
+private data class InsertMessageData(
+    val conversation_id: Int,
+    val sender_id: Int,
+    val message_text: String
+)
+
+@Serializable
+private data class UpdateConversationData(
+    val updated_at: String
+)
+
+@Serializable
+private data class UpdateMessageReadData(
+    val is_read: Boolean
+)
+
+@Serializable
+private data class InsertConversationData(
+    val user1_id: Int,
+    val user2_id: Int,
+    val listing_id: Int? = null
+)
+
 class MessagingRepository(private val context: Context) {
     private val tag = "MessagingRepository"
     private val supabase = SupabaseClient.client
@@ -164,10 +188,10 @@ class MessagingRepository(private val context: Context) {
             
             Log.d(tag, "Sending message to conversationId=$conversationId")
             
-            val insertData = mapOf(
-                "conversation_id" to conversationId,
-                "sender_id" to userId,
-                "message_text" to messageText
+            val insertData = InsertMessageData(
+                conversation_id = conversationId,
+                sender_id = userId,
+                message_text = messageText
             )
             
             val result = supabase.from("messages")
@@ -177,8 +201,9 @@ class MessagingRepository(private val context: Context) {
                 .decodeSingle<SupabaseMessage>()
             
             // Update conversation updated_at
+            val updateData = UpdateConversationData(updated_at = result.sent_at)
             supabase.from("conversations")
-                .update(mapOf("updated_at" to result.sent_at)) {
+                .update(updateData) {
                     filter { eq("conversation_id", conversationId) }
                 }
             
@@ -207,8 +232,9 @@ class MessagingRepository(private val context: Context) {
             Log.d(tag, "Marking messages as read for conversationId=$conversationId")
             
             // Mark all unread messages from other user as read
+            val updateData = UpdateMessageReadData(is_read = true)
             supabase.from("messages")
-                .update(mapOf("is_read" to true)) {
+                .update(updateData) {
                     filter {
                         eq("conversation_id", conversationId)
                         neq("sender_id", userId)
@@ -263,10 +289,10 @@ class MessagingRepository(private val context: Context) {
             }
             
             // Create new conversation
-            val insertData = mapOf(
-                "user1_id" to userId,
-                "user2_id" to otherUserId,
-                "listing_id" to listingId
+            val insertData = InsertConversationData(
+                user1_id = userId,
+                user2_id = otherUserId,
+                listing_id = listingId
             )
             
             val result = supabase.from("conversations")
