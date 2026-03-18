@@ -286,20 +286,31 @@ class BidDetailActivity : AppCompatActivity() {
         val currentBid = listing.highestBid?.bidAmount ?: listing.price
         binding.currentBidAmount.text = "₱ ${String.format("%.2f", currentBid)}"
         
-        // Show buyer buttons - for BID listings, show heart + place bid + contact seller
+        // Show buyer buttons - for BID listings, show heart + place bid (on same row), contact seller below
         binding.btnAddToCart.visibility = View.GONE
         binding.btnBuyNow.visibility = View.GONE
-        binding.btnContactSeller.visibility = View.VISIBLE
         binding.btnPlaceBid.visibility = View.VISIBLE
         binding.detailHeart.visibility = View.VISIBLE
+        
+        // Position Contact Seller button below Place Bid button
+        binding.btnContactSeller.visibility = View.VISIBLE
+        val contactParams = binding.btnContactSeller.layoutParams as androidx.constraintlayout.widget.ConstraintLayout.LayoutParams
+        contactParams.topToBottom = binding.btnPlaceBid.id
+        contactParams.topMargin = 48 // 16dp spacing
+        contactParams.startToStart = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
+        contactParams.endToEnd = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
+        contactParams.height = 180 // 60dp height
+        binding.btnContactSeller.layoutParams = contactParams
+        binding.btnContactSeller.text = "Contact Seller"
+        binding.btnContactSeller.textSize = 18f
         
         // Hide all dividers for cleaner look
         binding.divider3.visibility = View.GONE
         binding.divider3Owner.visibility = View.GONE
         
-        // For BID buyers, description goes after seller info since there's no divider3
+        // For BID buyers, description goes after contact seller button
         val descParams = binding.detailItemDescription.layoutParams as androidx.constraintlayout.widget.ConstraintLayout.LayoutParams
-        descParams.topToBottom = binding.btnPlaceBid.id
+        descParams.topToBottom = binding.btnContactSeller.id
         descParams.topMargin = 48 // Add some spacing
         binding.detailItemDescription.layoutParams = descParams
         
