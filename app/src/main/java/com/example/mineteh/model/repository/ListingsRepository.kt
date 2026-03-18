@@ -457,4 +457,122 @@ class ListingsRepository(private val context: Context) {
             Resource.Error(e.message ?: "Failed to update listing status")
         }
     }
+    
+    suspend fun getUserListings(): Resource<List<Listing>> = withContext(Dispatchers.IO) {
+        try {
+            val tokenManager = com.example.mineteh.utils.TokenManager(context)
+            val userId = tokenManager.getUserId()
+            if (userId == -1) return@withContext Resource.Error("Not authenticated")
+            
+            Log.d(tag, "Fetching user listings for userId=$userId")
+            
+            val rows = supabase.from("listings")
+                .select(columns = Columns.list(
+                    "id", "title", "description", "price", "location",
+                    "category", "listing_type", "status", "seller_id", "end_time", "created_at"
+                )) {
+                    filter {
+                        eq("seller_id", userId)
+                    }
+                    order("created_at", order = Order.DESCENDING)
+                }
+                .decodeList<SupabaseListing>()
+            
+            if (rows.isEmpty()) return@withContext Resource.Success(emptyList())
+            
+            val ids = rows.map { it.id }
+            
+            // Fetch images
+            val imageMap = mutableMapOf<Int, String?>()
+            if (ids.isNotEmpty()) {
+                val images = supabase.from("listing_images")
+                    .select(columns = Columns.list("listing_id", "image_path", "image_id")) {
+                        filter { isIn("listing_id", ids) }
+                        order("image_id", order = Order.ASCENDING)
+                    }
+                    .decodeList<SupabaseListingImage>()
+                images.forEach { img ->
+                    if (!imageMap.containsKey(img.listing_id)) {
+                        imageMap[img.listing_id] = img.image_path
+                    }
+                }
+            }
+            
+            // Fetch seller info (current user)
+            val sellerRows = supabase.from("accounts")
+                .select(columns = Columns.list("account_id", "username", "first_name", "last_name")) {
+                    filter { eq("account_id", userId) }
+                    limit(1)
+                }
+                .decodeList<SupabaseAccount>()
+            val seller = sellerRows.firstOrNull()
+            
+            val listings = rows.map { row ->
+                Listing(
+                    id = row.id,
+                    title = row.title,
+                    description = row.description,
+                    price = row.price,
+                    location = row.location,
+                    category = row.category,
+                    listingType = row.listing_type,
+                    status = row.status,
+                    _image = imageMap[row.id],
+                    _images = null,
+                    seller = if (seller != null) Seller(
+                        accountId = seller.account_id,
+                        username = seller.username,
+                        firstName = seller.first_name,
+                        lastName = seller.last_name
+                    ) else null,
+                    createdAt = row.created_at,
+                    highestBidAmount = null,
+                    endTime = row.end_time
+                )
+            }
+            
+            Log.d(tag, "Fetched ${listings.size} user listings")
+            Resource.Success(listings)
+        } catch (e: Exception) {
+            Log.e(tag, "Error fetching user listings", e)
+            Resource.Error(e.message ?: "Failed to load your listings")
+        }
+    }
+    
+    suspend fun deleteListing(listingId: Int): Resource<Boolean> = withContext(Dispatchers.IO) {
+        try {
+            Log.d(tag, "Deleting listing: listingId=$listingId")
+            
+            val tokenManager = com.example.mineteh.utils.TokenManager(context)
+            val userId = tokenManager.getUserId()
+            if (userId == -1) return@withContext Resource.Error("Not authenticated")
+            
+            // Delete related data first
+            supabase.from("listing_images").delete {
+                filter { eq("listing_id", listingId) }
+            }
+            
+            supabase.from("bids").delete {
+                filter { eq("listing_id", listingId) }
+            }
+            
+            supabase.from("favorites").delete {
+                filter { eq("listing_id", listingId) }
+            }
+            
+            // Delete the listing itself
+            supabase.from("listings").delete {
+                filter {
+                    eq("id", listingId)
+                    eq("seller_id", userId) // Ensure user owns the listing
+                }
+            }
+            
+            Log.d(tag, "Listing deleted successfully")
+            Resource.Success(true)
+        } catch (e: Exception) {
+            Log.e(tag, "Error deleting listing", e)
+            Resource.Error(e.message ?: "Failed to delete listing")
+        }
+    }
 }
