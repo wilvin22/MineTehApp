@@ -286,16 +286,24 @@ class BidDetailActivity : AppCompatActivity() {
         val currentBid = listing.highestBid?.bidAmount ?: listing.price
         binding.currentBidAmount.text = "₱ ${String.format("%.2f", currentBid)}"
         
-        // Show buyer buttons
+        // Show buyer buttons - for BID listings, show heart + place bid + contact seller
         binding.btnAddToCart.visibility = View.GONE
         binding.btnBuyNow.visibility = View.GONE
         binding.btnContactSeller.visibility = View.VISIBLE
         binding.btnPlaceBid.visibility = View.VISIBLE
         binding.detailHeart.visibility = View.VISIBLE
         
-        // Show buyer divider
+        // Hide all dividers for cleaner look
         binding.divider3.visibility = View.GONE
         binding.divider3Owner.visibility = View.GONE
+        
+        // For BID buyers, description goes after seller info since there's no divider3
+        val descParams = binding.detailItemDescription.layoutParams as androidx.constraintlayout.widget.ConstraintLayout.LayoutParams
+        descParams.topToBottom = binding.btnPlaceBid.id
+        descParams.topMargin = 48 // Add some spacing
+        binding.detailItemDescription.layoutParams = descParams
+        
+        Log.d("BidDetailActivity", "Buyer UI setup complete - showing heart, place bid, and contact seller")
 
         // Setup auction countdown
         setupAuctionTimer(listing.endTime)
@@ -364,6 +372,12 @@ class BidDetailActivity : AppCompatActivity() {
         // Toggle dividers
         binding.divider3.visibility = View.GONE
         binding.divider3Owner.visibility = View.VISIBLE
+        
+        // Update description constraint to divider3Owner
+        val descParams = binding.detailItemDescription.layoutParams as androidx.constraintlayout.widget.ConstraintLayout.LayoutParams
+        descParams.topToBottom = binding.divider3Owner.id
+        descParams.topMargin = 48 // Reset margin
+        binding.detailItemDescription.layoutParams = descParams
         
         // Setup buttons
         binding.btnCloseAuction.setOnClickListener {
