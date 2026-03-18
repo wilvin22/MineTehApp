@@ -84,7 +84,7 @@ class MessagingRepository(private val context: Context) {
             val listingIds = rows.mapNotNull { it.listing_id }.distinct()
             
             // Fetch other users
-            val userMap = mutableMapOf<Int, User>()
+            val userMap = mutableMapOf<Int, ConversationUser>()
             if (otherUserIds.isNotEmpty()) {
                 val users = supabase.from("accounts")
                     .select(columns = Columns.list("account_id", "username", "first_name", "last_name")) {
@@ -92,7 +92,7 @@ class MessagingRepository(private val context: Context) {
                     }
                     .decodeList<SupabaseUser>()
                 users.forEach {
-                    userMap[it.account_id] = User(it.account_id, it.username, it.first_name, it.last_name)
+                    userMap[it.account_id] = ConversationUser(it.account_id, it.username, it.first_name, it.last_name)
                 }
             }
             

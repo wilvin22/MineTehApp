@@ -13,7 +13,7 @@ data class Conversation(
     @SerialName("updated_at") val updatedAt: String,
     
     // Additional fields populated by joins
-    var otherUser: User? = null,
+    var otherUser: ConversationUser? = null,
     var listing: ListingPreview? = null,
     var lastMessage: Message? = null,
     var unreadCount: Int = 0
@@ -30,7 +30,7 @@ data class Message(
 )
 
 @Serializable
-data class User(
+data class ConversationUser(
     @SerialName("account_id") val accountId: Int,
     val username: String,
     @SerialName("first_name") val firstName: String,
