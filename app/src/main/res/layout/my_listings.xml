@@ -55,12 +55,31 @@
                 android:id="@+id/totalProductsLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Total Products: 8"
+                android:text="Total Products: 0"
                 android:textColor="@color/black"
                 android:textSize="22sp"
                 android:textStyle="bold"
                 android:layout_marginBottom="16dp"
                 android:layout_marginStart="8dp"/>
+
+            <ProgressBar
+                android:id="@+id/loadingProgress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="32dp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/emptyListingsText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="32dp"
+                android:text="No listings yet"
+                android:textSize="16sp"
+                android:textColor="@color/text_secondary"
+                android:visibility="gone" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/listingsRecyclerView"
