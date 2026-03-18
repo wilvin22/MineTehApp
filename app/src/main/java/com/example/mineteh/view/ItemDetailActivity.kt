@@ -315,6 +315,11 @@ class ItemDetailActivity : AppCompatActivity() {
             // Show buyer divider
             binding.divider3.visibility = View.VISIBLE
             binding.divider3Owner.visibility = View.GONE
+            
+            // Update description constraint to divider3
+            val descParams = binding.detailItemDescription.layoutParams as androidx.constraintlayout.widget.ConstraintLayout.LayoutParams
+            descParams.topToBottom = binding.divider3.id
+            binding.detailItemDescription.layoutParams = descParams
             binding.divider3Owner.visibility = View.GONE
             
             when (listing.listingType) {
@@ -517,6 +522,11 @@ class ItemDetailActivity : AppCompatActivity() {
             // Toggle dividers
             binding.divider3.visibility = View.GONE
             binding.divider3Owner.visibility = View.VISIBLE
+            
+            // Update description constraint to divider3Owner
+            val descParams = binding.detailItemDescription.layoutParams as androidx.constraintlayout.widget.ConstraintLayout.LayoutParams
+            descParams.topToBottom = binding.divider3Owner.id
+            binding.detailItemDescription.layoutParams = descParams
             
             // Show/hide Close Auction button based on listing type
             if (listing.listingType == "BID") {
