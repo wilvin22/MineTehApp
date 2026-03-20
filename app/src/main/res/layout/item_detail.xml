@@ -339,7 +339,7 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent">
 
-                    <!-- BUYER: FIXED listing row (heart + add to cart + contact) -->
+                    <!-- BUYER: FIXED listing row (heart + interested + contact) -->
                     <LinearLayout
                         android:id="@+id/fixedBuyerRow"
                         android:layout_width="match_parent"
@@ -357,12 +357,12 @@
                             android:contentDescription="Favorite" />
 
                         <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnAddToCart"
+                            android:id="@+id/btnImInterested"
                             android:layout_width="0dp"
                             android:layout_height="56dp"
                             android:layout_weight="1"
                             android:layout_marginStart="8dp"
-                            android:text="Add to Cart"
+                            android:text="I'm Interested"
                             android:textAllCaps="false"
                             android:textSize="13sp"
                             app:backgroundTint="@color/purple"
@@ -381,19 +381,19 @@
                             app:cornerRadius="12dp" />
                     </LinearLayout>
 
-                    <!-- BUYER: FIXED Buy Now button -->
-                    <com.google.android.material.button.MaterialButton
+                    <!-- Stub to keep binding references valid -->
+                    <View
                         android:id="@+id/btnBuyNow"
-                        android:layout_width="match_parent"
-                        android:layout_height="60dp"
-                        android:layout_marginTop="12dp"
-                        android:text="Buy Now"
-                        android:textSize="18sp"
-                        android:textStyle="bold"
-                        android:textAllCaps="false"
-                        android:visibility="gone"
-                        app:backgroundTint="@color/purple"
-                        app:cornerRadius="12dp" />
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:visibility="gone" />
+
+                    <!-- Stub to keep binding references valid -->
+                    <View
+                        android:id="@+id/btnAddToCart"
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:visibility="gone" />
 
                     <!-- BUYER: BID listing row (heart + place bid) -->
                     <LinearLayout

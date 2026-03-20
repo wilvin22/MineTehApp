@@ -63,12 +63,17 @@ class MessagingViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
-    fun getOrCreateConversation(otherUserId: Int, listingId: Int?) {
+    fun getOrCreateConversation(otherUserId: Int, listingId: Int?, initialMessage: String? = null) {
         _conversation.value = Resource.Loading()
 
         viewModelScope.launch {
             val result = messagingRepository.getOrCreateConversation(otherUserId, listingId)
             _conversation.value = result
+            // Send initial message automatically if provided
+            if (result is Resource.Success && !initialMessage.isNullOrBlank()) {
+                val convId = result.data?.conversationId ?: return@launch
+                messagingRepository.sendMessage(convId, initialMessage)
+            }
         }
     }
 
