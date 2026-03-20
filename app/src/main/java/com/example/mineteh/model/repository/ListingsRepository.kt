@@ -172,6 +172,21 @@ class ListingsRepository(private val context: Context) {
                 }
             }
 
+            // Fetch current user's favorited listing IDs
+            val favoritedIds = mutableSetOf<Int>()
+            val userId = com.example.mineteh.utils.TokenManager(context).getUserId()
+            if (userId != -1 && ids.isNotEmpty()) {
+                val favRows = supabase.from("favorites")
+                    .select(columns = Columns.list("listing_id")) {
+                        filter {
+                            eq("user_id", userId)
+                            isIn("listing_id", ids)
+                        }
+                    }
+                    .decodeList<SupabaseFavoriteRow>()
+                favRows.forEach { favoritedIds.add(it.listing_id) }
+            }
+
             val listings = rows.map { row ->
                 val acc = sellerMap[row.seller_id]
                 Listing(
@@ -193,7 +208,8 @@ class ListingsRepository(private val context: Context) {
                     ) else null,
                     createdAt = row.created_at,
                     highestBidAmount = highestBidMap[row.id],
-                    endTime = row.end_time
+                    endTime = row.end_time,
+                    isFavorited = row.id in favoritedIds
                 )
             }
 
@@ -449,13 +465,16 @@ class ListingsRepository(private val context: Context) {
 
             val ids = favRows.map { it.listing_id }
 
-            // Fetch those listings
+            // Fetch those listings — only active ones
             val rows = supabase.from("listings")
                 .select(columns = Columns.list(
                     "id", "title", "description", "price", "location",
                     "category", "listing_type", "status", "seller_id", "end_time", "created_at"
                 )) {
-                    filter { isIn("id", ids) }
+                    filter {
+                        isIn("id", ids)
+                        eq("status", "active")
+                    }
                     order("created_at", order = Order.DESCENDING)
                 }
                 .decodeList<SupabaseListing>()
