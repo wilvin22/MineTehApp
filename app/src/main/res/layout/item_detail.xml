@@ -285,7 +285,7 @@
                     app:layout_constraintTop_toBottomOf="@id/bidInfoCard"
                     app:layout_constraintStart_toStartOf="parent">
 
-                    <ImageView
+                    <com.google.android.material.imageview.ShapeableImageView
                         android:id="@+id/sellerAvatar"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
@@ -327,210 +327,226 @@
                     android:layout_marginTop="12dp"
                     app:layout_constraintTop_toBottomOf="@id/sellerAvatarCard" />
 
-                <!-- Action Buttons Row -->
-                <ImageView
-                    android:id="@+id/detailHeart"
-                    android:layout_width="44dp"
-                    android:layout_height="44dp"
-                    android:layout_marginTop="16dp"
-                    android:src="@drawable/heart"
-                    android:padding="4dp"
-                    android:contentDescription="Favorite"
-                    app:layout_constraintTop_toBottomOf="@id/divider2"
-                    app:layout_constraintStart_toStartOf="parent" />
-
-                <!-- Owner Management Card -->
-                <androidx.cardview.widget.CardView
-                    android:id="@+id/ownerManagementCard"
+                <!-- Action area: single anchor point after divider2 -->
+                <!-- This LinearLayout holds ALL action buttons and description in a clean vertical stack -->
+                <LinearLayout
+                    android:id="@+id/actionAreaContainer"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:orientation="vertical"
                     android:layout_marginTop="16dp"
-                    android:visibility="gone"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="2dp"
-                    app:cardBackgroundColor="@color/purple_light"
                     app:layout_constraintTop_toBottomOf="@id/divider2"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent">
 
+                    <!-- BUYER: FIXED listing row (heart + add to cart + contact) -->
                     <LinearLayout
+                        android:id="@+id/fixedBuyerRow"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="20dp">
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:visibility="gone">
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Manage Your Listing"
-                            android:textColor="@color/purple"
-                            android:textSize="18sp"
-                            android:textStyle="bold"
-                            android:layout_marginBottom="16dp" />
+                        <ImageView
+                            android:id="@+id/detailHeart"
+                            android:layout_width="44dp"
+                            android:layout_height="44dp"
+                            android:src="@drawable/heart"
+                            android:padding="4dp"
+                            android:contentDescription="Favorite" />
 
                         <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnEditListing"
-                            android:layout_width="match_parent"
+                            android:id="@+id/btnAddToCart"
+                            android:layout_width="0dp"
                             android:layout_height="56dp"
-                            android:text="✏️ Edit Listing"
-                            android:textSize="16sp"
+                            android:layout_weight="1"
+                            android:layout_marginStart="8dp"
+                            android:text="Add to Cart"
                             android:textAllCaps="false"
+                            android:textSize="13sp"
                             app:backgroundTint="@color/purple"
-                            app:cornerRadius="8dp"
-                            android:layout_marginBottom="12dp" />
+                            app:cornerRadius="12dp" />
 
                         <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnViewYourListings"
-                            android:layout_width="match_parent"
+                            android:id="@+id/btnContactSeller"
+                            android:layout_width="0dp"
                             android:layout_height="56dp"
-                            android:text="📦 Your Listings"
-                            android:textSize="16sp"
+                            android:layout_weight="1"
+                            android:layout_marginStart="8dp"
+                            android:text="Contact"
                             android:textAllCaps="false"
+                            android:textSize="13sp"
                             app:backgroundTint="@color/purple"
-                            app:cornerRadius="8dp"
-                            android:layout_marginBottom="12dp" />
-
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnCloseAuction"
-                            android:layout_width="match_parent"
-                            android:layout_height="56dp"
-                            android:text="🔨 Close Auction"
-                            android:textSize="16sp"
-                            android:textAllCaps="false"
-                            android:visibility="gone"
-                            app:backgroundTint="#ffc107"
-                            app:cornerRadius="8dp"
-                            android:layout_marginBottom="12dp" />
-
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnToggleStatus"
-                            android:layout_width="match_parent"
-                            android:layout_height="56dp"
-                            android:text="🚫 Disable Listing"
-                            android:textSize="16sp"
-                            android:textAllCaps="false"
-                            app:backgroundTint="#dc3545"
-                            app:cornerRadius="8dp" />
-
+                            app:cornerRadius="12dp" />
                     </LinearLayout>
 
-                </androidx.cardview.widget.CardView>
+                    <!-- BUYER: FIXED Buy Now button -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnBuyNow"
+                        android:layout_width="match_parent"
+                        android:layout_height="60dp"
+                        android:layout_marginTop="12dp"
+                        android:text="Buy Now"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textAllCaps="false"
+                        android:visibility="gone"
+                        app:backgroundTint="@color/purple"
+                        app:cornerRadius="12dp" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnAddToCart"
-                    android:layout_width="0dp"
-                    android:layout_height="56dp"
-                    android:layout_marginStart="12dp"
-                    android:text="Add to Cart"
-                    android:textAllCaps="false"
-                    android:textSize="13sp"
-                    android:paddingHorizontal="4dp"
-                    app:backgroundTint="@color/purple"
-                    app:cornerRadius="12dp"
-                    app:layout_constraintTop_toTopOf="@id/detailHeart"
-                    app:layout_constraintBottom_toBottomOf="@id/detailHeart"
-                    app:layout_constraintStart_toEndOf="@id/detailHeart"
-                    app:layout_constraintEnd_toStartOf="@id/btnContactSeller"
-                    android:layout_marginEnd="8dp"/>
+                    <!-- BUYER: BID listing row (heart + place bid) -->
+                    <LinearLayout
+                        android:id="@+id/bidBuyerRow"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:visibility="gone">
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnContactSeller"
-                    android:layout_width="0dp"
-                    android:layout_height="56dp"
-                    android:text="Contact"
-                    android:textAllCaps="false"
-                    android:textSize="13sp"
-                    android:paddingHorizontal="4dp"
-                    app:backgroundTint="@color/purple"
-                    app:cornerRadius="12dp"
-                    app:layout_constraintTop_toTopOf="@id/detailHeart"
-                    app:layout_constraintBottom_toBottomOf="@id/detailHeart"
-                    app:layout_constraintStart_toEndOf="@id/btnAddToCart"
-                    app:layout_constraintEnd_toEndOf="parent" />
-                
-                <!-- Contact Seller button for BID items (positioned below Place Bid) -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnContactSellerBid"
-                    android:layout_width="0dp"
-                    android:layout_height="60dp"
-                    android:layout_marginTop="16dp"
-                    android:text="Contact Seller"
-                    android:textAllCaps="false"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:visibility="gone"
-                    app:backgroundTint="@color/purple"
-                    app:cornerRadius="12dp"
-                    app:layout_constraintTop_toBottomOf="@id/btnPlaceBid"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent" />
+                        <ImageView
+                            android:id="@+id/detailHeartBid"
+                            android:layout_width="44dp"
+                            android:layout_height="44dp"
+                            android:src="@drawable/heart"
+                            android:padding="4dp"
+                            android:contentDescription="Favorite" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnBuyNow"
-                    android:layout_width="0dp"
-                    android:layout_height="60dp"
-                    android:layout_marginTop="16dp"
-                    android:text="Buy Now"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textAllCaps="false"
-                    app:backgroundTint="@color/purple"
-                    app:cornerRadius="12dp"
-                    app:layout_constraintTop_toBottomOf="@id/detailHeart"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent" />
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnPlaceBid"
+                            android:layout_width="0dp"
+                            android:layout_height="64dp"
+                            android:layout_weight="1"
+                            android:layout_marginStart="12dp"
+                            android:text="Place Bid"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            android:textAllCaps="false"
+                            app:icon="@android:drawable/ic_input_add"
+                            app:iconGravity="textStart"
+                            app:iconPadding="8dp"
+                            app:backgroundTint="@color/purple"
+                            app:cornerRadius="12dp" />
+                    </LinearLayout>
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnPlaceBid"
-                    android:layout_width="0dp"
-                    android:layout_height="64dp"
-                    android:layout_marginStart="12dp"
-                    android:text="Place Bid"
-                    android:textSize="20sp"
-                    android:textStyle="bold"
-                    android:textAllCaps="false"
-                    android:visibility="gone"
-                    app:icon="@android:drawable/ic_input_add"
-                    app:iconGravity="textStart"
-                    app:iconPadding="8dp"
-                    app:backgroundTint="@color/purple"
-                    app:cornerRadius="12dp"
-                    app:layout_constraintTop_toTopOf="@id/detailHeart"
-                    app:layout_constraintBottom_toBottomOf="@id/detailHeart"
-                    app:layout_constraintStart_toEndOf="@id/detailHeart"
-                    app:layout_constraintEnd_toEndOf="parent" />
+                    <!-- BUYER: BID Contact Seller button (below place bid row) -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnContactSellerBid"
+                        android:layout_width="match_parent"
+                        android:layout_height="60dp"
+                        android:layout_marginTop="12dp"
+                        android:text="Contact Seller"
+                        android:textAllCaps="false"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:visibility="gone"
+                        app:backgroundTint="@color/purple"
+                        app:cornerRadius="12dp" />
 
-                <View
-                    android:id="@+id/divider3"
-                    android:layout_width="match_parent"
-                    android:layout_height="1.5dp"
-                    android:background="@color/black"
-                    android:layout_marginTop="16dp"
-                    app:layout_constraintTop_toBottomOf="@id/btnBuyNow" />
-                
+                    <!-- OWNER: Management Card -->
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/ownerManagementCard"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="2dp"
+                        app:cardBackgroundColor="@color/purple_light">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="20dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Manage Your Listing"
+                                android:textColor="@color/purple"
+                                android:textSize="18sp"
+                                android:textStyle="bold"
+                                android:layout_marginBottom="16dp" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnEditListing"
+                                android:layout_width="match_parent"
+                                android:layout_height="56dp"
+                                android:text="✏️ Edit Listing"
+                                android:textSize="16sp"
+                                android:textAllCaps="false"
+                                app:backgroundTint="@color/purple"
+                                app:cornerRadius="8dp"
+                                android:layout_marginBottom="12dp" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnViewYourListings"
+                                android:layout_width="match_parent"
+                                android:layout_height="56dp"
+                                android:text="📦 Your Listings"
+                                android:textSize="16sp"
+                                android:textAllCaps="false"
+                                app:backgroundTint="@color/purple"
+                                app:cornerRadius="8dp"
+                                android:layout_marginBottom="12dp" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnCloseAuction"
+                                android:layout_width="match_parent"
+                                android:layout_height="56dp"
+                                android:text="🔨 Close Auction"
+                                android:textSize="16sp"
+                                android:textAllCaps="false"
+                                android:visibility="gone"
+                                app:backgroundTint="#ffc107"
+                                app:cornerRadius="8dp"
+                                android:layout_marginBottom="12dp" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnToggleStatus"
+                                android:layout_width="match_parent"
+                                android:layout_height="56dp"
+                                android:text="🚫 Disable Listing"
+                                android:textSize="16sp"
+                                android:textAllCaps="false"
+                                app:backgroundTint="#dc3545"
+                                app:cornerRadius="8dp" />
+
+                        </LinearLayout>
+
+                    </androidx.cardview.widget.CardView>
+
+                    <!-- Divider before description -->
+                    <View
+                        android:id="@+id/divider3"
+                        android:layout_width="match_parent"
+                        android:layout_height="1.5dp"
+                        android:background="@color/black"
+                        android:layout_marginTop="16dp"
+                        android:visibility="gone" />
+
+                    <!-- Description -->
+                    <TextView
+                        android:id="@+id/detailItemDescription"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:lineSpacingExtra="6dp"
+                        android:text=""
+                        android:textColor="@color/black"
+                        android:textSize="18sp"
+                        android:paddingBottom="32dp" />
+
+                </LinearLayout>
+
+                <!-- Keep these hidden stubs so code references don't break -->
                 <View
                     android:id="@+id/divider3Owner"
-                    android:layout_width="match_parent"
-                    android:layout_height="1.5dp"
-                    android:background="@color/black"
-                    android:layout_marginTop="16dp"
-                    android:visibility="gone"
-                    app:layout_constraintTop_toBottomOf="@id/ownerManagementCard" />
-
-                <!-- Description / Bullet Points -->
-                <TextView
-                    android:id="@+id/detailItemDescription"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:lineSpacingExtra="6dp"
-                    android:text=""
-                    android:textColor="@color/black"
-                    android:textSize="18sp"
-                    app:layout_constraintTop_toBottomOf="@id/divider3"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    android:paddingBottom="32dp"/>
+                    android:layout_height="0dp"
+                    android:visibility="gone"
+                    app:layout_constraintTop_toBottomOf="@id/actionAreaContainer"
+                    app:layout_constraintStart_toStartOf="parent" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 

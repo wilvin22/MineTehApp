@@ -86,11 +86,13 @@ class ListingsRepository(private val context: Context) {
         category: String? = null,
         type: String? = null,
         search: String? = null,
+        minPrice: Double? = null,
+        maxPrice: Double? = null,
         limit: Int = 50,
         offset: Int = 0
     ): Resource<List<Listing>> = withContext(Dispatchers.IO) {
         try {
-            Log.d(tag, "Fetching listings from Supabase: category=$category, type=$type, search=$search")
+            Log.d(tag, "Fetching listings from Supabase: category=$category, type=$type, search=$search, minPrice=$minPrice, maxPrice=$maxPrice")
 
             val rows = supabase.from("listings")
                 .select(columns = Columns.list(
@@ -102,6 +104,8 @@ class ListingsRepository(private val context: Context) {
                         if (category != null) eq("category", category)
                         if (type != null) eq("listing_type", type)
                         if (search != null) ilike("title", "%$search%")
+                        if (minPrice != null) gte("price", minPrice)
+                        if (maxPrice != null) lte("price", maxPrice)
                     }
                     order("created_at", order = Order.DESCENDING)
                     limit(limit.toLong())
@@ -539,6 +543,100 @@ class ListingsRepository(private val context: Context) {
         }
     }
     
+    suspend fun updateListing(
+        listingId: Int,
+        title: String,
+        description: String,
+        price: Double,
+        endTime: String?,
+        newImageUris: List<android.net.Uri>,
+        removedImagePaths: List<String>
+    ): Resource<Unit> = withContext(Dispatchers.IO) {
+        try {
+            Log.d(tag, "Updating listing id=$listingId")
+
+            val tokenManager = com.example.mineteh.utils.TokenManager(context)
+            val currentUserId = tokenManager.getUserId()
+            if (currentUserId == -1) return@withContext Resource.Error("Not authenticated")
+
+            // Update core listing fields
+            supabase.from("listings")
+                .update(mapOf(
+                    "title" to title,
+                    "description" to description,
+                    "price" to price,
+                    "end_time" to endTime
+                )) {
+                    filter {
+                        eq("id", listingId)
+                        eq("seller_id", currentUserId)
+                    }
+                }
+
+            Log.d(tag, "Listing fields updated for id=$listingId")
+
+            // Delete removed images from listing_images
+            for (imagePath in removedImagePaths) {
+                supabase.from("listing_images").delete {
+                    filter {
+                        eq("listing_id", listingId)
+                        eq("image_path", imagePath)
+                    }
+                }
+            }
+
+            // Upload new images and insert into listing_images
+            newImageUris.forEachIndexed { index, uri ->
+                try {
+                    val stream = context.contentResolver.openInputStream(uri) ?: return@forEachIndexed
+                    val originalBitmap = android.graphics.BitmapFactory.decodeStream(stream)
+                    stream.close()
+                    if (originalBitmap == null) return@forEachIndexed
+
+                    val maxSize = 800
+                    val scale = minOf(maxSize.toFloat() / originalBitmap.width, maxSize.toFloat() / originalBitmap.height, 1f)
+                    val scaledBitmap = if (scale < 1f) {
+                        android.graphics.Bitmap.createScaledBitmap(
+                            originalBitmap,
+                            (originalBitmap.width * scale).toInt(),
+                            (originalBitmap.height * scale).toInt(),
+                            true
+                        )
+                    } else originalBitmap
+
+                    val outputStream = java.io.ByteArrayOutputStream()
+                    scaledBitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 80, outputStream)
+                    val bytes = outputStream.toByteArray()
+                    if (scaledBitmap != originalBitmap) scaledBitmap.recycle()
+                    originalBitmap.recycle()
+
+                    val fileName = "listing_${listingId}_edit_${index}_${System.currentTimeMillis()}.jpg"
+                    supabase.storage.from("images").upload(
+                        path = fileName,
+                        data = bytes,
+                        upsert = true
+                    )
+                    val publicUrl = supabase.storage.from("images").publicUrl(fileName)
+
+                    Log.d(tag, "New image $index uploaded for listing $listingId: $publicUrl")
+
+                    supabase.from("listing_images").insert(InsertListingImage(
+                        listing_id = listingId,
+                        image_path = publicUrl
+                    ))
+                } catch (e: Exception) {
+                    Log.e(tag, "Failed to upload new image $index for listing $listingId", e)
+                }
+            }
+
+            Log.d(tag, "Listing $listingId updated successfully")
+            Resource.Success(Unit)
+        } catch (e: Exception) {
+            Log.e(tag, "Error updating listing $listingId", e)
+            Resource.Error(e.message ?: "Failed to update listing")
+        }
+    }
+
     suspend fun deleteListing(listingId: Int): Resource<Boolean> = withContext(Dispatchers.IO) {
         try {
             Log.d(tag, "Deleting listing: listingId=$listingId")

@@ -31,6 +31,7 @@ class SearchActivity : AppCompatActivity(), FilterBottomSheetFragment.FilterList
     private lateinit var backButton: ImageView
     private lateinit var searchInput: TextInputEditText
     private lateinit var searchButton: MaterialButton
+    private lateinit var filterButton: MaterialButton
     private lateinit var categorySpinner: AutoCompleteTextView
     private lateinit var typeSpinner: AutoCompleteTextView
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
@@ -60,6 +61,7 @@ class SearchActivity : AppCompatActivity(), FilterBottomSheetFragment.FilterList
         backButton = findViewById(R.id.backButton)
         searchInput = findViewById(R.id.searchInput)
         searchButton = findViewById(R.id.searchButton)
+        filterButton = findViewById(R.id.filterButton)
         categorySpinner = findViewById(R.id.categorySpinner)
         typeSpinner = findViewById(R.id.typeSpinner)
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout)
@@ -112,10 +114,9 @@ class SearchActivity : AppCompatActivity(), FilterBottomSheetFragment.FilterList
             performSearch()
         }
 
-        // Add filter functionality if you have a filter button
-        // findViewById<View>(R.id.filterButton)?.setOnClickListener {
-        //     showFilterBottomSheet()
-        // }
+        filterButton.setOnClickListener {
+            showFilterBottomSheet()
+        }
     }
 
     private fun showFilterBottomSheet() {
@@ -134,7 +135,9 @@ class SearchActivity : AppCompatActivity(), FilterBottomSheetFragment.FilterList
         viewModel.searchListings(
             query = query.takeIf { it.isNotEmpty() },
             category = currentFilters.category,
-            type = currentFilters.listingType
+            type = currentFilters.listingType,
+            minPrice = currentFilters.minPrice,
+            maxPrice = currentFilters.maxPrice
         )
     }
 

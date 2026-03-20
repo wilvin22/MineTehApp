@@ -92,6 +92,8 @@
         <activity android:name=".view.CheckoutActivity" />
         <activity android:name=".view.YourAuctionsActivity" />
         <activity android:name=".view.MyListingsActivity" />
+        <activity android:name=".view.EditListingActivity" />
+        <activity android:name=".view.SellerProfileActivity" />
 
     </application>
 
