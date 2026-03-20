@@ -65,7 +65,7 @@ class HomeActivity : AppCompatActivity() {
             }
 
             findViewById<ImageView>(R.id.btnCart).setOnClickListener {
-                startActivity(Intent(this, CartActivity::class.java))
+                startActivity(Intent(this, YourAuctionsActivity::class.java))
             }
 
             // Search functionality
@@ -117,6 +117,10 @@ class HomeActivity : AppCompatActivity() {
         recyclerView.layoutManager = GridLayoutManager(this, 2)
         adapter = ItemAdapter()
         recyclerView.adapter = adapter
+
+        // Pass current user ID so "Your Listing" badge shows correctly
+        val userId = com.example.mineteh.utils.TokenManager(this).getUserId()
+        adapter.setCurrentUserId(userId)
     }
 
     private fun observeViewModel() {

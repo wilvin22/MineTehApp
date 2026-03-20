@@ -61,23 +61,49 @@
                     android:background="?attr/selectableItemBackgroundBorderless"/>
             </FrameLayout>
 
-            <!-- Type Badge (Fixed/Bid) -->
-            <TextView
-                android:id="@+id/itemTypeBadge"
+            <!-- Bottom-left badges row -->
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="FIXED"
-                android:textSize="10sp"
-                android:textStyle="bold"
-                android:textColor="@color/white"
-                android:background="@drawable/badge_background"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp"
-                android:paddingTop="6dp"
-                android:paddingBottom="6dp"
                 android:layout_gravity="bottom|start"
                 android:layout_margin="12dp"
-                android:elevation="2dp"/>
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:elevation="2dp">
+
+                <!-- Type Badge (Fixed/Bid) -->
+                <TextView
+                    android:id="@+id/itemTypeBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="FIXED"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/white"
+                    android:background="@drawable/badge_background"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:paddingTop="5dp"
+                    android:paddingBottom="5dp" />
+
+                <!-- Your Listing Badge -->
+                <TextView
+                    android:id="@+id/yourListingBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:text="Your Listing"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/white"
+                    android:background="@drawable/your_listing_badge_bg"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:paddingTop="5dp"
+                    android:paddingBottom="5dp"
+                    android:visibility="gone" />
+
+            </LinearLayout>
         </FrameLayout>
 
         <!-- Content Section -->
