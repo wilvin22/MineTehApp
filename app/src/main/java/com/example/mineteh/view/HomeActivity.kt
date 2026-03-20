@@ -127,7 +127,9 @@ class HomeActivity : AppCompatActivity() {
 
     private fun setupRecyclerView() {
         recyclerView.layoutManager = GridLayoutManager(this, 2)
-        adapter = ItemAdapter()
+        adapter = ItemAdapter(onFavoriteToggle = { listing ->
+            viewModel.toggleFavorite(listing.id)
+        })
         recyclerView.adapter = adapter
 
         // Pass current user ID so "Your Listing" badge shows correctly
