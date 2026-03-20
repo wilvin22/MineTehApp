@@ -20,7 +20,8 @@ class InboxActivity : AppCompatActivity() {
     private val notificationsViewModel: NotificationsViewModel by viewModels()
     private val messagingViewModel: MessagingViewModel by viewModels()
     private lateinit var recyclerView: RecyclerView
-    private lateinit var emptyView: TextView
+    private lateinit var emptyView: View
+    private lateinit var emptyText: TextView
     private lateinit var loadingView: View
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,7 +29,8 @@ class InboxActivity : AppCompatActivity() {
         setContentView(R.layout.inbox)
 
         recyclerView = findViewById(R.id.messageRecyclerView)
-        emptyView = findViewById(R.id.emptyMessagesText)
+        emptyView = findViewById(R.id.emptyStateContainer)
+        emptyText = findViewById(R.id.emptyMessagesText)
         loadingView = findViewById(R.id.loadingProgress)
         
         recyclerView.layoutManager = LinearLayoutManager(this)
@@ -73,7 +75,7 @@ class InboxActivity : AppCompatActivity() {
                     loadingView.visibility = View.GONE
                     recyclerView.visibility = View.GONE
                     emptyView.visibility = View.VISIBLE
-                    emptyView.text = resource.message ?: "Failed to load conversations"
+                    emptyText.text = resource.message ?: "Failed to load conversations"
                     Toast.makeText(this, resource.message ?: "Failed to load conversations", Toast.LENGTH_SHORT).show()
                 }
             }

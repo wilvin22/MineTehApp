@@ -1,83 +1,92 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:padding="16dp"
-    android:background="?attr/selectableItemBackground"
-    android:clickable="true"
-    android:focusable="true">
+    android:layout_marginHorizontal="12dp"
+    android:layout_marginVertical="4dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="1dp"
+    app:cardBackgroundColor="@color/white">
 
-    <!-- Notification Icon -->
-    <ImageView
-        android:id="@+id/notificationIcon"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_marginEnd="16dp"
-        android:layout_gravity="top"
-        android:src="@drawable/ic_notifications"
-        android:contentDescription="Notification icon" />
-
-    <!-- Content Container -->
     <LinearLayout
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:orientation="vertical">
+        android:orientation="horizontal"
+        android:padding="14dp"
+        android:gravity="center_vertical"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true">
 
-        <!-- Title and Timestamp Row -->
+        <!-- Unread dot -->
+        <View
+            android:id="@+id/unreadIndicator"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:layout_marginEnd="10dp"
+            android:background="@drawable/unread_indicator"
+            android:visibility="gone" />
+
+        <!-- Icon circle -->
+        <FrameLayout
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginEnd="14dp">
+
+            <View
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="@drawable/circle_background" />
+
+            <ImageView
+                android:id="@+id/notificationIcon"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_notifications"
+                android:contentDescription="Notification icon"
+                app:tint="@color/purple" />
+        </FrameLayout>
+
+        <!-- Text content -->
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginBottom="4dp">
+            android:layout_weight="1"
+            android:orientation="vertical">
 
             <TextView
                 android:id="@+id/notificationTitle"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:text="Notification Title"
-                android:textSize="16sp"
-                android:textColor="@color/text_primary"
+                android:textSize="14sp"
                 android:textStyle="bold"
-                android:maxLines="2"
+                android:textColor="@color/black"
+                android:maxLines="1"
                 android:ellipsize="end" />
+
+            <TextView
+                android:id="@+id/notificationMessage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Notification message content"
+                android:textSize="13sp"
+                android:textColor="@color/text_secondary"
+                android:maxLines="2"
+                android:ellipsize="end"
+                android:layout_marginTop="2dp" />
 
             <TextView
                 android:id="@+id/notificationTimestamp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
                 android:text="2m ago"
-                android:textSize="12sp"
-                android:textColor="@color/text_secondary" />
-
+                android:textSize="11sp"
+                android:textColor="@color/text_secondary"
+                android:layout_marginTop="4dp" />
         </LinearLayout>
 
-        <!-- Message -->
-        <TextView
-            android:id="@+id/notificationMessage"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Notification message content goes here"
-            android:textSize="14sp"
-            android:textColor="@color/text_secondary"
-            android:maxLines="3"
-            android:ellipsize="end"
-            android:lineSpacingExtra="2dp" />
-
     </LinearLayout>
-
-    <!-- Unread Indicator -->
-    <View
-        android:id="@+id/unreadIndicator"
-        android:layout_width="8dp"
-        android:layout_height="8dp"
-        android:layout_marginStart="12dp"
-        android:layout_gravity="center_vertical"
-        android:background="@drawable/unread_indicator"
-        android:visibility="gone" />
-
-</LinearLayout>
+</androidx.cardview.widget.CardView>
