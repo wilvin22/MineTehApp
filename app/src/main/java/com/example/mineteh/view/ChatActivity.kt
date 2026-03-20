@@ -59,6 +59,7 @@ class ChatActivity : AppCompatActivity() {
         conversationId = intent.getIntExtra("conversation_id", -1)
         otherUserId = intent.getIntExtra("other_user_id", -1)
         listingId = intent.getIntExtra("listing_id", -1).takeIf { it != -1 }
+        val initialMessage = intent.getStringExtra("initial_message")
         
         val otherUserName = intent.getStringExtra("other_user_name") ?: "User"
         binding.chatUserName.text = otherUserName
@@ -71,8 +72,8 @@ class ChatActivity : AppCompatActivity() {
             viewModel.loadMessages(conversationId)
             startAutoRefresh()
         } else if (otherUserId != -1) {
-            // Create or get conversation
-            viewModel.getOrCreateConversation(otherUserId, listingId)
+            // Create or get conversation, then send initial message if provided
+            viewModel.getOrCreateConversation(otherUserId, listingId, initialMessage)
         } else {
             Toast.makeText(this, "Invalid conversation data", Toast.LENGTH_SHORT).show()
             finish()

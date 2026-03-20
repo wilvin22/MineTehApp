@@ -14,7 +14,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager2.widget.ViewPager2
 import com.example.mineteh.R
 import com.example.mineteh.databinding.ItemDetailBinding
-import com.example.mineteh.models.CartItem
 import com.example.mineteh.models.Listing
 import com.example.mineteh.utils.AvatarUtils
 import com.example.mineteh.utils.Resource
@@ -347,36 +346,10 @@ class ItemDetailActivity : AppCompatActivity() {
                     binding.btnContactSellerBid.visibility = View.GONE
                     binding.divider3.visibility = View.VISIBLE
 
-                    binding.btnAddToCart.setOnClickListener {
-                        val cartItem = CartItem(
-                            listingId = listing.id,
-                            title = listing.title,
-                            price = listing.price,
-                            image = listing.image,
-                            sellerId = listing.seller?.accountId,
-                            sellerName = listing.seller?.username ?: "Unknown",
-                            quantity = 1
-                        )
-                        com.example.mineteh.model.repository.CartRepository(this).addToCart(cartItem)
-                        Toast.makeText(this, "Added to cart", Toast.LENGTH_SHORT).show()
+                    binding.btnImInterested.setOnClickListener {
+                        showInterestedDialog(listing)
                     }
 
-                    binding.btnBuyNow.setOnClickListener {
-                        val cartItem = CartItem(
-                            listingId = listing.id,
-                            title = listing.title,
-                            price = listing.price,
-                            image = listing.image,
-                            sellerId = listing.seller?.accountId,
-                            sellerName = listing.seller?.username ?: "Unknown",
-                            quantity = 1
-                        )
-                        val cartRepo = com.example.mineteh.model.repository.CartRepository(this)
-                        cartRepo.clearCart()
-                        cartRepo.addToCart(cartItem)
-                        startActivity(Intent(this, CheckoutActivity::class.java))
-                    }
-                    
                     binding.btnContactSeller.setOnClickListener {
                         listing.seller?.accountId?.let { sid ->
                             startActivity(Intent(this, ChatActivity::class.java).apply {
@@ -526,6 +499,35 @@ class ItemDetailActivity : AppCompatActivity() {
         }
     }
     
+    private fun showInterestedDialog(listing: Listing) {
+        val defaultMessage = "Hi! I'm interested in your listing: ${listing.title}"
+        val input = android.widget.EditText(this).apply {
+            setText(defaultMessage)
+            setSelection(defaultMessage.length)
+            setPadding(48, 32, 48, 32)
+            minLines = 3
+            maxLines = 5
+            gravity = android.view.Gravity.TOP or android.view.Gravity.START
+        }
+        AlertDialog.Builder(this)
+            .setTitle("Send Interest")
+            .setMessage("Send a message to the seller:")
+            .setView(input)
+            .setPositiveButton("Send") { _, _ ->
+                val message = input.text.toString().trim().ifEmpty { defaultMessage }
+                listing.seller?.accountId?.let { sid ->
+                    startActivity(Intent(this, ChatActivity::class.java).apply {
+                        putExtra("other_user_id", sid)
+                        putExtra("other_user_name", listing.seller?.username ?: "Seller")
+                        putExtra("listing_id", listing.id)
+                        putExtra("initial_message", message)
+                    })
+                } ?: Toast.makeText(this, "Seller information not available", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
     private fun showDisableListingDialog(listing: Listing) {
         AlertDialog.Builder(this)
             .setTitle("Disable Listing")
