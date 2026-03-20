@@ -17,7 +17,9 @@ data class SellerStats(
     val activeListings: Int,
     val totalSold: Int,
     val unreadMessages: Int,
-    val averageRating: Double
+    val averageRating: Double,
+    val inactiveListings: Int = 0,
+    val liveAuctions: Int = 0
 )
 
 @Serializable
@@ -125,6 +127,29 @@ class SellerRepository(private val context: Context) {
                 .decodeList<kotlinx.serialization.json.JsonObject>()
                 .size
 
+            // Inactive listings count
+            val inactiveListings = supabase.from("listings")
+                .select(columns = Columns.list("id")) {
+                    filter {
+                        eq("seller_id", userId)
+                        eq("status", "inactive")
+                    }
+                }
+                .decodeList<kotlinx.serialization.json.JsonObject>()
+                .size
+
+            // Live auctions (BID type, active)
+            val liveAuctions = supabase.from("listings")
+                .select(columns = Columns.list("id")) {
+                    filter {
+                        eq("seller_id", userId)
+                        eq("listing_type", "BID")
+                        eq("status", "active")
+                    }
+                }
+                .decodeList<kotlinx.serialization.json.JsonObject>()
+                .size
+
             // Total sold count
             val totalSold = supabase.from("orders")
                 .select(columns = Columns.list("order_id")) {
@@ -167,7 +192,9 @@ class SellerRepository(private val context: Context) {
                     activeListings = activeListings,
                     totalSold = totalSold,
                     unreadMessages = unreadMessages,
-                    averageRating = averageRating
+                    averageRating = averageRating,
+                    inactiveListings = inactiveListings,
+                    liveAuctions = liveAuctions
                 )
             )
         } catch (e: Exception) {
