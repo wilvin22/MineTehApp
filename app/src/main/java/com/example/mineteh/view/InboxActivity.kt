@@ -3,7 +3,7 @@ package com.example.mineteh.view
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import android.widget.LinearLayout
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -11,7 +11,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mineteh.R
-import com.example.mineteh.utils.NotificationBadgeManager
 import com.example.mineteh.utils.Resource
 import com.example.mineteh.viewmodel.MessagingViewModel
 import com.example.mineteh.viewmodel.NotificationsViewModel
@@ -37,29 +36,7 @@ class InboxActivity : AppCompatActivity() {
         setupObservers()
         messagingViewModel.loadConversations()
 
-        // Setup notification badge
-        val notificationBadge = findViewById<TextView>(R.id.notificationBadge)
-        NotificationBadgeManager.setupBadge(this, this, notificationsViewModel, notificationBadge)
-
-        // Navigation setup
-        findViewById<LinearLayout>(R.id.nav_home).setOnClickListener {
-            startActivity(Intent(this, HomeActivity::class.java))
-            overridePendingTransition(0, 0)
-            finish()
-        }
-        findViewById<LinearLayout>(R.id.nav_notifications).setOnClickListener {
-            startActivity(Intent(this, NotificationsActivity::class.java))
-            overridePendingTransition(0, 0)
-            finish()
-        }
-        findViewById<LinearLayout>(R.id.nav_sell).setOnClickListener {
-            startActivity(Intent(this, SellActivity::class.java))
-            overridePendingTransition(0, 0)
-            finish()
-        }
-        findViewById<LinearLayout>(R.id.nav_profile).setOnClickListener {
-            startActivity(Intent(this, ProfileActivity::class.java))
-            overridePendingTransition(0, 0)
+        findViewById<android.widget.ImageView>(R.id.backButton).setOnClickListener {
             finish()
         }
     }

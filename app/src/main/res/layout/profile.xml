@@ -374,7 +374,7 @@
                 android:layout_marginBottom="16dp">
 
                 <LinearLayout
-                    android:id="@+id/btnMyOrders"
+                    android:id="@+id/btnManageListings"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -393,7 +393,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="My Orders"
+                        android:text="Manage Listings"
                         android:textColor="@color/black"
                         android:textSize="12sp"
                         android:textStyle="bold" />

@@ -1,93 +1,137 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F8F9FA">
+    android:background="#F0F2F5">
 
-    <!-- Header Toolbar Section -->
-    <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/appBarLayout"
-        android:layout_width="match_parent"
+    <!-- Toolbar -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="0dp"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/white"
+        android:elevation="2dp"
+        app:title="Manage Listings"
+        app:titleTextColor="@color/black"
+        app:navigationIcon="?attr/homeAsUpIndicator"
+        app:navigationIconTint="@color/black"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Filter tabs -->
+    <HorizontalScrollView
+        android:id="@+id/filterScrollView"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="@color/purple"
-        app:elevation="0dp"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            app:navigationIcon="@android:drawable/ic_menu_revert"
-            app:navigationIconTint="@color/black">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="MineTeh"
-                android:textColor="@color/black"
-                android:textSize="32sp"
-                android:textStyle="bold"
-                android:fontFamily="sans-serif-condensed-medium"/>
-        </com.google.android.material.appbar.MaterialToolbar>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="2dp"
-            android:background="@color/white" />
-    </com.google.android.material.appbar.AppBarLayout>
-
-    <androidx.core.widget.NestedScrollView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/appBarLayout">
+        android:background="@color/white"
+        android:scrollbars="none"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
+            android:orientation="horizontal"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="10dp">
 
             <TextView
-                android:id="@+id/totalProductsLabel"
+                android:id="@+id/tabAll"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Total Products: 0"
-                android:textColor="@color/black"
-                android:textSize="22sp"
+                android:layout_height="32dp"
+                android:text="All"
+                android:textSize="13sp"
                 android:textStyle="bold"
-                android:layout_marginBottom="16dp"
-                android:layout_marginStart="8dp"/>
-
-            <ProgressBar
-                android:id="@+id/loadingProgress"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginTop="32dp"
-                android:visibility="gone" />
+                android:gravity="center"
+                android:paddingHorizontal="16dp"
+                android:background="@drawable/tab_selected_bg"
+                android:textColor="@color/white"
+                android:layout_marginEnd="8dp"
+                android:clickable="true"
+                android:focusable="true" />
 
             <TextView
-                android:id="@+id/emptyListingsText"
+                android:id="@+id/tabActive"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginTop="32dp"
-                android:text="No listings yet"
-                android:textSize="16sp"
+                android:layout_height="32dp"
+                android:text="Active"
+                android:textSize="13sp"
+                android:gravity="center"
+                android:paddingHorizontal="16dp"
+                android:background="@drawable/tab_unselected_bg"
                 android:textColor="@color/text_secondary"
-                android:visibility="gone" />
+                android:layout_marginEnd="8dp"
+                android:clickable="true"
+                android:focusable="true" />
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/listingsRecyclerView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                tools:listitem="@layout/item_listing" />
+            <TextView
+                android:id="@+id/tabSold"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:text="Sold"
+                android:textSize="13sp"
+                android:gravity="center"
+                android:paddingHorizontal="16dp"
+                android:background="@drawable/tab_unselected_bg"
+                android:textColor="@color/text_secondary"
+                android:layout_marginEnd="8dp"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <TextView
+                android:id="@+id/tabInactive"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:text="Inactive"
+                android:textSize="13sp"
+                android:gravity="center"
+                android:paddingHorizontal="16dp"
+                android:background="@drawable/tab_unselected_bg"
+                android:textColor="@color/text_secondary"
+                android:clickable="true"
+                android:focusable="true" />
 
         </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
+    </HorizontalScrollView>
+
+    <!-- Loading -->
+    <ProgressBar
+        android:id="@+id/loadingProgress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/filterScrollView"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Empty state -->
+    <TextView
+        android:id="@+id/emptyListingsText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="No listings yet"
+        android:textSize="16sp"
+        android:textColor="@color/text_secondary"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/filterScrollView"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Listings list -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/listingsRecyclerView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:padding="12dp"
+        android:clipToPadding="false"
+        app:layout_constraintTop_toBottomOf="@id/filterScrollView"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
