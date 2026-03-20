@@ -36,15 +36,15 @@ import kotlinx.serialization.json.jsonPrimitive
 @Serializable
 data class SupabaseOrder(
     @SerialName("order_id") val orderId: Int = 0,
-    @SerialName("user_id") val userId: Int = 0,
+    @SerialName("buyer_id") val userId: Int = 0,
     @SerialName("seller_id") val sellerId: Int = 0,
     @SerialName("listing_id") val listingId: Int = 0,
     @SerialName("listing_title") val listingTitle: String = "",
     @SerialName("listing_image") val listingImage: String? = null,
-    @SerialName("total_amount") val totalAmount: Double = 0.0,
-    @SerialName("status") val status: String = "pending",
+    @SerialName("order_amount") val totalAmount: Double = 0.0,
+    @SerialName("order_status") val status: String = "processing",
     @SerialName("seller_name") val sellerName: String = "",
-    @SerialName("created_at") val createdAt: String? = null
+    @SerialName("order_date") val createdAt: String? = null
 )
 
 class MyOrdersActivity : AppCompatActivity(), RateSellerDialogFragment.RateSellerListener {
@@ -52,7 +52,7 @@ class MyOrdersActivity : AppCompatActivity(), RateSellerDialogFragment.RateSelle
     private lateinit var binding: MyOrdersBinding
     private lateinit var tokenManager: TokenManager
     private val allOrders = mutableListOf<SupabaseOrder>()
-    private val tabStatuses = listOf(null, "pending", "to_ship", "to_receive", "completed")
+    private val tabStatuses = listOf(null, "processing", "shipped", "delivered", "cancelled")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -89,10 +89,10 @@ class MyOrdersActivity : AppCompatActivity(), RateSellerDialogFragment.RateSelle
             val response = SupabaseClient.database
                 .from("orders")
                 .select(columns = Columns.raw(
-                    "order_id, user_id, seller_id, listing_id, total_amount, status, created_at, " +
+                    "order_id, buyer_id, seller_id, listing_id, order_amount, order_status, order_date, " +
                     "listings(title, listing_images(image_url)), accounts!orders_seller_id_fkey(username)"
                 )) {
-                    filter { eq("user_id", userId) }
+                    filter { eq("buyer_id", userId) }
                 }
             parseOrdersJson(response.data)
         } catch (e: Exception) {
@@ -100,7 +100,7 @@ class MyOrdersActivity : AppCompatActivity(), RateSellerDialogFragment.RateSelle
             try {
                 val response = SupabaseClient.database
                     .from("orders")
-                    .select() { filter { eq("user_id", userId) } }
+                    .select() { filter { eq("buyer_id", userId) } }
                 parseSimpleOrdersJson(response.data)
             } catch (e2: Exception) {
                 Log.e("MyOrdersActivity", "Fallback query also failed", e2)
@@ -124,15 +124,15 @@ class MyOrdersActivity : AppCompatActivity(), RateSellerDialogFragment.RateSelle
                     val sellerName = accountObj?.get("username")?.jsonPrimitive?.content ?: ""
                     SupabaseOrder(
                         orderId = obj["order_id"]?.jsonPrimitive?.content?.toIntOrNull() ?: 0,
-                        userId = obj["user_id"]?.jsonPrimitive?.content?.toIntOrNull() ?: 0,
+                        userId = obj["buyer_id"]?.jsonPrimitive?.content?.toIntOrNull() ?: 0,
                         sellerId = obj["seller_id"]?.jsonPrimitive?.content?.toIntOrNull() ?: 0,
                         listingId = obj["listing_id"]?.jsonPrimitive?.content?.toIntOrNull() ?: 0,
                         listingTitle = listingObj?.get("title")?.jsonPrimitive?.content ?: "",
                         listingImage = firstImage,
-                        totalAmount = obj["total_amount"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: 0.0,
-                        status = obj["status"]?.jsonPrimitive?.content ?: "pending",
+                        totalAmount = obj["order_amount"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: 0.0,
+                        status = obj["order_status"]?.jsonPrimitive?.content ?: "processing",
                         sellerName = sellerName,
-                        createdAt = obj["created_at"]?.jsonPrimitive?.content
+                        createdAt = obj["order_date"]?.jsonPrimitive?.content
                     )
                 } catch (e: Exception) {
                     Log.e("MyOrdersActivity", "Error parsing order element", e)
@@ -155,13 +155,13 @@ class MyOrdersActivity : AppCompatActivity(), RateSellerDialogFragment.RateSelle
                     val obj = element.jsonObject
                     SupabaseOrder(
                         orderId = obj["order_id"]?.jsonPrimitive?.content?.toIntOrNull() ?: 0,
-                        userId = obj["user_id"]?.jsonPrimitive?.content?.toIntOrNull() ?: 0,
+                        userId = obj["buyer_id"]?.jsonPrimitive?.content?.toIntOrNull() ?: 0,
                         sellerId = obj["seller_id"]?.jsonPrimitive?.content?.toIntOrNull() ?: 0,
                         listingId = obj["listing_id"]?.jsonPrimitive?.content?.toIntOrNull() ?: 0,
                         listingTitle = "Order #${obj["order_id"]?.jsonPrimitive?.content}",
-                        totalAmount = obj["total_amount"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: 0.0,
-                        status = obj["status"]?.jsonPrimitive?.content ?: "pending",
-                        createdAt = obj["created_at"]?.jsonPrimitive?.content
+                        totalAmount = obj["order_amount"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: 0.0,
+                        status = obj["order_status"]?.jsonPrimitive?.content ?: "processing",
+                        createdAt = obj["order_date"]?.jsonPrimitive?.content
                     )
                 } catch (e: Exception) { null }
             }
@@ -173,7 +173,7 @@ class MyOrdersActivity : AppCompatActivity(), RateSellerDialogFragment.RateSelle
         binding.viewPager.adapter = adapter
         TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
             tab.text = when (position) {
-                0 -> "All"; 1 -> "To Pay"; 2 -> "To Ship"; 3 -> "To Receive"; else -> "Completed"
+                0 -> "All"; 1 -> "Processing"; 2 -> "Shipped"; 3 -> "Delivered"; else -> "Cancelled"
             }
         }.attach()
     }
@@ -235,7 +235,7 @@ class MyOrdersActivity : AppCompatActivity(), RateSellerDialogFragment.RateSelle
                 Glide.with(holder.productImage.context).load(order.listingImage).centerCrop().into(holder.productImage)
             }
 
-            if (order.status == "completed") {
+            if (order.status == "delivered") {
                 holder.btnSecondary.visibility = View.VISIBLE
                 holder.btnSecondary.text = "Rate Seller"
                 holder.btnSecondary.isEnabled = false
@@ -265,10 +265,10 @@ class MyOrdersActivity : AppCompatActivity(), RateSellerDialogFragment.RateSelle
         override fun getItemCount(): Int = orders.size
 
         private fun formatStatus(status: String): String = when (status) {
-            "pending" -> "To Pay"
-            "to_ship" -> "To Ship"
-            "to_receive" -> "To Receive"
-            "completed" -> "Completed"
+            "processing" -> "Processing"
+            "shipped" -> "Shipped"
+            "delivered" -> "Delivered"
+            "cancelled" -> "Cancelled"
             else -> status.replaceFirstChar { it.uppercase() }
         }
     }

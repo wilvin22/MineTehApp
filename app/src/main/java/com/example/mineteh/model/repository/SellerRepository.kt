@@ -69,12 +69,12 @@ class SellerRepository(private val context: Context) {
                 .decodeList<kotlinx.serialization.json.JsonObject>()
                 .size
 
-            // 3. Count completed orders
+            // 3. Count completed orders (seller_id + order_status)
             val soldCount = supabase.from("orders")
                 .select(columns = Columns.list("order_id")) {
                     filter {
                         eq("seller_id", sellerId)
-                        eq("status", "completed")
+                        eq("order_status", "delivered")
                     }
                 }
                 .decodeList<kotlinx.serialization.json.JsonObject>()
@@ -130,7 +130,7 @@ class SellerRepository(private val context: Context) {
                 .select(columns = Columns.list("order_id")) {
                     filter {
                         eq("seller_id", userId)
-                        eq("status", "completed")
+                        eq("order_status", "delivered")
                     }
                 }
                 .decodeList<kotlinx.serialization.json.JsonObject>()
