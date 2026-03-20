@@ -14,7 +14,8 @@ import com.example.mineteh.models.Listing
 class ItemAdapter(
     private var itemList: List<Listing> = emptyList(),
     private val isBidActivity: Boolean = false,
-    private var currentUserId: Int = -1
+    private var currentUserId: Int = -1,
+    private val onFavoriteToggle: ((Listing) -> Unit)? = null
 ) : RecyclerView.Adapter<ItemAdapter.ViewHolder>() {
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -167,6 +168,13 @@ class ItemAdapter(
         }
 
         updateHeartIcon(holder.itemHeart, item.isFavorited)
+
+        holder.itemHeart.setOnClickListener {
+            onFavoriteToggle?.invoke(item)
+            // Optimistic UI update
+            val newState = !item.isFavorited
+            updateHeartIcon(holder.itemHeart, newState)
+        }
 
         holder.itemView.setOnClickListener {
             val context = holder.itemView.context

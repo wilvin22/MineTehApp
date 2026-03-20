@@ -58,6 +58,16 @@ private data class SupabaseBid(
 )
 
 @Serializable
+private data class SupabaseFavorite(
+    val id: Int
+)
+
+@Serializable
+private data class SupabaseFavoriteRow(
+    val listing_id: Int
+)
+
+@Serializable
 private data class InsertListing(
     val title: String,
     val description: String,
@@ -380,16 +390,39 @@ class ListingsRepository(private val context: Context) {
     suspend fun toggleFavorite(listingId: Int): Resource<Boolean> = withContext(Dispatchers.IO) {
         try {
             Log.d(tag, "Toggling favorite for listing $listingId")
-            val response = api.toggleFavorite(FavoriteRequest(listing_id = listingId))
-            if (response.isSuccessful) {
-                val body = response.body()
-                if (body?.success == true && body.data != null) {
-                    Resource.Success(body.data.isFavorited)
-                } else {
-                    Resource.Error(body?.message ?: "Failed to toggle favorite")
+            val tokenManager = com.example.mineteh.utils.TokenManager(context)
+            val userId = tokenManager.getUserId()
+            if (userId == -1) return@withContext Resource.Error("Not authenticated")
+
+            // Check if already favorited
+            val existing = supabase.from("favorites")
+                .select(columns = Columns.list("id")) {
+                    filter {
+                        eq("listing_id", listingId)
+                        eq("user_id", userId)
+                    }
+                    limit(1)
                 }
+                .decodeList<SupabaseFavorite>()
+
+            return@withContext if (existing.isNotEmpty()) {
+                // Remove favorite
+                supabase.from("favorites").delete {
+                    filter {
+                        eq("listing_id", listingId)
+                        eq("user_id", userId)
+                    }
+                }
+                Log.d(tag, "Removed favorite for listing $listingId")
+                Resource.Success(false)
             } else {
-                Resource.Error("Server error: ${response.code()}")
+                // Add favorite
+                supabase.from("favorites").insert(mapOf(
+                    "listing_id" to listingId,
+                    "user_id" to userId
+                ))
+                Log.d(tag, "Added favorite for listing $listingId")
+                Resource.Success(true)
             }
         } catch (e: Exception) {
             Log.e(tag, "Error toggling favorite", e)
@@ -399,18 +432,83 @@ class ListingsRepository(private val context: Context) {
 
     suspend fun getFavorites(): Resource<List<Listing>> = withContext(Dispatchers.IO) {
         try {
-            Log.d(tag, "Fetching favorites")
-            val response = api.getFavorites()
-            if (response.isSuccessful) {
-                val body = response.body()
-                if (body?.success == true) {
-                    Resource.Success(body.data ?: emptyList())
-                } else {
-                    Resource.Error(body?.message ?: "Failed to load favorites")
+            Log.d(tag, "Fetching favorites from Supabase")
+            val tokenManager = com.example.mineteh.utils.TokenManager(context)
+            val userId = tokenManager.getUserId()
+            if (userId == -1) return@withContext Resource.Error("Not authenticated")
+
+            // Get favorited listing IDs
+            val favRows = supabase.from("favorites")
+                .select(columns = Columns.list("listing_id")) {
+                    filter { eq("user_id", userId) }
+                    order("created_at", order = Order.DESCENDING)
                 }
-            } else {
-                Resource.Error("Server error: ${response.code()}")
+                .decodeList<SupabaseFavoriteRow>()
+
+            if (favRows.isEmpty()) return@withContext Resource.Success(emptyList())
+
+            val ids = favRows.map { it.listing_id }
+
+            // Fetch those listings
+            val rows = supabase.from("listings")
+                .select(columns = Columns.list(
+                    "id", "title", "description", "price", "location",
+                    "category", "listing_type", "status", "seller_id", "end_time", "created_at"
+                )) {
+                    filter { isIn("id", ids) }
+                    order("created_at", order = Order.DESCENDING)
+                }
+                .decodeList<SupabaseListing>()
+
+            if (rows.isEmpty()) return@withContext Resource.Success(emptyList())
+
+            val sellerIds = rows.map { it.seller_id }.distinct()
+            val imageMap = mutableMapOf<Int, String?>()
+            val images = supabase.from("listing_images")
+                .select(columns = Columns.list("listing_id", "image_path", "image_id")) {
+                    filter { isIn("listing_id", ids) }
+                    order("image_id", order = Order.ASCENDING)
+                }
+                .decodeList<SupabaseListingImage>()
+            images.forEach { img -> if (!imageMap.containsKey(img.listing_id)) imageMap[img.listing_id] = img.image_path }
+
+            val sellerMap = mutableMapOf<Int, SupabaseAccount>()
+            if (sellerIds.isNotEmpty()) {
+                val sellers = supabase.from("accounts")
+                    .select(columns = Columns.list("account_id", "username", "first_name", "last_name")) {
+                        filter { isIn("account_id", sellerIds) }
+                    }
+                    .decodeList<SupabaseAccount>()
+                sellers.forEach { sellerMap[it.account_id] = it }
             }
+
+            val listings = rows.map { row ->
+                val acc = sellerMap[row.seller_id]
+                Listing(
+                    id = row.id,
+                    title = row.title,
+                    description = row.description,
+                    price = row.price,
+                    location = row.location,
+                    category = row.category,
+                    listingType = row.listing_type,
+                    status = row.status,
+                    _image = imageMap[row.id],
+                    _images = null,
+                    seller = if (acc != null) Seller(
+                        accountId = acc.account_id,
+                        username = acc.username,
+                        firstName = acc.first_name,
+                        lastName = acc.last_name
+                    ) else null,
+                    createdAt = row.created_at,
+                    endTime = row.end_time,
+                    isFavorited = true
+                )
+            }
+
+            Log.d(tag, "Fetched ${listings.size} favorites")
+            Resource.Success(listings)
         } catch (e: Exception) {
             Log.e(tag, "Error fetching favorites", e)
             Resource.Error(e.message ?: "Failed to load favorites")

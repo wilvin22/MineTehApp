@@ -45,4 +45,10 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
+
+    fun toggleFavorite(listingId: Int) {
+        viewModelScope.launch {
+            repository.toggleFavorite(listingId)
+        }
+    }
 }
