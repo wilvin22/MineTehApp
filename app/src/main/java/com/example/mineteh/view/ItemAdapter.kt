@@ -13,7 +13,8 @@ import com.example.mineteh.models.Listing
 
 class ItemAdapter(
     private var itemList: List<Listing> = emptyList(),
-    private val isBidActivity: Boolean = false
+    private val isBidActivity: Boolean = false,
+    private var currentUserId: Int = -1
 ) : RecyclerView.Adapter<ItemAdapter.ViewHolder>() {
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -23,6 +24,7 @@ class ItemAdapter(
         val itemHeart: ImageView = itemView.findViewById(R.id.itemHeart)
         val itemImage: ImageView = itemView.findViewById(R.id.itemImage)
         val itemTypeBadge: TextView = itemView.findViewById(R.id.itemTypeBadge)
+        val yourListingBadge: TextView = itemView.findViewById(R.id.yourListingBadge)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -41,6 +43,10 @@ class ItemAdapter(
         holder.itemPrice.text = "₱ ${String.format("%.2f", item.price)}"
         holder.itemLocation?.text = "📍 ${item.location ?: "Unknown"}"
         holder.itemTypeBadge.text = item.listingType ?: "FIXED"
+
+        // Show "Your Listing" badge if this item belongs to the current user
+        val isOwner = currentUserId != -1 && item.seller?.accountId == currentUserId
+        holder.yourListingBadge.visibility = if (isOwner) View.VISIBLE else View.GONE
 
         // Set price color based on listing type
         val priceColor = if (item.listingType == "BID") {
@@ -182,6 +188,11 @@ class ItemAdapter(
 
     fun updateList(newList: List<Listing>) {
         itemList = newList
+        notifyDataSetChanged()
+    }
+
+    fun setCurrentUserId(userId: Int) {
+        currentUserId = userId
         notifyDataSetChanged()
     }
 }
