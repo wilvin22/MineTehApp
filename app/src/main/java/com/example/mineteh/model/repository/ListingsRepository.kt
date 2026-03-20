@@ -82,6 +82,28 @@ private data class InsertListing(
 )
 
 @Serializable
+private data class InsertFavorite(
+    val listing_id: Int,
+    val user_id: Int
+)
+
+@Serializable
+private data class UpdateListingStatus(
+    val status: String
+)
+
+@Serializable
+private data class UpdateListing(
+    val title: String,
+    val description: String,
+    val price: Double,
+    val location: String,
+    val category: String,
+    val listing_type: String,
+    val end_time: String? = null
+)
+
+@Serializable
 private data class InsertListingImage(
     val listing_id: Int,
     val image_path: String
@@ -449,9 +471,9 @@ class ListingsRepository(private val context: Context) {
                 Resource.Success(false)
             } else {
                 // Add favorite
-                supabase.from("favorites").insert(mapOf(
-                    "listing_id" to listingId,
-                    "user_id" to userId
+                supabase.from("favorites").insert(InsertFavorite(
+                    listing_id = listingId,
+                    user_id = userId
                 ))
                 Log.d(tag, "Added favorite for listing $listingId")
                 Resource.Success(true)
@@ -580,10 +602,10 @@ class ListingsRepository(private val context: Context) {
             
             // Update status in Supabase
             supabase.from("listings")
-                .update(mapOf("status" to status)) {
+                .update(UpdateListingStatus(status = status)) {
                     filter {
                         eq("id", listingId)
-                        eq("seller_id", userId) // Ensure user owns the listing
+                        eq("seller_id", userId)
                     }
                 }
             
@@ -697,14 +719,14 @@ class ListingsRepository(private val context: Context) {
 
             // Update core listing fields
             supabase.from("listings")
-                .update(mapOf(
-                    "title" to title,
-                    "description" to description,
-                    "price" to price,
-                    "location" to location,
-                    "category" to category,
-                    "listing_type" to listingType,
-                    "end_time" to endTime
+                .update(UpdateListing(
+                    title = title,
+                    description = description,
+                    price = price,
+                    location = location,
+                    category = category,
+                    listing_type = listingType,
+                    end_time = endTime
                 )) {
                     filter {
                         eq("id", listingId)
