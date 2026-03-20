@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.PopupMenu
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
@@ -140,83 +141,43 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun setupCategoryFilters() {
-        // Initialize category buttons
-        categoryButtons = listOf(
-            findViewById(R.id.btnCategoryAll),
-            findViewById(R.id.btnCategoryElectronics),
-            findViewById(R.id.btnCategoryVehicles),
-            findViewById(R.id.btnCategoryProperty),
-            findViewById(R.id.btnCategoryFashion),
-            findViewById(R.id.btnCategoryHomeGarden),
-            findViewById(R.id.btnCategorySports),
-            findViewById(R.id.btnCategoryBooks),
-            findViewById(R.id.btnCategoryOther)
+        val filterBtn = findViewById<MaterialButton>(R.id.btnCategoryAll)
+        val categoriesTitle = findViewById<TextView>(R.id.categoriesTitle)
+
+        val categoryList = listOf(
+            "All", "Electronics", "Vehicles", "Property", "Fashion",
+            "Home & Garden", "Sports", "Books", "Other"
         )
 
-        // Set up click listeners for each category button with visual feedback
-        findViewById<MaterialButton>(R.id.btnCategoryAll).setOnClickListener { button ->
-            selectCategory(null, button as MaterialButton)
+        filterBtn.setOnClickListener { anchor ->
+            val popup = PopupMenu(this, anchor)
+            categoryList.forEachIndexed { index, name ->
+                popup.menu.add(0, index, index, name)
+            }
+            popup.setOnMenuItemClickListener { item ->
+                val selected = categoryList[item.itemId]
+                val category = if (selected == "All") null else selected
+                selectedCategory = category
+                categoriesTitle.text = if (category == null) "All Listings" else selected
+                filterBtn.text = "${selected} ▾"
+                progressBar.visibility = View.VISIBLE
+                viewModel.fetchListings(
+                    category = Categories.getCategoryForApi(category),
+                    type = selectedListingType
+                )
+                true
+            }
+            popup.show()
         }
-        
-        findViewById<MaterialButton>(R.id.btnCategoryElectronics).setOnClickListener { button ->
-            selectCategory("Electronics", button as MaterialButton)
-        }
-        
-        findViewById<MaterialButton>(R.id.btnCategoryVehicles).setOnClickListener { button ->
-            selectCategory("Vehicles", button as MaterialButton)
-        }
-        
-        findViewById<MaterialButton>(R.id.btnCategoryProperty).setOnClickListener { button ->
-            selectCategory("Property", button as MaterialButton)
-        }
-        
-        findViewById<MaterialButton>(R.id.btnCategoryFashion).setOnClickListener { button ->
-            selectCategory("Fashion", button as MaterialButton)
-        }
-        
-        findViewById<MaterialButton>(R.id.btnCategoryHomeGarden).setOnClickListener { button ->
-            selectCategory("Home & Garden", button as MaterialButton)
-        }
-        
-        findViewById<MaterialButton>(R.id.btnCategorySports).setOnClickListener { button ->
-            selectCategory("Sports", button as MaterialButton)
-        }
-        
-        findViewById<MaterialButton>(R.id.btnCategoryBooks).setOnClickListener { button ->
-            selectCategory("Books", button as MaterialButton)
-        }
-        
-        findViewById<MaterialButton>(R.id.btnCategoryOther).setOnClickListener { button ->
-            selectCategory("Other", button as MaterialButton)
-        }
-        
-        // Set "All" as initially selected
-        selectCategory(null, findViewById(R.id.btnCategoryAll))
+
+        // initialise hidden buttons list so selectCategory() doesn't crash
+        categoryButtons = emptyList()
+        selectCategory(null, filterBtn)
     }
 
     private fun selectCategory(category: String?, selectedButton: MaterialButton) {
         selectedCategory = category
-        
-        // Update button styles
-        categoryButtons.forEach { button ->
-            if (button == selectedButton) {
-                // Selected style - filled button
-                button.setBackgroundColor(getColor(R.color.purple))
-                button.setTextColor(getColor(R.color.white))
-                button.strokeWidth = 0
-            } else {
-                // Unselected style - outlined button
-                button.setBackgroundColor(android.graphics.Color.TRANSPARENT)
-                button.setTextColor(getColor(R.color.purple))
-                button.strokeWidth = 4 // 2dp in pixels
-                button.strokeColor = getColorStateList(R.color.purple)
-            }
-        }
-        
-        // Show loading while fetching
         progressBar.visibility = View.VISIBLE
-        
-        // Fetch listings for selected category and current type
         viewModel.fetchListings(category = Categories.getCategoryForApi(category), type = selectedListingType)
     }
 
