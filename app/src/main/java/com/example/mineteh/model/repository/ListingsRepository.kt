@@ -264,6 +264,21 @@ class ListingsRepository(private val context: Context) {
                 }
                 .decodeList<SupabaseBid>()
 
+            // Check if current user has favorited this listing
+            val userId = com.example.mineteh.utils.TokenManager(context).getUserId()
+            val isFavorited = if (userId != -1) {
+                val favRows = supabase.from("favorites")
+                    .select(columns = Columns.list("listing_id")) {
+                        filter {
+                            eq("listing_id", id)
+                            eq("user_id", userId)
+                        }
+                        limit(1)
+                    }
+                    .decodeList<SupabaseFavoriteRow>()
+                favRows.isNotEmpty()
+            } else false
+
             val listing = Listing(
                 id = row.id,
                 title = row.title,
@@ -283,7 +298,8 @@ class ListingsRepository(private val context: Context) {
                 ) else null,
                 createdAt = row.created_at,
                 highestBidAmount = bidRows.firstOrNull()?.bid_amount,
-                endTime = row.end_time
+                endTime = row.end_time,
+                isFavorited = isFavorited
             )
 
             Resource.Success(listing)

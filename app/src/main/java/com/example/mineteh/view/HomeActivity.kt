@@ -113,6 +113,22 @@ class HomeActivity : AppCompatActivity() {
                     type = selectedListingType
                 )
             }
+
+            // Favorite toggle confirmation
+            viewModel.toggleResult.observe(this) { resource ->
+                when (resource) {
+                    is Resource.Success -> {
+                        val saved = resource.data ?: false
+                        Toast.makeText(this, if (saved) "Saved to favorites" else "Removed from favorites", Toast.LENGTH_SHORT).show()
+                        viewModel.resetToggleResult()
+                    }
+                    is Resource.Error -> {
+                        Toast.makeText(this, resource.message ?: "Failed to update favorite", Toast.LENGTH_SHORT).show()
+                        viewModel.resetToggleResult()
+                    }
+                    else -> {}
+                }
+            }
             
             // Setup notification badge
             val notificationBadge = findViewById<TextView>(R.id.notificationBadge)

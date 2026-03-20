@@ -137,7 +137,7 @@ class BidDetailActivity : AppCompatActivity() {
                     updateHeartIcon(isFavorited)
                     Toast.makeText(
                         this,
-                        if (isFavorited) "Added to favorites" else "Removed from favorites",
+                        if (isFavorited) "Saved to favorites" else "Removed from favorites",
                         Toast.LENGTH_SHORT
                     ).show()
                     viewModel.resetFavoriteResult()
