@@ -46,7 +46,8 @@ class SellerItemAdapter(
 
         if (item.listingType == "BID" && item.endTime != null) {
             holder.auctionLayout.visibility = View.VISIBLE
-            holder.auctionTimer.text = com.example.mineteh.utils.TimeUtils.getTimeRemaining(item.endTime)
+            val ms = com.example.mineteh.utils.TimeUtils.calculateTimeRemaining(item.endTime)
+            holder.auctionTimer.text = com.example.mineteh.utils.TimeUtils.formatCountdown(ms)
         } else {
             holder.auctionLayout.visibility = View.GONE
         }
