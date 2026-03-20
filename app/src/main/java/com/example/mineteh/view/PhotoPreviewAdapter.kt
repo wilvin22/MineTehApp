@@ -56,7 +56,8 @@ class PhotoPreviewAdapter(
                 .into(imagePreview)
 
             btnRemove.setOnClickListener {
-                onRemoveClick(position)
+                val pos = bindingAdapterPosition
+                if (pos != RecyclerView.NO_POSITION) onRemoveClick(pos)
             }
         }
     }
