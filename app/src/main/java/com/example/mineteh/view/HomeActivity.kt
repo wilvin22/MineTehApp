@@ -19,6 +19,7 @@ import com.example.mineteh.utils.Resource
 import com.example.mineteh.utils.NotificationBadgeManager
 import com.example.mineteh.viewmodel.HomeViewModel
 import com.example.mineteh.viewmodel.NotificationsViewModel
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.button.MaterialButton
 
 class HomeActivity : AppCompatActivity() {
@@ -26,6 +27,7 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: ItemAdapter
     private lateinit var progressBar: ProgressBar
+    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     
     private val viewModel: HomeViewModel by viewModels()
     private val notificationsViewModel: NotificationsViewModel by viewModels()
@@ -49,6 +51,8 @@ class HomeActivity : AppCompatActivity() {
 
             recyclerView = findViewById(R.id.itemRecyclerView)
             progressBar = findViewById(R.id.progressBar)
+            swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout)
+            swipeRefreshLayout.setColorSchemeColors(getColor(R.color.purple))
             android.util.Log.d("HomeActivity", "Views initialized")
 
             android.util.Log.d("HomeActivity", "About to initialize ViewModel")
@@ -101,6 +105,14 @@ class HomeActivity : AppCompatActivity() {
             
             // Type filters (All / Auctions / Buy Now)
             setupTypeFilters()
+
+            // Pull-to-refresh
+            swipeRefreshLayout.setOnRefreshListener {
+                viewModel.fetchListings(
+                    category = com.example.mineteh.utils.Categories.getCategoryForApi(selectedCategory),
+                    type = selectedListingType
+                )
+            }
             
             // Setup notification badge
             val notificationBadge = findViewById<TextView>(R.id.notificationBadge)
@@ -127,16 +139,16 @@ class HomeActivity : AppCompatActivity() {
         viewModel.listings.observe(this) { resource ->
             when (resource) {
                 is Resource.Loading -> {
-                    progressBar.visibility = View.VISIBLE
+                    if (!swipeRefreshLayout.isRefreshing) progressBar.visibility = View.VISIBLE
                 }
                 is Resource.Success -> {
                     progressBar.visibility = View.GONE
-                    resource.data?.let { listings ->
-                        adapter.updateList(listings)
-                    }
+                    swipeRefreshLayout.isRefreshing = false
+                    resource.data?.let { adapter.updateList(it) }
                 }
                 is Resource.Error -> {
                     progressBar.visibility = View.GONE
+                    swipeRefreshLayout.isRefreshing = false
                     Toast.makeText(this, resource.message, Toast.LENGTH_SHORT).show()
                 }
                 null -> {}
