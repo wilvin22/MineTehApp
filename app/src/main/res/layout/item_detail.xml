@@ -159,8 +159,7 @@
                         android:textStyle="bold"
                         android:paddingHorizontal="10dp"
                         android:paddingVertical="3dp"
-                        android:background="@drawable/circle_background_red"
-                        android:backgroundTint="@color/purple_light"
+                        android:background="@drawable/your_listing_badge_bg"
                         android:visibility="gone" />
 
                 </LinearLayout>
@@ -444,77 +443,125 @@
                         app:cornerRadius="12dp" />
 
                     <!-- OWNER: Management Card -->
-                    <androidx.cardview.widget.CardView
+                    <com.google.android.material.card.MaterialCardView
                         android:id="@+id/ownerManagementCard"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:visibility="gone"
                         app:cardCornerRadius="12dp"
-                        app:cardElevation="2dp"
-                        app:cardBackgroundColor="@color/purple_light">
+                        app:cardElevation="0dp"
+                        app:strokeColor="@color/purple"
+                        app:strokeWidth="1.5dp"
+                        app:cardBackgroundColor="@color/white">
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="vertical"
-                            android:padding="20dp">
+                            android:padding="16dp">
 
-                            <TextView
-                                android:layout_width="wrap_content"
+                            <!-- Header row -->
+                            <LinearLayout
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="Manage Your Listing"
-                                android:textColor="@color/purple"
-                                android:textSize="18sp"
-                                android:textStyle="bold"
-                                android:layout_marginBottom="16dp" />
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:layout_marginBottom="14dp">
 
+                                <View
+                                    android:layout_width="4dp"
+                                    android:layout_height="20dp"
+                                    android:background="@color/purple"
+                                    android:layout_marginEnd="10dp" />
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="Manage Listing"
+                                    android:textColor="@color/black"
+                                    android:textSize="16sp"
+                                    android:textStyle="bold" />
+
+                            </LinearLayout>
+
+                            <!-- Edit Listing -->
                             <com.google.android.material.button.MaterialButton
                                 android:id="@+id/btnEditListing"
+                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                                 android:layout_width="match_parent"
-                                android:layout_height="56dp"
-                                android:text="✏️ Edit Listing"
-                                android:textSize="16sp"
+                                android:layout_height="48dp"
+                                android:text="Edit Listing"
+                                android:textSize="14sp"
                                 android:textAllCaps="false"
-                                app:backgroundTint="@color/purple"
+                                android:textColor="@color/purple"
+                                android:insetTop="0dp"
+                                android:insetBottom="0dp"
+                                android:layout_marginBottom="10dp"
+                                app:strokeColor="@color/purple"
+                                app:strokeWidth="1.5dp"
                                 app:cornerRadius="8dp"
-                                android:layout_marginBottom="12dp" />
+                                app:icon="@drawable/ic_edit"
+                                app:iconTint="@color/purple"
+                                app:iconSize="18dp"
+                                app:iconPadding="8dp" />
 
+                            <!-- View Your Listings -->
                             <com.google.android.material.button.MaterialButton
                                 android:id="@+id/btnViewYourListings"
+                                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                                 android:layout_width="match_parent"
-                                android:layout_height="56dp"
-                                android:text="📦 Your Listings"
-                                android:textSize="16sp"
+                                android:layout_height="48dp"
+                                android:text="View All My Listings"
+                                android:textSize="14sp"
                                 android:textAllCaps="false"
-                                app:backgroundTint="@color/purple"
+                                android:textColor="@color/purple"
+                                android:insetTop="0dp"
+                                android:insetBottom="0dp"
+                                android:layout_marginBottom="10dp"
+                                app:strokeColor="@color/purple"
+                                app:strokeWidth="1.5dp"
                                 app:cornerRadius="8dp"
-                                android:layout_marginBottom="12dp" />
+                                app:icon="@drawable/sell"
+                                app:iconTint="@color/purple"
+                                app:iconSize="18dp"
+                                app:iconPadding="8dp" />
 
+                            <!-- Close Auction (BID only) -->
                             <com.google.android.material.button.MaterialButton
                                 android:id="@+id/btnCloseAuction"
+                                style="@style/Widget.MaterialComponents.Button"
                                 android:layout_width="match_parent"
-                                android:layout_height="56dp"
-                                android:text="🔨 Close Auction"
-                                android:textSize="16sp"
+                                android:layout_height="48dp"
+                                android:text="Close Auction"
+                                android:textSize="14sp"
                                 android:textAllCaps="false"
+                                android:insetTop="0dp"
+                                android:insetBottom="0dp"
                                 android:visibility="gone"
-                                app:backgroundTint="#ffc107"
+                                android:layout_marginBottom="10dp"
+                                app:backgroundTint="#FF9800"
                                 app:cornerRadius="8dp"
-                                android:layout_marginBottom="12dp" />
+                                app:iconSize="18dp"
+                                app:iconPadding="8dp" />
 
+                            <!-- Toggle Status (Disable / Enable) -->
                             <com.google.android.material.button.MaterialButton
                                 android:id="@+id/btnToggleStatus"
+                                style="@style/Widget.MaterialComponents.Button"
                                 android:layout_width="match_parent"
-                                android:layout_height="56dp"
-                                android:text="🚫 Disable Listing"
-                                android:textSize="16sp"
+                                android:layout_height="48dp"
+                                android:text="Disable Listing"
+                                android:textSize="14sp"
                                 android:textAllCaps="false"
+                                android:insetTop="0dp"
+                                android:insetBottom="0dp"
                                 app:backgroundTint="#dc3545"
                                 app:cornerRadius="8dp" />
 
                         </LinearLayout>
 
-                    </androidx.cardview.widget.CardView>
+                    </com.google.android.material.card.MaterialCardView>
 
                     <!-- Divider before description -->
                     <View
