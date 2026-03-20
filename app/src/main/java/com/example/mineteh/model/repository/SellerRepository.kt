@@ -26,7 +26,6 @@ private data class AccountRow(
     val username: String,
     @SerialName("first_name") val firstName: String,
     @SerialName("last_name") val lastName: String,
-    @SerialName("avatar_url") val avatarUrl: String? = null,
     @SerialName("created_at") val createdAt: String? = null
 )
 
@@ -50,7 +49,7 @@ class SellerRepository(private val context: Context) {
 
             // 1. Query accounts
             val accountRows = supabase.from("accounts")
-                .select(columns = Columns.list("account_id", "username", "first_name", "last_name", "avatar_url", "created_at")) {
+                .select(columns = Columns.list("account_id", "username", "first_name", "last_name", "created_at")) {
                     filter { eq("account_id", sellerId) }
                     limit(1)
                 }
@@ -97,7 +96,7 @@ class SellerRepository(private val context: Context) {
                     username = account.username,
                     firstName = account.firstName,
                     lastName = account.lastName,
-                    avatarUrl = account.avatarUrl,
+                    avatarUrl = null,
                     averageRating = averageRating,
                     activeListingCount = activeListings,
                     soldCount = soldCount,
