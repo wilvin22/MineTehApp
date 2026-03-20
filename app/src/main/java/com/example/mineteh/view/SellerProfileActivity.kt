@@ -44,9 +44,6 @@ class SellerProfileActivity : AppCompatActivity() {
         setContentView(R.layout.activity_seller_profile)
 
         val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
-        setSupportActionBar(toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.title = ""
         toolbar.setNavigationOnClickListener { finish() }
 
         val sellerId = intent.getIntExtra("seller_id", -1)
@@ -137,7 +134,6 @@ class SellerProfileActivity : AppCompatActivity() {
     private fun loadSellerListings(sellerId: Int, activeCount: Int) {
         val tvHeader = findViewById<TextView>(R.id.tvListingsHeader)
         val rv = findViewById<RecyclerView>(R.id.rvListings)
-        tvHeader.text = "Active Listings ($activeCount)"
 
         CoroutineScope(Dispatchers.Main).launch {
             try {
@@ -150,7 +146,7 @@ class SellerProfileActivity : AppCompatActivity() {
                     } ?: emptyList()
                     tvHeader.text = "Active Listings (${sellerListings.size})"
                     rv.layoutManager = GridLayoutManager(this@SellerProfileActivity, 2)
-                    rv.adapter = ItemAdapter(sellerListings)
+                    rv.adapter = SellerItemAdapter(sellerListings)
                 }
             } catch (e: Exception) {
                 android.util.Log.e("SellerProfileActivity", "Error loading listings", e)
