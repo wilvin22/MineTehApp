@@ -101,82 +101,87 @@
         </LinearLayout>
 
         <!-- Filter chips row -->
-        <LinearLayout
+        <HorizontalScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:paddingHorizontal="12dp"
+            android:scrollbars="none"
             android:paddingBottom="10dp"
             android:paddingTop="2dp"
             android:background="@color/white">
 
-            <!-- Type chips -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnTypeAll"
-                style="@style/Widget.MaterialComponents.Button"
+            <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="34dp"
-                android:text="All"
-                android:textSize="12sp"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                app:backgroundTint="@color/purple"
-                app:cornerRadius="17dp" />
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="2dp">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnTypeFixed"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="wrap_content"
-                android:layout_height="34dp"
-                android:layout_marginStart="6dp"
-                android:text="Buy Now"
-                android:textColor="@color/purple"
-                android:textSize="12sp"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                app:strokeColor="@color/purple"
-                app:strokeWidth="1.5dp"
-                app:cornerRadius="17dp" />
+                <!-- Type chips -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnTypeAll"
+                    style="@style/Widget.MaterialComponents.Button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="34dp"
+                    android:text="All"
+                    android:textSize="12sp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    app:backgroundTint="@color/purple"
+                    app:cornerRadius="17dp" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnTypeAuction"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="wrap_content"
-                android:layout_height="34dp"
-                android:layout_marginStart="6dp"
-                android:text="Auctions"
-                android:textColor="@color/purple"
-                android:textSize="12sp"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                app:strokeColor="@color/purple"
-                app:strokeWidth="1.5dp"
-                app:cornerRadius="17dp" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnTypeFixed"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="34dp"
+                    android:layout_marginStart="6dp"
+                    android:text="Fixed"
+                    android:textColor="@color/purple"
+                    android:textSize="12sp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    app:strokeColor="@color/purple"
+                    app:strokeWidth="1.5dp"
+                    app:cornerRadius="17dp" />
 
-            <!-- Spacer -->
-            <View android:layout_width="0dp" android:layout_height="0dp" android:layout_weight="1" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnTypeAuction"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="34dp"
+                    android:layout_marginStart="6dp"
+                    android:text="Auctions"
+                    android:textColor="@color/purple"
+                    android:textSize="12sp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    app:strokeColor="@color/purple"
+                    app:strokeWidth="1.5dp"
+                    app:cornerRadius="17dp" />
 
-            <!-- Filter button -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/filterButton"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="wrap_content"
-                android:layout_height="34dp"
-                android:text="Filter"
-                android:textColor="@color/purple"
-                android:textSize="12sp"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                app:strokeColor="@color/purple"
-                app:strokeWidth="1.5dp"
-                app:cornerRadius="17dp"
-                app:icon="@drawable/ic_filter"
-                app:iconTint="@color/purple"
-                app:iconSize="14dp"
-                app:iconPadding="4dp" />
+                <!-- Filter button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/filterButton"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="34dp"
+                    android:layout_marginStart="6dp"
+                    android:text="Filter"
+                    android:textColor="@color/purple"
+                    android:textSize="12sp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    app:strokeColor="@color/purple"
+                    app:strokeWidth="1.5dp"
+                    app:cornerRadius="17dp"
+                    app:icon="@drawable/ic_filter"
+                    app:iconTint="@color/purple"
+                    app:iconSize="14dp"
+                    app:iconPadding="4dp" />
 
-        </LinearLayout>
+            </LinearLayout>
+        </HorizontalScrollView>
 
         <!-- Active filter label (shown when category filter is active) -->
         <LinearLayout

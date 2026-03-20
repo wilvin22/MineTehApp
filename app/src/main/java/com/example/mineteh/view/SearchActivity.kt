@@ -16,6 +16,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.mineteh.R
 import com.example.mineteh.utils.Categories
 import com.example.mineteh.utils.Resource
+import com.example.mineteh.viewmodel.SearchViewModel
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 
