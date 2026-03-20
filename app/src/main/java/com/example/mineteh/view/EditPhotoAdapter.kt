@@ -76,7 +76,10 @@ class EditPhotoAdapter(
                     .centerCrop()
                     .into(imagePreview)
             }
-            btnRemove.setOnClickListener { onRemoveClick(position) }
+            btnRemove.setOnClickListener {
+                val pos = bindingAdapterPosition
+                if (pos != RecyclerView.NO_POSITION) onRemoveClick(pos)
+            }
         }
     }
 }
