@@ -8,5 +8,7 @@ data class SellerProfileData(
     val avatarUrl: String?,
     val averageRating: Double,
     val activeListingCount: Int,
-    val soldCount: Int
+    val soldCount: Int,
+    val reviewCount: Int = 0,
+    val createdAt: String? = null
 )
