@@ -477,8 +477,8 @@ class ItemDetailActivity : AppCompatActivity() {
             
             // Setup toggle status button
             val isActive = listing.status.equals("active", ignoreCase = true)
-            binding.btnToggleStatus.text = if (isActive) "🚫 Disable Listing" else "✅ Enable Listing"
-            binding.btnToggleStatus.setBackgroundColor(getColor(if (isActive) R.color.red else R.color.green))
+            binding.btnToggleStatus.text = if (isActive) "Disable Listing" else "Enable Listing"
+            binding.btnToggleStatus.backgroundTintList = getColorStateList(if (isActive) R.color.red else R.color.green)
             binding.btnToggleStatus.setOnClickListener {
                 if (isActive) showDisableListingDialog(listing) else showEnableListingDialog(listing)
             }
