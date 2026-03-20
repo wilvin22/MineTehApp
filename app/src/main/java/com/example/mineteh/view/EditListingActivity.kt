@@ -3,7 +3,10 @@ package com.example.mineteh.view
 import android.app.DatePickerDialog
 import android.os.Bundle
 import android.view.View
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
 import android.widget.ProgressBar
+import android.widget.RadioGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -11,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mineteh.R
 import com.example.mineteh.models.Listing
+import com.example.mineteh.utils.Categories
 import com.example.mineteh.utils.Resource
 import com.example.mineteh.viewmodel.EditListingViewModel
 import com.google.android.material.button.MaterialButton
@@ -27,6 +31,9 @@ class EditListingActivity : AppCompatActivity() {
     private lateinit var etTitle: TextInputEditText
     private lateinit var etDescription: TextInputEditText
     private lateinit var etPrice: TextInputEditText
+    private lateinit var etLocation: TextInputEditText
+    private lateinit var spinnerCategory: AutoCompleteTextView
+    private lateinit var radioListingType: RadioGroup
     private lateinit var etEndTime: TextInputEditText
     private lateinit var layoutEndTime: View
     private lateinit var btnSaveChanges: MaterialButton
@@ -35,8 +42,6 @@ class EditListingActivity : AppCompatActivity() {
 
     private var listingId: Int = -1
     private var currentListing: Listing? = null
-
-    // Tracks which existing URLs were present when the listing loaded
     private val originalImageUrls = mutableListOf<String>()
 
     private val pickImages = registerForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris ->
@@ -56,6 +61,7 @@ class EditListingActivity : AppCompatActivity() {
 
         setupToolbar()
         initViews()
+        setupCategoryDropdown()
         setupPhotoRecycler()
         setupListeners()
         setupObservers()
@@ -72,6 +78,9 @@ class EditListingActivity : AppCompatActivity() {
         etTitle = findViewById(R.id.etTitle)
         etDescription = findViewById(R.id.etDescription)
         etPrice = findViewById(R.id.etPrice)
+        etLocation = findViewById(R.id.etLocation)
+        spinnerCategory = findViewById(R.id.spinnerCategory)
+        radioListingType = findViewById(R.id.radioListingType)
         etEndTime = findViewById(R.id.etEndTime)
         layoutEndTime = findViewById(R.id.layoutEndTime)
         btnSaveChanges = findViewById(R.id.btnSaveChanges)
@@ -79,26 +88,25 @@ class EditListingActivity : AppCompatActivity() {
         progressBar = findViewById(R.id.progressBar)
     }
 
+    private fun setupCategoryDropdown() {
+        val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, Categories.ALL_CATEGORIES)
+        spinnerCategory.setAdapter(adapter)
+    }
+
     private fun setupPhotoRecycler() {
-        photoAdapter = EditPhotoAdapter { position ->
-            photoAdapter.removeAt(position)
-        }
+        photoAdapter = EditPhotoAdapter { position -> photoAdapter.removeAt(position) }
         val rv = findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.rvPhotos)
         rv.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         rv.adapter = photoAdapter
     }
 
     private fun setupListeners() {
-        btnAddPhoto.setOnClickListener {
-            pickImages.launch("image/*")
-        }
+        btnAddPhoto.setOnClickListener { pickImages.launch("image/*") }
+        etEndTime.setOnClickListener { showDatePicker() }
+        btnSaveChanges.setOnClickListener { submitEdit() }
 
-        etEndTime.setOnClickListener {
-            showDatePicker()
-        }
-
-        btnSaveChanges.setOnClickListener {
-            submitEdit()
+        radioListingType.setOnCheckedChangeListener { _, checkedId ->
+            layoutEndTime.visibility = if (checkedId == R.id.rbBid) View.VISIBLE else View.GONE
         }
     }
 
@@ -134,7 +142,6 @@ class EditListingActivity : AppCompatActivity() {
                         Snackbar.LENGTH_SHORT
                     ).show()
                     viewModel.resetEditResult()
-                    // Small delay so user sees the success message
                     btnSaveChanges.postDelayed({ finish() }, 1000)
                 }
                 is Resource.Error -> {
@@ -157,39 +164,34 @@ class EditListingActivity : AppCompatActivity() {
         etTitle.setText(listing.title)
         etDescription.setText(listing.description)
         etPrice.setText(listing.price.toString())
+        etLocation.setText(listing.location)
+        spinnerCategory.setText(listing.category, false)
 
-        // Show/hide end time based on listing type
+        // Set listing type radio
         if (listing.listingType == "BID") {
+            radioListingType.check(R.id.rbBid)
             layoutEndTime.visibility = View.VISIBLE
             listing.endTime?.let { endTime ->
-                // Convert ISO format to display format
                 try {
                     val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
                     isoFormat.timeZone = TimeZone.getTimeZone("UTC")
                     val date = isoFormat.parse(endTime)
                     if (date != null) {
-                        val displayFormat = SimpleDateFormat("M/d/yyyy", Locale.getDefault())
-                        etEndTime.setText(displayFormat.format(date))
-                    } else {
-                        etEndTime.setText(endTime)
-                    }
+                        etEndTime.setText(SimpleDateFormat("M/d/yyyy", Locale.getDefault()).format(date))
+                    } else etEndTime.setText(endTime)
                 } catch (e: Exception) {
-                    // Try alternate format
                     try {
-                        val altFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-                        val date2 = altFormat.parse(endTime)
+                        val date2 = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).parse(endTime)
                         if (date2 != null) {
-                            val displayFormat = SimpleDateFormat("M/d/yyyy", Locale.getDefault())
-                            etEndTime.setText(displayFormat.format(date2))
-                        } else {
-                            etEndTime.setText(endTime)
-                        }
+                            etEndTime.setText(SimpleDateFormat("M/d/yyyy", Locale.getDefault()).format(date2))
+                        } else etEndTime.setText(endTime)
                     } catch (e2: Exception) {
                         etEndTime.setText(endTime)
                     }
                 }
             }
         } else {
+            radioListingType.check(R.id.rbFixed)
             layoutEndTime.visibility = View.GONE
         }
 
@@ -206,41 +208,29 @@ class EditListingActivity : AppCompatActivity() {
         val title = etTitle.text.toString().trim()
         val description = etDescription.text.toString().trim()
         val priceStr = etPrice.text.toString().trim()
+        val location = etLocation.text.toString().trim()
+        val category = spinnerCategory.text.toString().trim()
+        val listingType = if (radioListingType.checkedRadioButtonId == R.id.rbBid) "BID" else "FIXED"
 
-        if (title.isEmpty()) {
-            etTitle.error = "Title is required"
-            return
-        }
+        if (title.isEmpty()) { etTitle.error = "Title is required"; return }
+        if (location.isEmpty()) { etLocation.error = "Location is required"; return }
+        if (category.isEmpty()) { spinnerCategory.error = "Category is required"; return }
 
         val price = priceStr.toDoubleOrNull()
-        if (price == null || price <= 0) {
-            etPrice.error = "Enter a valid price greater than 0"
-            return
-        }
+        if (price == null || price <= 0) { etPrice.error = "Enter a valid price greater than 0"; return }
 
         var endTime: String? = currentListing?.endTime
-
-        if (currentListing?.listingType == "BID") {
+        if (listingType == "BID") {
             val endTimeStr = etEndTime.text.toString().trim()
-            if (endTimeStr.isEmpty()) {
-                etEndTime.error = "End time is required for auctions"
-                return
-            }
-            // Parse and validate end time is in the future
+            if (endTimeStr.isEmpty()) { etEndTime.error = "End time is required for auctions"; return }
             val parsedEndTime = parseEndTime(endTimeStr)
-            if (parsedEndTime == null) {
-                etEndTime.error = "Invalid date format"
-                return
-            }
-            if (parsedEndTime.time <= System.currentTimeMillis()) {
-                etEndTime.error = "End time must be a future date"
-                return
-            }
-            val outputFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-            endTime = outputFormat.format(parsedEndTime)
+            if (parsedEndTime == null) { etEndTime.error = "Invalid date format"; return }
+            if (parsedEndTime.time <= System.currentTimeMillis()) { etEndTime.error = "End time must be a future date"; return }
+            endTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(parsedEndTime)
+        } else {
+            endTime = null
         }
 
-        // Compute removed image paths: original URLs that are no longer in the adapter
         val currentExistingUrls = photoAdapter.getExistingUrls()
         val removedPaths = originalImageUrls.filter { it !in currentExistingUrls }
         val newUris = photoAdapter.getNewUris()
@@ -250,6 +240,9 @@ class EditListingActivity : AppCompatActivity() {
             title = title,
             description = description,
             price = price,
+            location = location,
+            category = category,
+            listingType = listingType,
             endTime = endTime,
             newImageUris = newUris,
             removedImagePaths = removedPaths
@@ -264,35 +257,23 @@ class EditListingActivity : AppCompatActivity() {
         )
         for (fmt in formats) {
             try {
-                val date = fmt.parse(dateStr)
-                if (date != null) {
-                    // Set to end of day
-                    val cal = Calendar.getInstance()
-                    cal.time = date
-                    cal.set(Calendar.HOUR_OF_DAY, 23)
-                    cal.set(Calendar.MINUTE, 59)
-                    cal.set(Calendar.SECOND, 59)
-                    return cal.time
-                }
-            } catch (e: Exception) {
-                // try next format
-            }
+                val date = fmt.parse(dateStr) ?: continue
+                val cal = Calendar.getInstance()
+                cal.time = date
+                cal.set(Calendar.HOUR_OF_DAY, 23)
+                cal.set(Calendar.MINUTE, 59)
+                cal.set(Calendar.SECOND, 59)
+                return cal.time
+            } catch (e: Exception) { /* try next */ }
         }
         return null
     }
 
     private fun showDatePicker() {
         val calendar = Calendar.getInstance()
-        val year = calendar.get(Calendar.YEAR)
-        val month = calendar.get(Calendar.MONTH)
-        val day = calendar.get(Calendar.DAY_OF_MONTH)
-
-        val dialog = DatePickerDialog(this, { _, selectedYear, selectedMonth, selectedDay ->
-            val formatted = "${selectedMonth + 1}/$selectedDay/$selectedYear"
-            etEndTime.setText(formatted)
-        }, year, month, day)
-
-        // Minimum date is tomorrow
+        val dialog = DatePickerDialog(this, { _, year, month, day ->
+            etEndTime.setText("${month + 1}/$day/$year")
+        }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
         calendar.add(Calendar.DAY_OF_MONTH, 1)
         dialog.datePicker.minDate = calendar.timeInMillis
         dialog.show()

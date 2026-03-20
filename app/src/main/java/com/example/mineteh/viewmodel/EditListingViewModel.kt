@@ -32,6 +32,9 @@ class EditListingViewModel(application: Application) : AndroidViewModel(applicat
         title: String,
         description: String,
         price: Double,
+        location: String,
+        category: String,
+        listingType: String,
         endTime: String?,
         newImageUris: List<Uri>,
         removedImagePaths: List<String>
@@ -43,6 +46,9 @@ class EditListingViewModel(application: Application) : AndroidViewModel(applicat
                 title = title,
                 description = description,
                 price = price,
+                location = location,
+                category = category,
+                listingType = listingType,
                 endTime = endTime,
                 newImageUris = newImageUris,
                 removedImagePaths = removedImagePaths

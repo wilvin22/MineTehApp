@@ -167,6 +167,45 @@
                             android:inputType="textMultiLine|textCapSentences" />
                     </com.google.android.material.textfield.TextInputLayout>
 
+                    <!-- Category -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Category *"
+                        app:boxBackgroundMode="outline"
+                        app:boxStrokeColor="@color/purple"
+                        app:boxCornerRadiusTopStart="10dp"
+                        app:boxCornerRadiusTopEnd="10dp"
+                        app:boxCornerRadiusBottomStart="10dp"
+                        app:boxCornerRadiusBottomEnd="10dp"
+                        app:endIconMode="dropdown_menu"
+                        android:layout_marginBottom="14dp">
+                        <AutoCompleteTextView
+                            android:id="@+id/spinnerCategory"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="none" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- Location -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Location *"
+                        app:boxBackgroundMode="outline"
+                        app:boxStrokeColor="@color/purple"
+                        app:boxCornerRadiusTopStart="10dp"
+                        app:boxCornerRadiusTopEnd="10dp"
+                        app:boxCornerRadiusBottomStart="10dp"
+                        app:boxCornerRadiusBottomEnd="10dp"
+                        app:startIconDrawable="@android:drawable/ic_menu_mylocation">
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etLocation"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="textCapWords" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
@@ -215,8 +254,65 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- AUCTION END TIME CARD (BID only, hidden by default) -->
-            <LinearLayout
+            <!-- LISTING TYPE CARD -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Listing Type"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/black"
+                        android:layout_marginBottom="12dp" />
+
+                    <RadioGroup
+                        android:id="@+id/radioListingType"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <RadioButton
+                            android:id="@+id/rbFixed"
+                            android:layout_width="0dp"
+                            android:layout_height="48dp"
+                            android:layout_weight="1"
+                            android:text="🏷️  Fixed Price"
+                            android:textSize="13sp"
+                            android:checked="true"
+                            android:gravity="center"
+                            android:button="@null"
+                            android:background="@drawable/radio_selector_bg"
+                            android:layout_marginEnd="6dp" />
+
+                        <RadioButton
+                            android:id="@+id/rbBid"
+                            android:layout_width="0dp"
+                            android:layout_height="48dp"
+                            android:layout_weight="1"
+                            android:text="🔨  Auction"
+                            android:textSize="13sp"
+                            android:gravity="center"
+                            android:button="@null"
+                            android:background="@drawable/radio_selector_bg" />
+
+                    </RadioGroup>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- AUCTION END TIME CARD (BID only, hidden by default) -->            <LinearLayout
                 android:id="@+id/layoutEndTime"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

@@ -59,7 +59,7 @@ private data class SupabaseBid(
 
 @Serializable
 private data class SupabaseFavorite(
-    val id: Int
+    val listing_id: Int
 )
 
 @Serializable
@@ -428,7 +428,7 @@ class ListingsRepository(private val context: Context) {
 
             // Check if already favorited
             val existing = supabase.from("favorites")
-                .select(columns = Columns.list("id")) {
+                .select(columns = Columns.list("listing_id")) {
                     filter {
                         eq("listing_id", listingId)
                         eq("user_id", userId)
@@ -681,6 +681,9 @@ class ListingsRepository(private val context: Context) {
         title: String,
         description: String,
         price: Double,
+        location: String,
+        category: String,
+        listingType: String,
         endTime: String?,
         newImageUris: List<android.net.Uri>,
         removedImagePaths: List<String>
@@ -698,6 +701,9 @@ class ListingsRepository(private val context: Context) {
                     "title" to title,
                     "description" to description,
                     "price" to price,
+                    "location" to location,
+                    "category" to category,
+                    "listing_type" to listingType,
                     "end_time" to endTime
                 )) {
                     filter {
