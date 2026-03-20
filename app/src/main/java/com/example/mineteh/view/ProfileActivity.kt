@@ -3,6 +3,7 @@ package com.example.mineteh.view
 import android.content.Intent
 import android.os.Bundle
 import android.widget.LinearLayout
+import android.widget.RatingBar
 import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
@@ -13,11 +14,11 @@ import com.example.mineteh.R
 import com.example.mineteh.utils.AvatarUtils
 import com.example.mineteh.utils.Resource
 import com.example.mineteh.utils.TokenManager
-import com.example.mineteh.view.SellActivity
-import com.example.mineteh.view.YourAuctionsActivity
 import com.example.mineteh.viewmodel.SellingDashboardViewModel
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.imageview.ShapeableImageView
+import java.text.SimpleDateFormat
+import java.util.*
 
 class ProfileActivity : AppCompatActivity() {
 
@@ -30,60 +31,75 @@ class ProfileActivity : AppCompatActivity() {
 
         tokenManager = TokenManager(this)
 
-        // Set User info from TokenManager
-        findViewById<TextView>(R.id.usernameText)?.text = tokenManager.getUserName() ?: "Username"
-        findViewById<TextView>(R.id.emailText)?.text = tokenManager.getUserEmail() ?: "email@example.com"
-
-        // Bind profile avatar using username as fallback for initials
-        val username = tokenManager.getUserName() ?: ""
+        // User info
+        val username = tokenManager.getUserName() ?: "Username"
         val accountId = tokenManager.getUserId()
-        val ivAvatar = findViewById<ShapeableImageView>(R.id.ivProfileAvatar)
-        if (ivAvatar != null) {
-            // TokenManager stores username only; use first char as first name, empty last name
-            AvatarUtils.bindAvatar(
-                view = ivAvatar,
-                firstName = username,
-                lastName = "",
-                accountId = accountId,
-                avatarUrl = null,
-                context = this
-            )
-        }
+        findViewById<TextView>(R.id.usernameText).text = username
+        findViewById<TextView>(R.id.emailText).text = tokenManager.getUserEmail() ?: "email@example.com"
 
-        // Observe selling stats
-        val tvActive = findViewById<TextView>(R.id.tvStatActive)
-        val tvSold = findViewById<TextView>(R.id.tvStatSold)
-        val tvMessages = findViewById<TextView>(R.id.tvStatMessages)
-        val tvRating = findViewById<TextView>(R.id.tvStatRating)
+        // Avatar
+        AvatarUtils.bindAvatar(
+            view = findViewById<ShapeableImageView>(R.id.ivProfileAvatar),
+            firstName = username,
+            lastName = "",
+            accountId = accountId,
+            avatarUrl = null,
+            context = this
+        )
 
+        // Member since — TokenManager doesn't store this yet, show placeholder
+        findViewById<TextView>(R.id.tvMemberSince).text = "🗓 Member since —"
+
+        // Observe stats
         sellingDashboardViewModel.stats.observe(this) { resource ->
+            val tvActive    = findViewById<TextView>(R.id.tvStatActive)
+            val tvSold      = findViewById<TextView>(R.id.tvStatSold)
+            val tvMessages  = findViewById<TextView>(R.id.tvStatMessages)
+            val tvRating    = findViewById<TextView>(R.id.tvStatRating)
+            val tvSellerRating = findViewById<TextView>(R.id.tvStatSellerRating)
+            val tvInactive  = findViewById<TextView>(R.id.tvStatInactive)
+            val tvLive      = findViewById<TextView>(R.id.tvStatLiveAuctions)
+            val ratingBar   = findViewById<RatingBar>(R.id.profileRatingBar)
+
             when (resource) {
                 is Resource.Loading -> {
-                    tvActive?.text = "..."
-                    tvSold?.text = "..."
-                    tvMessages?.text = "..."
-                    tvRating?.text = "..."
+                    listOf(tvActive, tvSold, tvMessages, tvRating, tvSellerRating, tvInactive, tvLive)
+                        .forEach { it.text = "..." }
                 }
                 is Resource.Success -> {
-                    val stats = resource.data
-                    tvActive?.text = stats?.activeListings?.toString() ?: "—"
-                    tvSold?.text = stats?.totalSold?.toString() ?: "—"
-                    tvMessages?.text = stats?.unreadMessages?.toString() ?: "—"
-                    tvRating?.text = if (stats != null && stats.averageRating > 0)
-                        String.format("%.1f", stats.averageRating) else "—"
+                    val s = resource.data
+                    tvActive.text   = s?.activeListings?.toString() ?: "0"
+                    tvSold.text     = s?.totalSold?.toString() ?: "0"
+                    tvMessages.text = s?.unreadMessages?.toString() ?: "0"
+                    tvInactive.text = s?.inactiveListings?.toString() ?: "0"
+                    tvLive.text     = s?.liveAuctions?.toString() ?: "0"
+                    val rating = s?.averageRating ?: 0.0
+                    val ratingStr = if (rating > 0) String.format("%.1f", rating) else "—"
+                    tvRating.text = ratingStr
+                    tvSellerRating.text = ratingStr
+                    ratingBar.rating = rating.toFloat()
                 }
                 is Resource.Error -> {
-                    tvActive?.text = "—"
-                    tvSold?.text = "—"
-                    tvMessages?.text = "—"
-                    tvRating?.text = "—"
+                    listOf(tvActive, tvSold, tvMessages, tvRating, tvSellerRating, tvInactive, tvLive)
+                        .forEach { it.text = "—" }
                 }
+                null -> {}
             }
         }
 
         sellingDashboardViewModel.loadStats()
 
-        // Profile Action Buttons
+        // Create new listing
+        findViewById<MaterialButton>(R.id.btnCreateListing).setOnClickListener {
+            startActivity(Intent(this, SellActivity::class.java))
+        }
+
+        // See all listings (now a TextView acting as link)
+        findViewById<TextView>(R.id.btnMyListings).setOnClickListener {
+            startActivity(Intent(this, MyListingsActivity::class.java))
+        }
+
+        // Quick actions
         findViewById<LinearLayout>(R.id.btnMyOrders).setOnClickListener {
             startActivity(Intent(this, MyOrdersActivity::class.java))
         }
@@ -92,39 +108,28 @@ class ProfileActivity : AppCompatActivity() {
             startActivity(Intent(this, YourAuctionsActivity::class.java))
         }
 
-        findViewById<LinearLayout>(R.id.btnMyListings).setOnClickListener {
-            startActivity(Intent(this, MyListingsActivity::class.java))
-        }
-
-        // Logout Button with Confirmation
+        // Logout
         findViewById<MaterialButton>(R.id.logoutBtn).setOnClickListener {
             showLogoutConfirmation()
         }
 
         // Bottom Navigation
-        val navHome = findViewById<LinearLayout>(R.id.nav_home)
-        val navNotifications = findViewById<LinearLayout>(R.id.nav_notifications)
-        val navSell = findViewById<LinearLayout>(R.id.nav_sell)
-        val navInbox = findViewById<LinearLayout>(R.id.nav_inbox)
-        val navMe = findViewById<LinearLayout>(R.id.nav_profile)
-
-        navHome.setOnClickListener {
+        findViewById<LinearLayout>(R.id.nav_home).setOnClickListener {
             startActivity(Intent(this, HomeActivity::class.java))
             overridePendingTransition(0, 0)
             finish()
         }
-
-        navNotifications.setOnClickListener {
+        findViewById<LinearLayout>(R.id.nav_notifications).setOnClickListener {
             startActivity(Intent(this, NotificationsActivity::class.java))
             overridePendingTransition(0, 0)
             finish()
         }
-        navSell.setOnClickListener {
+        findViewById<LinearLayout>(R.id.nav_sell).setOnClickListener {
             startActivity(Intent(this, SellActivity::class.java))
             overridePendingTransition(0, 0)
             finish()
         }
-        navInbox.setOnClickListener {
+        findViewById<LinearLayout>(R.id.nav_inbox).setOnClickListener {
             startActivity(Intent(this, InboxActivity::class.java))
             overridePendingTransition(0, 0)
             finish()
@@ -135,23 +140,16 @@ class ProfileActivity : AppCompatActivity() {
         AlertDialog.Builder(this)
             .setTitle("Logout")
             .setMessage("Are you sure you want to logout?")
-            .setPositiveButton("Yes") { _, _ ->
-                performLogout()
-            }
+            .setPositiveButton("Yes") { _, _ -> performLogout() }
             .setNegativeButton("No", null)
             .show()
     }
 
     private fun performLogout() {
-        // 1. Clear saved credentials
         tokenManager.clearAll()
-
-        // 2. Navigate back to Login
-        val intent = Intent(this, Login::class.java)
-        
-        // 3. Clear the activity stack so user cannot go back to profile with back button
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        startActivity(intent)
+        startActivity(Intent(this, Login::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        })
         finish()
     }
 }
