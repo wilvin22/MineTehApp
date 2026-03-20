@@ -33,6 +33,10 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var categoryButtons: List<MaterialButton>
     private var selectedCategory: String? = null
 
+    // Type filter buttons
+    private lateinit var typeButtons: List<MaterialButton>
+    private var selectedListingType: String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         android.util.Log.d("HomeActivity", "onCreate() called")
@@ -93,6 +97,9 @@ class HomeActivity : AppCompatActivity() {
             
             // Category filters
             setupCategoryFilters()
+            
+            // Type filters (All / Auctions / Buy Now)
+            setupTypeFilters()
             
             // Setup notification badge
             val notificationBadge = findViewById<TextView>(R.id.notificationBadge)
@@ -209,8 +216,53 @@ class HomeActivity : AppCompatActivity() {
         // Show loading while fetching
         progressBar.visibility = View.VISIBLE
         
-        // Fetch listings for selected category
-        viewModel.fetchListings(category = Categories.getCategoryForApi(category))
+        // Fetch listings for selected category and current type
+        viewModel.fetchListings(category = Categories.getCategoryForApi(category), type = selectedListingType)
+    }
+
+    private fun setupTypeFilters() {
+        typeButtons = listOf(
+            findViewById(R.id.btnTypeAll),
+            findViewById(R.id.btnTypeAuctions),
+            findViewById(R.id.btnTypeBuyNow)
+        )
+
+        findViewById<MaterialButton>(R.id.btnTypeAll).setOnClickListener { button ->
+            selectListingType(null, button as MaterialButton)
+        }
+
+        findViewById<MaterialButton>(R.id.btnTypeAuctions).setOnClickListener { button ->
+            selectListingType("BID", button as MaterialButton)
+        }
+
+        findViewById<MaterialButton>(R.id.btnTypeBuyNow).setOnClickListener { button ->
+            selectListingType("FIXED", button as MaterialButton)
+        }
+
+        // Default to "All" on launch
+        selectListingType(null, findViewById(R.id.btnTypeAll))
+    }
+
+    private fun selectListingType(type: String?, selectedButton: MaterialButton) {
+        selectedListingType = type
+
+        // Update button styles
+        typeButtons.forEach { button ->
+            if (button == selectedButton) {
+                button.setBackgroundColor(getColor(R.color.purple))
+                button.setTextColor(getColor(R.color.white))
+                button.strokeWidth = 0
+            } else {
+                button.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+                button.setTextColor(getColor(R.color.purple))
+                button.strokeWidth = 4
+                button.strokeColor = getColorStateList(R.color.purple)
+            }
+        }
+
+        // Fetch listings with current category and new type
+        progressBar.visibility = View.VISIBLE
+        viewModel.fetchListings(category = Categories.getCategoryForApi(selectedCategory), type = selectedListingType)
     }
 
     private fun setupSearchFunctionality() {

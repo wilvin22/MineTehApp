@@ -16,6 +16,7 @@ import com.example.mineteh.R
 import com.example.mineteh.databinding.ItemDetailBinding
 import com.example.mineteh.models.CartItem
 import com.example.mineteh.models.Listing
+import com.example.mineteh.utils.AvatarUtils
 import com.example.mineteh.utils.Resource
 import com.example.mineteh.viewmodel.ListingDetailViewModel
 import com.google.android.material.textfield.TextInputEditText
@@ -151,9 +152,11 @@ class ItemDetailActivity : AppCompatActivity() {
                 when (resource) {
                     is Resource.Loading -> {
                         binding.detailHeart.isEnabled = false
+                        binding.detailHeartBid.isEnabled = false
                     }
                     is Resource.Success -> {
                         binding.detailHeart.isEnabled = true
+                        binding.detailHeartBid.isEnabled = true
                         val isFavorited = resource.data ?: false
                         updateHeartIcon(isFavorited)
                         Toast.makeText(
@@ -165,11 +168,13 @@ class ItemDetailActivity : AppCompatActivity() {
                     }
                     is Resource.Error -> {
                         binding.detailHeart.isEnabled = true
+                        binding.detailHeartBid.isEnabled = true
                         Toast.makeText(this, resource.message ?: "Failed to update favorite", Toast.LENGTH_SHORT).show()
                         viewModel.resetFavoriteResult()
                     }
                     null -> {
                         binding.detailHeart.isEnabled = true
+                        binding.detailHeartBid.isEnabled = true
                     }
                 }
             }
@@ -223,7 +228,7 @@ class ItemDetailActivity : AppCompatActivity() {
             // Update favorite icon
             updateHeartIcon(listing.isFavorited)
 
-            // Setup favorite click listener
+            // Setup FIXED heart click listener (BID heart is set in setupActionButtons)
             binding.detailHeart.setOnClickListener {
                 viewModel.toggleFavorite(listing.id)
             }
@@ -270,6 +275,27 @@ class ItemDetailActivity : AppCompatActivity() {
                 val fullName = "${seller.firstName} ${seller.lastName}".trim()
                 binding.sellerName.text = if (fullName.isNotEmpty()) fullName else seller.username
                 binding.sellerUsername.text = "@${seller.username}"
+
+                // Bind seller avatar
+                AvatarUtils.bindAvatar(
+                    view = binding.sellerAvatar,
+                    firstName = seller.firstName,
+                    lastName = seller.lastName,
+                    accountId = seller.accountId ?: 0,
+                    avatarUrl = null,
+                    context = this
+                )
+
+                // Make seller name and avatar clickable to open SellerProfileActivity
+                val openProfile = View.OnClickListener {
+                    seller.accountId?.let { sid ->
+                        startActivity(Intent(this, SellerProfileActivity::class.java).apply {
+                            putExtra("seller_id", sid)
+                        })
+                    }
+                }
+                binding.sellerName.setOnClickListener(openProfile)
+                binding.sellerAvatarCard.setOnClickListener(openProfile)
             } ?: run {
                 binding.sellerName.text = "Unknown Seller"
                 binding.sellerUsername.text = ""
@@ -282,9 +308,7 @@ class ItemDetailActivity : AppCompatActivity() {
     private fun setupActionButtons(listing: Listing) {
         try {
             Log.d("ItemDetailActivity", "=== SETUP ACTION BUTTONS START ===")
-            Log.d("ItemDetailActivity", "Listing type: ${listing.listingType}")
-            Log.d("ItemDetailActivity", "Listing ID: ${listing.id}")
-            Log.d("ItemDetailActivity", "Listing title: ${listing.title}")
+            Log.d("ItemDetailActivity", "Listing type: ${listing.listingType}, ID: ${listing.id}")
             
             // Check if current user is the owner
             val tokenManager = com.example.mineteh.utils.TokenManager(this)
@@ -292,39 +316,20 @@ class ItemDetailActivity : AppCompatActivity() {
             val sellerId = listing.seller?.accountId
             val isOwner = currentUserId != -1 && sellerId != null && sellerId == currentUserId
             
-            Log.d("ItemDetailActivity", "=== OWNER CHECK ===")
-            Log.d("ItemDetailActivity", "Current user ID: $currentUserId")
-            Log.d("ItemDetailActivity", "Seller ID: $sellerId")
-            Log.d("ItemDetailActivity", "Seller object: ${listing.seller}")
-            Log.d("ItemDetailActivity", "Is owner: $isOwner")
-            Log.d("ItemDetailActivity", "==================")
+            Log.d("ItemDetailActivity", "Current user ID: $currentUserId, Seller ID: $sellerId, Is owner: $isOwner")
             
             if (isOwner) {
-                Log.d("ItemDetailActivity", "USER IS OWNER - Calling setupOwnerManagementUI")
-                // Show owner management UI
                 setupOwnerManagementUI(listing)
                 return
             }
             
-            Log.d("ItemDetailActivity", "USER IS NOT OWNER - Setting up buyer UI")
-            
-            // Hide owner badge for non-owners
+            // BUYER view — hide owner UI
             binding.ownerBadge.visibility = View.GONE
             binding.ownerManagementCard.visibility = View.GONE
             
-            // Show buyer divider
-            binding.divider3.visibility = View.VISIBLE
-            binding.divider3Owner.visibility = View.GONE
-            
-            // Update description constraint to divider3
-            val descParams = binding.detailItemDescription.layoutParams as androidx.constraintlayout.widget.ConstraintLayout.LayoutParams
-            descParams.topToBottom = binding.divider3.id
-            binding.detailItemDescription.layoutParams = descParams
-            binding.divider3Owner.visibility = View.GONE
-            
             when (listing.listingType) {
                 "FIXED" -> {
-                    // Show FIXED listing UI
+                    // Show price
                     binding.detailItemPrice.text = "₱ ${String.format("%.2f", listing.price)}"
                     binding.detailItemPrice.visibility = View.VISIBLE
                     binding.bidInfoCard.visibility = View.GONE
@@ -335,14 +340,14 @@ class ItemDetailActivity : AppCompatActivity() {
                     params.topToBottom = binding.detailItemPrice.id
                     binding.sellerAvatarCard.layoutParams = params
                     
-                    // Show FIXED buttons
-                    binding.btnAddToCart.visibility = View.VISIBLE
+                    // Show FIXED buyer row and Buy Now; hide BID row
+                    binding.fixedBuyerRow.visibility = View.VISIBLE
                     binding.btnBuyNow.visibility = View.VISIBLE
-                    binding.btnPlaceBid.visibility = View.GONE
-                    binding.btnContactSeller.visibility = View.VISIBLE
+                    binding.bidBuyerRow.visibility = View.GONE
+                    binding.btnContactSellerBid.visibility = View.GONE
+                    binding.divider3.visibility = View.VISIBLE
 
                     binding.btnAddToCart.setOnClickListener {
-                        // Add to cart
                         val cartItem = CartItem(
                             listingId = listing.id,
                             title = listing.title,
@@ -352,15 +357,11 @@ class ItemDetailActivity : AppCompatActivity() {
                             sellerName = listing.seller?.username ?: "Unknown",
                             quantity = 1
                         )
-                        
-                        val cartRepo = com.example.mineteh.model.repository.CartRepository(this)
-                        cartRepo.addToCart(cartItem)
-                        
+                        com.example.mineteh.model.repository.CartRepository(this).addToCart(cartItem)
                         Toast.makeText(this, "Added to cart", Toast.LENGTH_SHORT).show()
                     }
 
                     binding.btnBuyNow.setOnClickListener {
-                        // Create temporary cart item for direct purchase
                         val cartItem = CartItem(
                             listingId = listing.id,
                             title = listing.title,
@@ -370,19 +371,24 @@ class ItemDetailActivity : AppCompatActivity() {
                             sellerName = listing.seller?.username ?: "Unknown",
                             quantity = 1
                         )
-                        
-                        // Create temporary cart with just this item
                         val cartRepo = com.example.mineteh.model.repository.CartRepository(this)
-                        cartRepo.clearCart() // Clear any existing items
-                        cartRepo.addToCart(cartItem) // Add only this item
-                        
-                        // Go directly to checkout
-                        val intent = Intent(this, CheckoutActivity::class.java)
-                        startActivity(intent)
+                        cartRepo.clearCart()
+                        cartRepo.addToCart(cartItem)
+                        startActivity(Intent(this, CheckoutActivity::class.java))
+                    }
+                    
+                    binding.btnContactSeller.setOnClickListener {
+                        listing.seller?.accountId?.let { sid ->
+                            startActivity(Intent(this, ChatActivity::class.java).apply {
+                                putExtra("other_user_id", sid)
+                                putExtra("other_user_name", listing.seller?.username ?: "Seller")
+                                putExtra("listing_id", listing.id)
+                            })
+                        } ?: Toast.makeText(this, "Seller information not available", Toast.LENGTH_SHORT).show()
                     }
                 }
                 "BID" -> {
-                    // Show BID listing UI
+                    // Show BID info card
                     binding.detailItemPrice.visibility = View.GONE
                     binding.bidInfoCard.visibility = View.VISIBLE
                     binding.auctionStatusBadge.visibility = View.VISIBLE
@@ -392,10 +398,8 @@ class ItemDetailActivity : AppCompatActivity() {
                     params.topToBottom = binding.bidInfoCard.id
                     binding.sellerAvatarCard.layoutParams = params
                     
-                    // Check if auction is still active
                     val isActive = listing.status.equals("active", ignoreCase = true)
                     val timeRemaining = com.example.mineteh.utils.TimeUtils.calculateTimeRemaining(listing.endTime ?: "")
-                    
                     if (isActive && timeRemaining > 0) {
                         binding.auctionStatusBadge.text = "LIVE"
                         binding.auctionStatusBadge.setBackgroundResource(R.drawable.circle_background_red)
@@ -407,55 +411,32 @@ class ItemDetailActivity : AppCompatActivity() {
                     val currentBid = listing.highestBid?.bidAmount ?: listing.price
                     binding.currentBidAmount.text = "₱ ${String.format("%.2f", currentBid)}"
                     
-                    // Show BID buttons - hide Add to Cart and Buy Now, show Contact Seller
-                    binding.btnAddToCart.visibility = View.GONE
+                    // Show BID buyer row + contact seller; hide FIXED row
+                    binding.fixedBuyerRow.visibility = View.GONE
                     binding.btnBuyNow.visibility = View.GONE
-                    binding.btnContactSeller.visibility = View.GONE // Hide FIXED contact button
-                    binding.btnContactSellerBid.visibility = View.VISIBLE // Show BID contact button
-                    binding.btnPlaceBid.visibility = View.VISIBLE
-                    
-                    // Hide FIXED divider
+                    binding.bidBuyerRow.visibility = View.VISIBLE
+                    binding.btnContactSellerBid.visibility = View.VISIBLE
                     binding.divider3.visibility = View.GONE
-                    
-                    // Description goes after Contact Seller BID button
-                    val descParams = binding.detailItemDescription.layoutParams as androidx.constraintlayout.widget.ConstraintLayout.LayoutParams
-                    descParams.topToBottom = binding.btnContactSellerBid.id
-                    descParams.topMargin = (16 * resources.displayMetrics.density).toInt()
-                    binding.detailItemDescription.layoutParams = descParams
 
-                    // Setup auction countdown
                     setupAuctionTimer(listing.endTime)
 
                     binding.btnPlaceBid.setOnClickListener {
                         showBidDialog(listing)
                     }
                     
+                    binding.detailHeartBid.setOnClickListener {
+                        viewModel.toggleFavorite(listing.id)
+                    }
+                    
                     binding.btnContactSellerBid.setOnClickListener {
-                        listing.seller?.accountId?.let { sellerId ->
-                            val intent = Intent(this, ChatActivity::class.java).apply {
-                                putExtra("other_user_id", sellerId)
+                        listing.seller?.accountId?.let { sid ->
+                            startActivity(Intent(this, ChatActivity::class.java).apply {
+                                putExtra("other_user_id", sid)
                                 putExtra("other_user_name", listing.seller?.username ?: "Seller")
                                 putExtra("listing_id", listing.id)
-                            }
-                            startActivity(intent)
-                        } ?: run {
-                            Toast.makeText(this, "Seller information not available", Toast.LENGTH_SHORT).show()
-                        }
+                            })
+                        } ?: Toast.makeText(this, "Seller information not available", Toast.LENGTH_SHORT).show()
                     }
-                }
-            }
-
-            // Contact Seller button
-            binding.btnContactSeller.setOnClickListener {
-                listing.seller?.accountId?.let { sellerId ->
-                    val intent = Intent(this, ChatActivity::class.java).apply {
-                        putExtra("other_user_id", sellerId)
-                        putExtra("other_user_name", listing.seller?.username ?: "Seller")
-                        putExtra("listing_id", listing.id)
-                    }
-                    startActivity(intent)
-                } ?: run {
-                    Toast.makeText(this, "Seller information not available", Toast.LENGTH_SHORT).show()
                 }
             }
         } catch (e: Exception) {
@@ -466,16 +447,13 @@ class ItemDetailActivity : AppCompatActivity() {
     private fun setupOwnerManagementUI(listing: Listing) {
         try {
             Log.d("ItemDetailActivity", "=== SETUP OWNER MANAGEMENT UI START ===")
-            Log.d("ItemDetailActivity", "Listing type: ${listing.listingType}")
             
             // Show owner badge
             binding.ownerBadge.visibility = View.VISIBLE
-            Log.d("ItemDetailActivity", "Owner badge set to VISIBLE")
             
             // Show price/bid info based on type
             when (listing.listingType) {
                 "FIXED" -> {
-                    Log.d("ItemDetailActivity", "Setting up FIXED listing for owner")
                     binding.detailItemPrice.text = "₱ ${String.format("%.2f", listing.price)}"
                     binding.detailItemPrice.visibility = View.VISIBLE
                     binding.bidInfoCard.visibility = View.GONE
@@ -486,7 +464,6 @@ class ItemDetailActivity : AppCompatActivity() {
                     binding.sellerAvatarCard.layoutParams = params
                 }
                 "BID" -> {
-                    Log.d("ItemDetailActivity", "Setting up BID listing for owner")
                     binding.detailItemPrice.visibility = View.GONE
                     binding.bidInfoCard.visibility = View.VISIBLE
                     binding.auctionStatusBadge.visibility = View.VISIBLE
@@ -497,7 +474,6 @@ class ItemDetailActivity : AppCompatActivity() {
                     
                     val isActive = listing.status.equals("active", ignoreCase = true)
                     val timeRemaining = com.example.mineteh.utils.TimeUtils.calculateTimeRemaining(listing.endTime ?: "")
-                    
                     if (isActive && timeRemaining > 0) {
                         binding.auctionStatusBadge.text = "LIVE"
                         binding.auctionStatusBadge.setBackgroundResource(R.drawable.circle_background_red)
@@ -508,71 +484,43 @@ class ItemDetailActivity : AppCompatActivity() {
                     
                     val currentBid = listing.highestBid?.bidAmount ?: listing.price
                     binding.currentBidAmount.text = "₱ ${String.format("%.2f", currentBid)}"
-                    
                     setupAuctionTimer(listing.endTime)
                 }
             }
             
-            // Hide all buyer action buttons and favorite
-            Log.d("ItemDetailActivity", "Hiding all buyer buttons")
-            binding.btnAddToCart.visibility = View.GONE
+            // Hide all buyer rows
+            binding.fixedBuyerRow.visibility = View.GONE
             binding.btnBuyNow.visibility = View.GONE
-            binding.btnPlaceBid.visibility = View.GONE
-            binding.detailHeart.visibility = View.GONE
-            binding.btnContactSeller.visibility = View.GONE
-            Log.d("ItemDetailActivity", "All buyer buttons hidden")
+            binding.bidBuyerRow.visibility = View.GONE
+            binding.btnContactSellerBid.visibility = View.GONE
+            binding.divider3.visibility = View.GONE
             
             // Show owner management card
             binding.ownerManagementCard.visibility = View.VISIBLE
-            Log.d("ItemDetailActivity", "Owner management card set to VISIBLE")
             
-            // Toggle dividers
-            binding.divider3.visibility = View.GONE
-            binding.divider3Owner.visibility = View.VISIBLE
-            
-            // Update description constraint to divider3Owner
-            val descParams = binding.detailItemDescription.layoutParams as androidx.constraintlayout.widget.ConstraintLayout.LayoutParams
-            descParams.topToBottom = binding.divider3Owner.id
-            binding.detailItemDescription.layoutParams = descParams
-            
-            // Show/hide Close Auction button based on listing type
-            if (listing.listingType == "BID") {
-                binding.btnCloseAuction.visibility = View.VISIBLE
-                Log.d("ItemDetailActivity", "Close Auction button set to VISIBLE")
-                binding.btnCloseAuction.setOnClickListener {
-                    showCloseAuctionDialog(listing)
-                }
-            } else {
-                binding.btnCloseAuction.visibility = View.GONE
-                Log.d("ItemDetailActivity", "Close Auction button set to GONE")
-            }
+            // Show/hide Close Auction button
+            binding.btnCloseAuction.visibility = if (listing.listingType == "BID") View.VISIBLE else View.GONE
+            binding.btnCloseAuction.setOnClickListener { showCloseAuctionDialog(listing) }
             
             // Setup toggle status button
             val isActive = listing.status.equals("active", ignoreCase = true)
             binding.btnToggleStatus.text = if (isActive) "🚫 Disable Listing" else "✅ Enable Listing"
             binding.btnToggleStatus.setBackgroundColor(getColor(if (isActive) R.color.red else R.color.green))
-            
             binding.btnToggleStatus.setOnClickListener {
-                if (isActive) {
-                    showDisableListingDialog(listing)
-                } else {
-                    showEnableListingDialog(listing)
-                }
+                if (isActive) showDisableListingDialog(listing) else showEnableListingDialog(listing)
             }
             
-            // Setup edit listing button
             binding.btnEditListing.setOnClickListener {
-                Toast.makeText(this, "Edit listing feature coming soon", Toast.LENGTH_SHORT).show()
+                startActivity(Intent(this, EditListingActivity::class.java).apply {
+                    putExtra("listing_id", listing.id)
+                })
             }
             
-            // Setup your listings button
             binding.btnViewYourListings.setOnClickListener {
-                val intent = Intent(this, MyListingsActivity::class.java)
-                startActivity(intent)
+                startActivity(Intent(this, MyListingsActivity::class.java))
             }
             
             Log.d("ItemDetailActivity", "=== SETUP OWNER MANAGEMENT UI COMPLETE ===")
-            
         } catch (e: Exception) {
             Log.e("ItemDetailActivity", "Error in setupOwnerManagementUI", e)
         }
@@ -724,11 +672,9 @@ class ItemDetailActivity : AppCompatActivity() {
 
     private fun updateHeartIcon(isLiked: Boolean) {
         try {
-            if (isLiked) {
-                binding.detailHeart.setImageResource(R.drawable.heart_red)
-            } else {
-                binding.detailHeart.setImageResource(R.drawable.heart)
-            }
+            val heartRes = if (isLiked) R.drawable.heart_red else R.drawable.heart
+            binding.detailHeart.setImageResource(heartRes)
+            binding.detailHeartBid.setImageResource(heartRes)
         } catch (e: Exception) {
             Log.e("ItemDetailActivity", "Error in updateHeartIcon", e)
         }

@@ -20,7 +20,9 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
     fun searchListings(
         query: String? = null,
         category: String? = null,
-        type: String? = null
+        type: String? = null,
+        minPrice: Double? = null,
+        maxPrice: Double? = null
     ) {
         viewModelScope.launch {
             _searchResults.value = Resource.Loading()
@@ -28,7 +30,9 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
             val result = repository.getListings(
                 category = category,
                 type = type,
-                search = query?.takeIf { it.isNotEmpty() }
+                search = query?.takeIf { it.isNotEmpty() },
+                minPrice = minPrice,
+                maxPrice = maxPrice
             )
             
             _searchResults.value = result
