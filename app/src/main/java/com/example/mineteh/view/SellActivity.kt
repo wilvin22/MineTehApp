@@ -5,7 +5,16 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.*
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
+import android.widget.Button
+import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.ProgressBar
+import android.widget.RadioButton
+import android.widget.RadioGroup
+import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -64,7 +73,7 @@ class SellActivity : AppCompatActivity() {
     private lateinit var radioListingType: RadioGroup
     private lateinit var rbFixed: RadioButton
     private lateinit var rbBid: RadioButton
-    private lateinit var layoutAuctionDuration: LinearLayout
+    private lateinit var layoutAuctionDuration: androidx.cardview.widget.CardView
     private lateinit var tvPriceLabel: TextView
     private lateinit var radioDuration: RadioGroup
     private lateinit var rb1Day: RadioButton
@@ -76,7 +85,7 @@ class SellActivity : AppCompatActivity() {
     private lateinit var etMinBidIncrement: TextInputEditText
     private lateinit var categoryDropdown: AutoCompleteTextView
     private lateinit var btnSubmit: Button
-    private lateinit var btnAddPhoto: Button
+    private lateinit var btnAddPhoto: LinearLayout
     private lateinit var recyclerPhotos: RecyclerView
     private lateinit var progressBar: ProgressBar
 
@@ -308,6 +317,7 @@ class SellActivity : AppCompatActivity() {
     private fun setLoading(loading: Boolean) {
         btnSubmit.isEnabled = !loading
         btnAddPhoto.isEnabled = !loading
+        btnAddPhoto.alpha = if (loading) 0.5f else 1.0f
         etTitle.isEnabled = !loading
         etDescription.isEnabled = !loading
         etPrice.isEnabled = !loading
