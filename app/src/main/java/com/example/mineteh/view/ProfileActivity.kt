@@ -31,6 +31,12 @@ class ProfileActivity : AppCompatActivity() {
 
         tokenManager = TokenManager(this)
 
+        // Toolbar back button
+        val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        toolbar.setNavigationOnClickListener { finish() }
+
         // User info
         val username = tokenManager.getUserName() ?: "Username"
         val accountId = tokenManager.getUserId()
@@ -111,28 +117,6 @@ class ProfileActivity : AppCompatActivity() {
         // Logout
         findViewById<MaterialButton>(R.id.logoutBtn).setOnClickListener {
             showLogoutConfirmation()
-        }
-
-        // Bottom Navigation
-        findViewById<LinearLayout>(R.id.nav_home).setOnClickListener {
-            startActivity(Intent(this, HomeActivity::class.java))
-            overridePendingTransition(0, 0)
-            finish()
-        }
-        findViewById<LinearLayout>(R.id.nav_notifications).setOnClickListener {
-            startActivity(Intent(this, NotificationsActivity::class.java))
-            overridePendingTransition(0, 0)
-            finish()
-        }
-        findViewById<LinearLayout>(R.id.nav_sell).setOnClickListener {
-            startActivity(Intent(this, SellActivity::class.java))
-            overridePendingTransition(0, 0)
-            finish()
-        }
-        findViewById<LinearLayout>(R.id.nav_inbox).setOnClickListener {
-            startActivity(Intent(this, InboxActivity::class.java))
-            overridePendingTransition(0, 0)
-            finish()
         }
     }
 

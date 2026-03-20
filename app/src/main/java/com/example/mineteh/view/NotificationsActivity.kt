@@ -108,33 +108,8 @@ class NotificationsActivity : AppCompatActivity() {
         settingsButton.setOnClickListener {
             startActivity(Intent(this, NotificationPreferencesActivity::class.java))
         }
-        
-        // Bottom Navigation
-        findViewById<LinearLayout>(R.id.nav_home).setOnClickListener {
-            startActivity(Intent(this, HomeActivity::class.java))
-            overridePendingTransition(0, 0)
-            finish()
-        }
 
-        findViewById<LinearLayout>(R.id.nav_notifications).setOnClickListener {
-            // Already here
-        }
-
-        findViewById<LinearLayout>(R.id.nav_sell).setOnClickListener {
-            startActivity(Intent(this, SellActivity::class.java))
-            overridePendingTransition(0, 0)
-            finish()
-        }
-
-        findViewById<LinearLayout>(R.id.nav_inbox).setOnClickListener {
-            startActivity(Intent(this, InboxActivity::class.java))
-            overridePendingTransition(0, 0)
-            finish()
-        }
-
-        findViewById<LinearLayout>(R.id.nav_profile).setOnClickListener {
-            startActivity(Intent(this, ProfileActivity::class.java))
-            overridePendingTransition(0, 0)
+        findViewById<ImageView>(R.id.backButton).setOnClickListener {
             finish()
         }
     }
@@ -280,15 +255,6 @@ class NotificationsActivity : AppCompatActivity() {
     }
 
     private fun updateUnreadCount(count: Int) {
-        // Update badge in bottom navigation
-        val badge = findViewById<TextView>(R.id.notificationBadge)
-        if (count > 0) {
-            badge.visibility = View.VISIBLE
-            badge.text = if (count > 99) "99+" else count.toString()
-        } else {
-            badge.visibility = View.GONE
-        }
-        
         // Update mark all read button visibility
         markAllReadButton.visibility = if (count > 0) View.VISIBLE else View.GONE
     }
