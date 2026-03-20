@@ -18,7 +18,6 @@ class MessageAdapter(private val messageList: List<MessageModel>) :
         val senderName: TextView = itemView.findViewById(R.id.messageSenderName)
         val messageSnippet: TextView = itemView.findViewById(R.id.messageSnippet)
         val time: TextView = itemView.findViewById(R.id.messageTime)
-        val rootLayout: View = itemView.findViewById<View>(R.id.profileCard).parent as View
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -34,7 +33,7 @@ class MessageAdapter(private val messageList: List<MessageModel>) :
         holder.time.text = message.time
         holder.profileImage.setImageResource(message.profileImageRes)
 
-        holder.rootLayout.setOnClickListener {
+        holder.itemView.setOnClickListener {
             val context = holder.itemView.context
             val intent = Intent(context, ChatActivity::class.java).apply {
                 putExtra("senderName", message.senderName)
