@@ -22,6 +22,7 @@ class ItemAdapter(
         val itemPrice: TextView = itemView.findViewById(R.id.itemPrice)
         val itemLocation: TextView? = itemView.findViewById(R.id.itemLocation)
         val itemHeart: ImageView = itemView.findViewById(R.id.itemHeart)
+        val heartContainer: android.widget.FrameLayout = itemView.findViewById(R.id.heartContainer)
         val itemImage: ImageView = itemView.findViewById(R.id.itemImage)
         val itemTypeBadge: TextView = itemView.findViewById(R.id.itemTypeBadge)
         val yourListingBadge: TextView = itemView.findViewById(R.id.yourListingBadge)
@@ -44,9 +45,10 @@ class ItemAdapter(
         holder.itemLocation?.text = "📍 ${item.location ?: "Unknown"}"
         holder.itemTypeBadge.text = item.listingType ?: "FIXED"
 
-        // Show "Your Listing" badge if this item belongs to the current user
+        // Show "Your Listing" badge and hide heart if this item belongs to the current user
         val isOwner = currentUserId != -1 && item.seller?.accountId == currentUserId
         holder.yourListingBadge.visibility = if (isOwner) View.VISIBLE else View.GONE
+        holder.heartContainer.visibility = if (isOwner) View.GONE else View.VISIBLE
 
         // Set price color based on listing type
         val priceColor = if (item.listingType == "BID") {

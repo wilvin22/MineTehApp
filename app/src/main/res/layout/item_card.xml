@@ -38,6 +38,7 @@
 
             <!-- Heart Icon with Circular Background -->
             <FrameLayout
+                android:id="@+id/heartContainer"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:layout_gravity="top|end"
