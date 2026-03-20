@@ -21,7 +21,7 @@ class ManageListingsActivity : AppCompatActivity() {
     private lateinit var adapter: MyListingsAdapter
     private lateinit var recyclerView: RecyclerView
     private lateinit var loadingProgress: View
-    private lateinit var emptyText: TextView
+    private lateinit var emptyText: View
 
     private var allListings = listOf<Listing>()
     private var currentFilter = "all"
@@ -103,7 +103,6 @@ class ManageListingsActivity : AppCompatActivity() {
         if (filtered.isEmpty()) {
             recyclerView.visibility = View.GONE
             emptyText.visibility = View.VISIBLE
-            emptyText.text = "No ${if (currentFilter == "all") "" else "$currentFilter "}listings"
         } else {
             recyclerView.visibility = View.VISIBLE
             emptyText.visibility = View.GONE
@@ -139,7 +138,6 @@ class ManageListingsActivity : AppCompatActivity() {
                 is Resource.Error -> {
                     loadingProgress.visibility = View.GONE
                     emptyText.visibility = View.VISIBLE
-                    emptyText.text = resource.message ?: "Failed to load listings"
                     Toast.makeText(this, resource.message, Toast.LENGTH_SHORT).show()
                 }
                 null -> {}
