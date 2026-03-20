@@ -9,7 +9,6 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.example.mineteh.Login
-import com.example.mineteh.MyOrdersActivity
 import com.example.mineteh.R
 import com.example.mineteh.utils.AvatarUtils
 import com.example.mineteh.utils.Resource
@@ -106,8 +105,8 @@ class ProfileActivity : AppCompatActivity() {
         }
 
         // Quick actions
-        findViewById<LinearLayout>(R.id.btnMyOrders).setOnClickListener {
-            startActivity(Intent(this, MyOrdersActivity::class.java))
+        findViewById<LinearLayout>(R.id.btnManageListings).setOnClickListener {
+            startActivity(Intent(this, ManageListingsActivity::class.java))
         }
 
         findViewById<LinearLayout>(R.id.btnMyBids).setOnClickListener {
