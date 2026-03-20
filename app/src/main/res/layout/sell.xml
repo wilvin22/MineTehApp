@@ -469,7 +469,7 @@
         android:textAllCaps="false"
         app:backgroundTint="@color/purple"
         app:cornerRadius="0dp"
-        app:layout_constraintBottom_toTopOf="@id/bottomNav"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -484,46 +484,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- BOTTOM NAV -->
-    <LinearLayout
-        android:id="@+id/bottomNav"
-        android:layout_width="0dp"
-        android:layout_height="70dp"
-        android:background="@color/purple"
-        android:gravity="center"
-        android:orientation="horizontal"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
 
-        <LinearLayout android:id="@+id/nav_home" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:orientation="vertical" android:paddingVertical="8dp">
-            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/home" android:layout_marginBottom="4dp"/>
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Home" android:textColor="@color/black" android:textSize="12sp" android:textStyle="bold"/>
-        </LinearLayout>
-
-        <LinearLayout android:id="@+id/nav_notifications" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:orientation="vertical" android:paddingVertical="8dp">
-            <FrameLayout android:layout_width="wrap_content" android:layout_height="wrap_content">
-                <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/ic_notifications" android:layout_marginBottom="4dp"/>
-                <TextView android:id="@+id/notificationBadge" android:layout_width="16dp" android:layout_height="16dp" android:layout_gravity="top|end" android:background="@drawable/notification_badge_bg" android:gravity="center" android:textColor="@color/white" android:textSize="10sp" android:textStyle="bold" android:visibility="gone"/>
-            </FrameLayout>
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Notifications" android:textColor="@color/black" android:textSize="12sp" android:textStyle="bold"/>
-        </LinearLayout>
-
-        <LinearLayout android:id="@+id/nav_sell" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:orientation="vertical" android:paddingVertical="8dp">
-            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/sell" android:layout_marginBottom="4dp"/>
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Sell" android:textColor="@color/black" android:textSize="12sp" android:textStyle="bold"/>
-        </LinearLayout>
-
-        <LinearLayout android:id="@+id/nav_inbox" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:orientation="vertical" android:paddingVertical="8dp">
-            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/inbox" android:layout_marginBottom="4dp"/>
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Inbox" android:textColor="@color/black" android:textSize="12sp" android:textStyle="bold"/>
-        </LinearLayout>
-
-        <LinearLayout android:id="@+id/nav_profile" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:orientation="vertical" android:paddingVertical="8dp">
-            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/me" android:layout_marginBottom="4dp"/>
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Me" android:textColor="@color/black" android:textSize="12sp" android:textStyle="bold"/>
-        </LinearLayout>
-
-    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -97,7 +97,7 @@ class SellActivity : AppCompatActivity() {
 
             initViews()
             setupPhotoRecyclerView()
-            setupNavigation()
+            setupToolbar()
             setupCategoryDropdown()
             setupListeners()
             observeCreateListingState()
@@ -347,26 +347,14 @@ class SellActivity : AppCompatActivity() {
         datePickerDialog.show()
     }
 
+    private fun setupToolbar() {
+        val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        toolbar.setNavigationOnClickListener { finish() }
+    }
+
     private fun setupNavigation() {
-        findViewById<LinearLayout>(R.id.nav_home)?.setOnClickListener {
-            startActivity(Intent(this, HomeActivity::class.java))
-            overridePendingTransition(0, 0)
-            finish()
-        }
-        findViewById<LinearLayout>(R.id.nav_notifications)?.setOnClickListener {
-            startActivity(Intent(this, NotificationsActivity::class.java))
-            overridePendingTransition(0, 0)
-            finish()
-        }
-        findViewById<LinearLayout>(R.id.nav_inbox)?.setOnClickListener {
-            startActivity(Intent(this, InboxActivity::class.java))
-            overridePendingTransition(0, 0)
-            finish()
-        }
-        findViewById<LinearLayout>(R.id.nav_profile)?.setOnClickListener {
-            startActivity(Intent(this, ProfileActivity::class.java))
-            overridePendingTransition(0, 0)
-            finish()
-        }
+        // bottom nav removed from sell screen
     }
 }
