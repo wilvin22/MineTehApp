@@ -46,9 +46,17 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    private val _toggleResult = MutableLiveData<Resource<Boolean>?>()
+    val toggleResult: LiveData<Resource<Boolean>?> = _toggleResult
+
     fun toggleFavorite(listingId: Int) {
         viewModelScope.launch {
-            repository.toggleFavorite(listingId)
+            val result = repository.toggleFavorite(listingId)
+            _toggleResult.value = result
         }
+    }
+
+    fun resetToggleResult() {
+        _toggleResult.value = null
     }
 }

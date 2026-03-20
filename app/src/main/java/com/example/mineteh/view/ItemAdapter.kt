@@ -170,10 +170,11 @@ class ItemAdapter(
         updateHeartIcon(holder.itemHeart, item.isFavorited)
 
         holder.itemHeart.setOnClickListener {
-            onFavoriteToggle?.invoke(item)
-            // Optimistic UI update
             val newState = !item.isFavorited
+            // Update the list copy so rebinds stay in sync
+            itemList = itemList.toMutableList().also { it[holder.adapterPosition] = item.copy(isFavorited = newState) }
             updateHeartIcon(holder.itemHeart, newState)
+            onFavoriteToggle?.invoke(item)
         }
 
         holder.itemView.setOnClickListener {
