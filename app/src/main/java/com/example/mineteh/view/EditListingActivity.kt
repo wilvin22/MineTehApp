@@ -1,9 +1,7 @@
 package com.example.mineteh.view
 
 import android.app.DatePickerDialog
-import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.ProgressBar
 import android.widget.Toast
@@ -16,6 +14,7 @@ import com.example.mineteh.models.Listing
 import com.example.mineteh.utils.Resource
 import com.example.mineteh.viewmodel.EditListingViewModel
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
 import java.text.SimpleDateFormat
 import java.util.*
@@ -66,8 +65,6 @@ class EditListingActivity : AppCompatActivity() {
 
     private fun setupToolbar() {
         val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
-        setSupportActionBar(toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
         toolbar.setNavigationOnClickListener { finish() }
     }
 
@@ -131,9 +128,14 @@ class EditListingActivity : AppCompatActivity() {
                 is Resource.Success -> {
                     progressBar.visibility = View.GONE
                     btnSaveChanges.isEnabled = true
-                    Toast.makeText(this, "Listing updated successfully", Toast.LENGTH_SHORT).show()
+                    Snackbar.make(
+                        findViewById(android.R.id.content),
+                        "Listing updated successfully",
+                        Snackbar.LENGTH_SHORT
+                    ).show()
                     viewModel.resetEditResult()
-                    finish()
+                    // Small delay so user sees the success message
+                    btnSaveChanges.postDelayed({ finish() }, 1000)
                 }
                 is Resource.Error -> {
                     progressBar.visibility = View.GONE
