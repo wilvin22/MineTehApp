@@ -3,13 +3,15 @@ package com.example.mineteh.view
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mineteh.R
 import com.example.mineteh.model.ChatMessageModel
 
-class ChatAdapter(private val chatMessages: List<ChatMessageModel>) :
+class ChatAdapter(
+    private val chatMessages: List<ChatMessageModel>,
+    private val receiverInitials: String
+) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     companion object {
@@ -35,9 +37,11 @@ class ChatAdapter(private val chatMessages: List<ChatMessageModel>) :
         val message = chatMessages[position]
         if (holder is SentViewHolder) {
             holder.messageText.text = message.content
+            holder.timeText.text = message.time
         } else if (holder is ReceivedViewHolder) {
             holder.messageText.text = message.content
-            // Note: In real app, set the profile image here
+            holder.receiverInitialsText.text = receiverInitials
+            holder.timeText.text = message.time
         }
     }
 
@@ -45,10 +49,12 @@ class ChatAdapter(private val chatMessages: List<ChatMessageModel>) :
 
     class SentViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val messageText: TextView = view.findViewById(R.id.txtSentMessage)
+        val timeText: TextView = view.findViewById(R.id.txtSentTime)
     }
 
     class ReceivedViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val messageText: TextView = view.findViewById(R.id.txtReceivedMessage)
-        val profileImage: ImageView = view.findViewById(R.id.imgReceiverProfile)
+        val receiverInitialsText: TextView = view.findViewById(R.id.txtReceiverInitials)
+        val timeText: TextView = view.findViewById(R.id.txtReceivedTime)
     }
 }

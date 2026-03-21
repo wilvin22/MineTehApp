@@ -33,6 +33,11 @@ private data class SupabaseMessage(
 )
 
 @Serializable
+private data class SupabaseUnreadMessage(
+    val conversation_id: Int
+)
+
+@Serializable
 private data class SupabaseUser(
     val account_id: Int,
     val username: String,
@@ -134,9 +139,28 @@ class MessagingRepository(private val context: Context) {
             }
             
             // Build conversations with additional data
+            val conversationIds = rows.map { it.conversation_id }
+
+            // Compute unread message counts for inbox indicators
+            val unreadMessages = if (conversationIds.isNotEmpty()) {
+                supabase.from("messages")
+                    .select(columns = Columns.list("conversation_id")) {
+                        filter {
+                            isIn("conversation_id", conversationIds)
+                            neq("sender_id", userId)
+                            eq("is_read", false)
+                        }
+                    }
+                    .decodeList<SupabaseUnreadMessage>()
+            } else {
+                emptyList()
+            }
+
+            val unreadCountByConversation = unreadMessages.groupingBy { it.conversation_id }.eachCount()
+
             val conversations = rows.map { row ->
                 val otherId = if (row.user1_id == userId) row.user2_id else row.user1_id
-                Conversation(
+                val conv = Conversation(
                     conversationId = row.conversation_id,
                     user1Id = row.user1_id,
                     user2Id = row.user2_id,
@@ -146,6 +170,9 @@ class MessagingRepository(private val context: Context) {
                     otherUser = userMap[otherId],
                     listing = row.listing_id?.let { listingMap[it] }
                 )
+
+                conv.unreadCount = unreadCountByConversation[row.conversation_id] ?: 0
+                conv
             }
             
             Log.d(tag, "Fetched ${conversations.size} conversations")

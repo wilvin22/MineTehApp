@@ -65,6 +65,8 @@ class InboxActivity : AppCompatActivity() {
                                 putExtra("conversation_id", conversation.conversationId)
                                 putExtra("other_user_id", conversation.otherUser?.accountId ?: -1)
                                 putExtra("other_user_name", conversation.otherUser?.username ?: "User")
+                            putExtra("other_user_first_name", conversation.otherUser?.firstName ?: "")
+                            putExtra("other_user_last_name", conversation.otherUser?.lastName ?: "")
                                 conversation.listingId?.let { putExtra("listing_id", it) }
                             }
                             startActivity(intent)

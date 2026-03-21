@@ -4,32 +4,52 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:padding="8dp">
-
+ 
     <androidx.cardview.widget.CardView
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:layout_gravity="bottom"
         app:cardCornerRadius="16dp"
         xmlns:app="http://schemas.android.com/apk/res-auto">
-        <ImageView
-            android:id="@+id/imgReceiverProfile"
+        <TextView
+            android:id="@+id/txtReceiverInitials"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scaleType="centerCrop"
-            android:src="@drawable/ic_launcher_background" />
+            android:gravity="center"
+            android:text="U"
+            android:textColor="@android:color/white"
+            android:textStyle="bold"
+            android:background="@color/purple" />
     </androidx.cardview.widget.CardView>
 
-    <TextView
-        android:id="@+id/txtReceivedMessage"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:orientation="vertical"
         android:layout_marginStart="8dp"
-        android:layout_marginEnd="64dp"
-        android:background="@drawable/border"
-        android:backgroundTint="#EFEFEF"
-        android:padding="12dp"
-        android:text="Received message text"
-        android:textColor="@color/black"
-        android:textSize="14sp" />
+        android:layout_marginEnd="64dp">
+
+        <TextView
+            android:id="@+id/txtReceivedMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/border"
+            android:backgroundTint="#EFEFEF"
+            android:padding="12dp"
+            android:text="Received message text"
+            android:textColor="@color/black"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/txtReceivedTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="10:23 AM"
+            android:textColor="@color/text_secondary"
+            android:textSize="11sp"
+            android:layout_gravity="end"
+            android:paddingTop="2dp" />
+
+    </LinearLayout>
 
 </LinearLayout>

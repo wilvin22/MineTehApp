@@ -233,32 +233,10 @@ class NotificationService {
      * Check if notification should be shown based on user preferences
      */
     private suspend fun shouldShowNotification(userId: Int, notificationType: String): Boolean {
-        return try {
-            // Check if push notifications are globally enabled
-            val pushEnabledResult = notificationsRepository.isPushNotificationEnabled(userId)
-            if (pushEnabledResult is Resource.Success && !pushEnabledResult.data!!) {
-                Log.d(TAG, "Push notifications disabled globally for user $userId")
-                return false
-            }
-
-            // Check if this specific notification type is enabled
-            val typeEnabledResult = notificationsRepository.isNotificationTypeEnabled(userId, notificationType)
-            if (typeEnabledResult is Resource.Success && !typeEnabledResult.data!!) {
-                Log.d(TAG, "Notification type $notificationType disabled for user $userId")
-                return false
-            }
-
-            // Check quiet hours
-            if (isInQuietHours(userId)) {
-                Log.d(TAG, "Notification blocked by quiet hours for user $userId")
-                return false
-            }
-
-            true
-        } catch (e: Exception) {
-            Log.e(TAG, "Error checking notification preferences, defaulting to show", e)
-            true // Default to showing notification on error
-        }
+        // Preferences are intentionally disabled for now:
+        // - prevents dummy/default preference data from blocking notifications
+        // - keeps notifications behavior consistent
+        return true
     }
 
     /**

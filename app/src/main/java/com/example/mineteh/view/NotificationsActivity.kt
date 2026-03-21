@@ -106,8 +106,11 @@ class NotificationsActivity : AppCompatActivity() {
         }
         
         settingsButton.setOnClickListener {
-            startActivity(Intent(this, NotificationPreferencesActivity::class.java))
+            // Notification preferences are disabled for now.
         }
+
+        // Hide settings UI; preferences are not used.
+        settingsButton.visibility = View.GONE
 
         findViewById<ImageView>(R.id.backButton).setOnClickListener {
             finish()
