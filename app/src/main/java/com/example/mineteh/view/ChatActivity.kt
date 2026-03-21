@@ -13,8 +13,10 @@ import com.example.mineteh.R
 import com.example.mineteh.databinding.ChatBinding
 import com.example.mineteh.model.ChatMessageModel
 import com.example.mineteh.models.Message
+import com.example.mineteh.utils.AvatarUtils
 import com.example.mineteh.utils.Resource
 import com.example.mineteh.viewmodel.MessagingViewModel
+import java.time.Instant
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -24,6 +26,8 @@ class ChatActivity : AppCompatActivity() {
     private val chatMessages = mutableListOf<ChatMessageModel>()
     private lateinit var adapter: ChatAdapter
     private val viewModel: MessagingViewModel by viewModels()
+
+    private var receiverInitials: String = "U"
     
     private var conversationId: Int = -1
     private var otherUserId: Int = -1
@@ -62,6 +66,18 @@ class ChatActivity : AppCompatActivity() {
         val initialMessage = intent.getStringExtra("initial_message")
         
         val otherUserName = intent.getStringExtra("other_user_name") ?: "User"
+        val otherFirstName = intent.getStringExtra("other_user_first_name") ?: ""
+        val otherLastName = intent.getStringExtra("other_user_last_name") ?: ""
+        receiverInitials = if (otherFirstName.isNotBlank() || otherLastName.isNotBlank()) {
+            AvatarUtils.getInitials(otherFirstName, otherLastName)
+        } else {
+            otherUserName.trim().split(" ")
+                .filter { it.isNotBlank() }
+                .take(2)
+                .map { it.first().uppercaseChar() }
+                .joinToString("")
+                .ifEmpty { "U" }
+        }
         binding.chatUserName.text = otherUserName
 
         setupRecyclerView()
@@ -89,7 +105,7 @@ class ChatActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-        adapter = ChatAdapter(chatMessages)
+        adapter = ChatAdapter(chatMessages, receiverInitials)
         binding.chatRecyclerView.layoutManager = LinearLayoutManager(this).apply {
             stackFromEnd = true
         }
@@ -170,11 +186,29 @@ class ChatActivity : AppCompatActivity() {
     
     private fun formatTime(timestamp: String): String {
         return try {
-            val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
-            inputFormat.timeZone = TimeZone.getTimeZone("UTC")
-            val date = inputFormat.parse(timestamp)
-            val outputFormat = SimpleDateFormat("h:mm a", Locale.getDefault())
-            date?.let { outputFormat.format(it) } ?: "Now"
+            val instant = try {
+                Instant.parse(timestamp)
+            } catch (_: Exception) {
+                // Supabase timestamps sometimes omit timezone/offset.
+                val patterns = listOf(
+                    "yyyy-MM-dd'T'HH:mm:ss.SSSSSS",
+                    "yyyy-MM-dd'T'HH:mm:ss.SSS",
+                    "yyyy-MM-dd'T'HH:mm:ss"
+                )
+                val parsedMillis = patterns.firstNotNullOfOrNull { pattern ->
+                    runCatching {
+                        SimpleDateFormat(pattern, Locale.getDefault()).apply {
+                            timeZone = TimeZone.getTimeZone("UTC")
+                        }.parse(timestamp)?.time
+                    }.getOrNull()
+                }
+                if (parsedMillis == null) return "Now" else Instant.ofEpochMilli(parsedMillis)
+            }
+
+            val outputFormat = SimpleDateFormat("MMM d, h:mm a", Locale.getDefault()).apply {
+                timeZone = TimeZone.getTimeZone("Asia/Manila")
+            }
+            outputFormat.format(Date.from(instant))
         } catch (e: Exception) {
             Log.e("ChatActivity", "Error formatting time", e)
             "Now"

@@ -34,12 +34,16 @@
                 app:cardCornerRadius="25dp"
                 app:cardElevation="0dp">
 
-                <ImageView
+                <TextView
                     android:id="@+id/messageProfileImage"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/ic_launcher_background"
+                    android:gravity="center"
+                    android:text="U"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@android:color/white"
+                    android:background="@color/purple"
                     android:clickable="false" />
             </androidx.cardview.widget.CardView>
 

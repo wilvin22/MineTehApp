@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="end"
-    android:orientation="horizontal"
+    android:orientation="vertical"
     android:padding="8dp">
 
     <TextView
@@ -17,5 +17,16 @@
         android:text="Sent message text"
         android:textColor="@color/white"
         android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/txtSentTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="64dp"
+        android:text="10:23 AM"
+        android:textColor="@color/text_secondary"
+        android:textSize="11sp"
+        android:layout_gravity="end"
+        android:paddingTop="2dp" />
 
 </LinearLayout>
