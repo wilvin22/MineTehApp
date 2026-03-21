@@ -6,16 +6,20 @@ import android.os.CountDownTimer
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.example.mineteh.R
 import com.example.mineteh.databinding.ItemDetailBinding
 import com.example.mineteh.models.CartItem
 import com.example.mineteh.models.Listing
+import com.example.mineteh.model.UserBidData
 import com.example.mineteh.utils.Resource
 import com.example.mineteh.viewmodel.ListingDetailViewModel
 import com.google.android.material.textfield.TextInputEditText
@@ -28,6 +32,7 @@ class BidDetailActivity : AppCompatActivity() {
     private val viewModel: ListingDetailViewModel by viewModels()
     private var currentListing: Listing? = null
     private var countDownTimer: CountDownTimer? = null
+    private var biddersAdapter: BiddersAdapter? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -90,6 +95,19 @@ class BidDetailActivity : AppCompatActivity() {
                         currentListing = listing
                         showContent()
                         displayListing(listing)
+                        
+                        // Check if we should show bid dialog immediately
+                        if (intent.getBooleanExtra("show_bid_dialog", false)) {
+                            intent.removeExtra("show_bid_dialog") // Clear the flag
+                            // Check if auction is still active
+                            val isActive = listing.status.equals("active", ignoreCase = true)
+                            val timeRemaining = com.example.mineteh.utils.TimeUtils.calculateTimeRemaining(listing.endTime ?: "")
+                            if (isActive && timeRemaining > 0) {
+                                showBidDialog(listing)
+                            } else {
+                                Toast.makeText(this, "Auction has ended", Toast.LENGTH_SHORT).show()
+                            }
+                        }
                     }
                 }
                 is Resource.Error -> showError(resource.message ?: "Failed to load listing")
@@ -180,27 +198,78 @@ class BidDetailActivity : AppCompatActivity() {
         binding.detailItemDescription.text = listing.description
         binding.detailItemLocation.text = "📍 ${listing.location}"
 
+        // Setup badges
+        setupBadges(listing)
+
         // Setup image carousel
         setupImageCarousel(listing)
 
         // Display seller info
         displaySellerInfo(listing)
 
-        // Setup action buttons (always show BID UI for BidDetailActivity)
-        setupBidActionButtons(listing)
+        // Setup action buttons based on listing type
+        when (listing.listingType.uppercase()) {
+            "BID" -> setupBidActionButtons(listing)
+            "FIXED" -> setupFixedActionButtons(listing)
+            else -> setupFixedActionButtons(listing) // Default to fixed
+        }
 
         // Update favorite icon
         updateHeartIcon(listing.isFavorited)
-
-        // Setup favorite click listener (will be overridden in setupBidActionButtons for buyer)
-        binding.detailHeartBid.setOnClickListener {
-            viewModel.toggleFavorite(listing.id)
-        }
 
         // Setup retry button
         binding.btnRetry.setOnClickListener {
             viewModel.loadListing(listing.id)
         }
+
+        // Setup bidders list (only for BID type)
+        if (listing.listingType.uppercase() == "BID") {
+            setupBiddersList(listing)
+        }
+        
+        // Setup share button
+        binding.btnShare?.setOnClickListener {
+            shareListing(listing)
+        }
+    }
+    
+    private fun setupBadges(listing: Listing) {
+        // Category badge
+        binding.badgeCategory?.apply {
+            text = listing.category
+            visibility = if (listing.category.isNotBlank()) View.VISIBLE else View.GONE
+        }
+        
+        // Listing type badge
+        binding.badgeListingType?.apply {
+            text = if (listing.listingType.uppercase() == "BID") "Auction" else "Fixed Price"
+            visibility = View.VISIBLE
+        }
+        
+        // Condition badge - placeholder for future
+        binding.badgeCondition?.visibility = View.GONE
+    }
+    
+    private fun shareListing(listing: Listing) {
+        val shareText = buildString {
+            append("Check out \"${listing.title}\" on MineTeh!")
+            append("\n\n")
+            if (listing.listingType.uppercase() == "BID") {
+                val currentBid = listing.highestBid?.bidAmount ?: listing.price
+                append("Current Bid: ₱${String.format("%.2f", currentBid)}")
+            } else {
+                append("Price: ₱${String.format("%.2f", listing.price)}")
+            }
+            append("\n📍 ${listing.location}")
+            append("\n\nDownload MineTeh app to bid or buy!")
+        }
+        
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_SUBJECT, listing.title)
+            putExtra(Intent.EXTRA_TEXT, shareText)
+        }
+        startActivity(Intent.createChooser(intent, "Share via"))
     }
 
     private fun setupImageCarousel(listing: Listing) {
@@ -259,11 +328,6 @@ class BidDetailActivity : AppCompatActivity() {
         binding.bidInfoCard.visibility = View.VISIBLE
         binding.auctionStatusBadge.visibility = View.VISIBLE
         
-        // Update seller info constraint to bid card
-        val params = binding.sellerAvatarCard.layoutParams as androidx.constraintlayout.widget.ConstraintLayout.LayoutParams
-        params.topToBottom = binding.bidInfoCard.id
-        binding.sellerAvatarCard.layoutParams = params
-        
         // Auction status
         val isActive = listing.status.equals("active", ignoreCase = true)
         val timeRemaining = com.example.mineteh.utils.TimeUtils.calculateTimeRemaining(listing.endTime ?: "")
@@ -319,10 +383,6 @@ class BidDetailActivity : AppCompatActivity() {
         binding.bidInfoCard.visibility = View.VISIBLE
         binding.auctionStatusBadge.visibility = View.VISIBLE
         
-        val params = binding.sellerAvatarCard.layoutParams as androidx.constraintlayout.widget.ConstraintLayout.LayoutParams
-        params.topToBottom = binding.bidInfoCard.id
-        binding.sellerAvatarCard.layoutParams = params
-        
         val isActive = listing.status.equals("active", ignoreCase = true)
         val timeRemaining = com.example.mineteh.utils.TimeUtils.calculateTimeRemaining(listing.endTime ?: "")
         
@@ -372,6 +432,103 @@ class BidDetailActivity : AppCompatActivity() {
         }
         
         Log.d("BidDetailActivity", "=== SETUP OWNER BID UI COMPLETE ===")
+    }
+    
+    private fun setupFixedActionButtons(listing: Listing) {
+        Log.d("BidDetailActivity", "=== SETUP FIXED ACTION BUTTONS START ===")
+        
+        // Check if current user is the owner
+        val tokenManager = com.example.mineteh.utils.TokenManager(this)
+        val currentUserId = tokenManager.getUserId()
+        val sellerId = listing.seller?.accountId
+        val isOwner = currentUserId != -1 && sellerId != null && sellerId == currentUserId
+        
+        Log.d("BidDetailActivity", "Current user ID: $currentUserId, Seller ID: $sellerId, Is owner: $isOwner")
+        
+        if (isOwner) {
+            setupOwnerFixedUI(listing)
+            return
+        }
+        
+        // BUYER view for FIXED listing
+        binding.ownerBadge.visibility = View.GONE
+        binding.ownerManagementCard.visibility = View.GONE
+        
+        // Hide BID-specific UI
+        binding.bidInfoCard.visibility = View.GONE
+        binding.auctionStatusBadge.visibility = View.GONE
+        binding.bidBuyerRow.visibility = View.GONE
+        binding.btnContactSellerBid.visibility = View.GONE
+        
+        // Show FIXED price card
+        binding.fixedPriceCard?.visibility = View.VISIBLE
+        binding.detailItemPrice?.text = "₱${String.format("%.2f", listing.price)}"
+        binding.detailItemPriceStub?.visibility = View.GONE
+        
+        // Show FIXED buyer UI
+        binding.fixedBuyerRow.visibility = View.VISIBLE
+        binding.divider3.visibility = View.GONE
+
+        binding.detailHeart.setOnClickListener {
+            viewModel.toggleFavorite(listing.id)
+        }
+        
+        binding.btnImInterested.setOnClickListener {
+            Toast.makeText(this, "Seller has been notified of your interest!", Toast.LENGTH_SHORT).show()
+        }
+        
+        binding.btnContactSeller.setOnClickListener {
+            listing.seller?.accountId?.let { sid ->
+                val intent = Intent(this, ChatActivity::class.java).apply {
+                    putExtra("other_user_id", sid)
+                    putExtra("other_user_name", listing.seller?.username ?: "Seller")
+                    putExtra("listing_id", listing.id)
+                }
+                startActivity(intent)
+            } ?: Toast.makeText(this, "Seller information not available", Toast.LENGTH_SHORT).show()
+        }
+    }
+    
+    private fun setupOwnerFixedUI(listing: Listing) {
+        Log.d("BidDetailActivity", "=== SETUP OWNER FIXED UI START ===")
+        
+        // Show owner badge
+        binding.ownerBadge.visibility = View.VISIBLE
+        
+        // Hide BID-specific UI
+        binding.bidInfoCard.visibility = View.GONE
+        binding.bidBuyerRow.visibility = View.GONE
+        binding.btnContactSellerBid.visibility = View.GONE
+        
+        // Show FIXED price card for owner reference
+        binding.fixedPriceCard?.visibility = View.VISIBLE
+        binding.detailItemPrice?.text = "₱${String.format("%.2f", listing.price)}"
+        
+        // Hide buyer UI
+        binding.fixedBuyerRow.visibility = View.GONE
+        binding.divider3.visibility = View.GONE
+        
+        // Show owner management card
+        binding.ownerManagementCard.visibility = View.VISIBLE
+        binding.btnCloseAuction.visibility = View.GONE // Not applicable for fixed
+        
+        val isActiveStatus = listing.status.equals("active", ignoreCase = true)
+        binding.btnToggleStatus.text = if (isActiveStatus) "🚫 Disable Listing" else "✅ Enable Listing"
+        binding.btnToggleStatus.setBackgroundColor(getColor(if (isActiveStatus) R.color.red else R.color.green))
+        
+        binding.btnToggleStatus.setOnClickListener {
+            if (isActiveStatus) showDisableListingDialog(listing) else showEnableListingDialog(listing)
+        }
+        
+        binding.btnEditListing.setOnClickListener {
+            Toast.makeText(this, "Edit listing feature coming soon", Toast.LENGTH_SHORT).show()
+        }
+        
+        binding.btnViewYourListings.setOnClickListener {
+            startActivity(Intent(this, MyListingsActivity::class.java))
+        }
+        
+        Log.d("BidDetailActivity", "=== SETUP OWNER FIXED UI COMPLETE ===")
     }
     
     private fun showCloseAuctionDialog(listing: Listing) {
@@ -544,5 +701,113 @@ class BidDetailActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         onBackPressedDispatcher.onBackPressed()
         return true
+    }
+
+    /**
+     * Setup and display the bidders list
+     */
+    private fun setupBiddersList(listing: Listing) {
+        val recyclerView = binding.root.findViewById<RecyclerView>(R.id.recyclerBidders)
+        val emptyState = binding.root.findViewById<View>(R.id.emptyBiddersState)
+        val totalBidsBadge = binding.root.findViewById<TextView>(R.id.txtTotalBids)
+        
+        // Safety check for null views
+        if (recyclerView == null || emptyState == null || totalBidsBadge == null) {
+            Log.w("BidDetailActivity", "Bidders list views not found, skipping setup")
+            return
+        }
+        
+        // Get all bids for this listing from Supabase
+        // For now, we'll use an empty list - you can load actual bids from viewModel later
+        val allBids = listOf<UserBidData>()
+        
+        // Update badge count
+        totalBidsBadge.text = allBids.size.toString()
+        
+        // Show/hide empty state
+        if (allBids.isEmpty()) {
+            recyclerView.visibility = View.GONE
+            emptyState.visibility = View.VISIBLE
+        } else {
+            recyclerView.visibility = View.VISIBLE
+            emptyState.visibility = View.GONE
+            
+            // Setup adapter
+            if (biddersAdapter == null) {
+                biddersAdapter = BiddersAdapter(this)
+                recyclerView.adapter = biddersAdapter
+                recyclerView.layoutManager = LinearLayoutManager(this)
+            }
+            biddersAdapter?.submitList(allBids)
+        }
+    }
+
+    /**
+     * Adapter for displaying bidders in RecyclerView
+     */
+    inner class BiddersAdapter(private val context: android.content.Context) : 
+        RecyclerView.Adapter<BiddersAdapter.BidderViewHolder>() {
+        
+        private var bidders = listOf<UserBidData>()
+        
+        inner class BidderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+            private val imgAvatar: android.widget.ImageView = itemView.findViewById(R.id.imgBidderAvatar)
+            private val txtName: TextView = itemView.findViewById(R.id.txtBidderName)
+            private val txtTime: TextView = itemView.findViewById(R.id.txtBidTime)
+            private val txtAmount: TextView = itemView.findViewById(R.id.txtBidAmount)
+            private val divider: View = itemView.findViewById(R.id.dividerBidder)
+            
+            fun bind(bid: UserBidData) {
+                // Display bid amount
+                txtAmount.text = "₱ ${String.format("%.2f", bid.bidAmount)}"
+                
+                // Display formatted time
+                txtTime.text = formatBidTime(bid.bidTime)
+                
+                // For now, show user ID as name (you can enhance this to fetch actual username)
+                txtName.text = "Bidder #${bid.userId}"
+                
+                // Show divider for all items except the last one
+                divider.visibility = if (adapterPosition < itemCount - 1) View.VISIBLE else View.GONE
+            }
+        }
+        
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BidderViewHolder {
+            val view = LayoutInflater.from(context).inflate(R.layout.item_bidder, parent, false)
+            return BidderViewHolder(view)
+        }
+        
+        override fun onBindViewHolder(holder: BidderViewHolder, position: Int) {
+            holder.bind(bidders[position])
+        }
+        
+        override fun getItemCount(): Int = bidders.size
+        
+        fun submitList(newBidders: List<UserBidData>) {
+            // Sort by bid amount descending (highest bid first)
+            bidders = newBidders.sortedByDescending { it.bidAmount }
+            notifyDataSetChanged()
+        }
+        
+        private fun formatBidTime(bidTime: String): String {
+            // Format "2024-01-15 10:30:00" to "2 hours ago"
+            return try {
+                val format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+                val bidDate = format.parse(bidTime)
+                val now = Date()
+                val diffMs = now.time - bidDate!!.time
+                val diffMins = diffMs / (1000 * 60)
+                
+                when {
+                    diffMins < 1 -> "Just now"
+                    diffMins < 60 -> "${diffMins}m ago"
+                    diffMins < 1440 -> "${diffMins / 60}h ago"
+                    else -> "${diffMins / 1440}d ago"
+                }
+            } catch (e: Exception) {
+                Log.e("BiddersAdapter", "Error formatting bid time", e)
+                bidTime
+            }
+        }
     }
 }
