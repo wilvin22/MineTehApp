@@ -12,15 +12,12 @@ import com.example.mineteh.model.Notification
 import com.example.mineteh.model.NotificationPreferences
 import com.example.mineteh.model.repository.NotificationsRepository
 import com.example.mineteh.utils.NotificationRealtimeManager
-import com.example.mineteh.service.NotificationService
 import kotlinx.coroutines.launch
-import java.time.Instant
 
 class NotificationsViewModel(application: Application) : AndroidViewModel(application) {
     private val repository = NotificationsRepository(application)
     private val tokenManager = TokenManager(application)
     private val realtimeManager = NotificationRealtimeManager(application)
-    private val notificationService = NotificationService()
     
     companion object {
         private const val TAG = "NotificationsViewModel"
@@ -52,8 +49,6 @@ class NotificationsViewModel(application: Application) : AndroidViewModel(applic
     private val allNotifications = mutableListOf<Notification>()
 
     init {
-        // Ensure the notification channel exists and the service is ready.
-        notificationService.initialize(application.applicationContext)
         loadNotifications()
         loadUnreadCount()
         setupRealtimeSubscription()
@@ -448,46 +443,10 @@ class NotificationsViewModel(application: Application) : AndroidViewModel(applic
      * Handle new notification received via real-time
      */
     private fun handleNewNotification(notification: Notification) {
-        allNotifications.add(notification)
-
-        // Keep UI ordering stable even if multiple notifications arrive between polls.
-        allNotifications.sortByDescending { parseCreatedAtEpochMillis(it.createdAt) }
+        // Add to the beginning of the list (most recent first)
+        allNotifications.add(0, notification)
         _notifications.value = Resource.Success(allNotifications.toList())
-
-        // Show OS-level local notification as well.
-        try {
-            val data = buildNotificationServiceData(notification)
-            notificationService.showLocalNotification(
-                application.applicationContext,
-                notification.title,
-                notification.message,
-                data
-            )
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to show local notification", e)
-        }
-
         Log.d(TAG, "Added new notification to list: ${notification.title}")
-    }
-
-    private fun parseCreatedAtEpochMillis(createdAt: String): Long {
-        return try {
-            Instant.parse(createdAt).toEpochMilli()
-        } catch (e: Exception) {
-            0L
-        }
-    }
-
-    private fun buildNotificationServiceData(notification: Notification): Map<String, String> {
-        val data = mutableMapOf<String, String>()
-        data["type"] = notification.type.name
-
-        // For bid notifications, the backend typically stores the listing id in `link`.
-        notification.link?.let { link ->
-            data["listing_id"] = link
-        }
-
-        return data
     }
 
     /**

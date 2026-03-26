@@ -5,14 +5,11 @@ import android.util.Log
 import com.example.mineteh.model.Notification
 import com.example.mineteh.model.SupabaseNotificationResponse
 import com.example.mineteh.supabase.SupabaseClient
+import com.example.mineteh.TokenManager
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
-import io.github.jan.supabase.postgrest.query.Order
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -27,26 +24,21 @@ class NotificationRealtimeManager(private val context: Context) {
     }
     
     private val supabase = SupabaseClient.client
-    
+    private val tokenManager = TokenManager(context)
+
     // Coroutine scope for managing subscriptions
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-
-    private var subscriptionJob: Job? = null
-    private var hasInitialized = false
-    private val knownNotificationIds = mutableSetOf<Int>()
-    private val pollIntervalMs = 5000L
-    private val fetchLimit = 50
     
     // Flow for new notifications
-    private val _newNotifications = MutableSharedFlow<Notification>(extraBufferCapacity = 10)
+    private val _newNotifications = MutableSharedFlow<Notification>()
     val newNotifications: SharedFlow<Notification> = _newNotifications.asSharedFlow()
     
     // Flow for notification updates (read status changes)
-    private val _notificationUpdates = MutableSharedFlow<Notification>(extraBufferCapacity = 10)
+    private val _notificationUpdates = MutableSharedFlow<Notification>()
     val notificationUpdates: SharedFlow<Notification> = _notificationUpdates.asSharedFlow()
     
     // Flow for unread count changes
-    private val _unreadCountUpdates = MutableSharedFlow<Int>(extraBufferCapacity = 10)
+    private val _unreadCountUpdates = MutableSharedFlow<Int>()
     val unreadCountUpdates: SharedFlow<Int> = _unreadCountUpdates.asSharedFlow()
     
     // Connection state
@@ -57,7 +49,7 @@ class NotificationRealtimeManager(private val context: Context) {
      * Start real-time subscription for the given user
      */
     fun startSubscription(userId: Int) {
-        if (currentUserId == userId && subscriptionJob?.isActive == true) {
+        if (currentUserId == userId && isConnected) {
             Log.d(TAG, "Already subscribed for user $userId")
             return
         }
@@ -66,19 +58,18 @@ class NotificationRealtimeManager(private val context: Context) {
         stopSubscription()
 
         currentUserId = userId
-        isConnected = true
-        hasInitialized = false
-        knownNotificationIds.clear()
 
-        subscriptionJob = scope.launch {
-            while (isActive && currentUserId == userId) {
-                try {
-                    pollForNewNotifications(userId)
-                    updateUnreadCount()
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error polling notifications for user $userId", e)
-                }
-                delay(pollIntervalMs)
+        scope.launch {
+            try {
+                // Realtime subscription is temporarily disabled until the Realtime API is
+                // finalized for the currently pinned Supabase SDK version.
+                Log.d(TAG, "Realtime disabled; emitting unread count snapshot for user: $userId")
+                isConnected = false
+                updateUnreadCount()
+                
+            } catch (e: Exception) {
+                Log.e(TAG, "Error starting real-time subscription", e)
+                isConnected = false
             }
         }
     }
@@ -87,13 +78,19 @@ class NotificationRealtimeManager(private val context: Context) {
      * Stop the current real-time subscription
      */
     fun stopSubscription() {
-        Log.d(TAG, "Stopping notification polling")
-        subscriptionJob?.cancel()
-        subscriptionJob = null
         isConnected = false
         currentUserId = null
-        hasInitialized = false
-        knownNotificationIds.clear()
+        
+        scope.launch {
+            try {
+                Log.d(TAG, "Stopping real-time subscription")
+
+                Log.d(TAG, "Real-time subscription stopped")
+                
+            } catch (e: Exception) {
+                Log.e(TAG, "Error stopping real-time subscription", e)
+            }
+        }
     }
     
     /**
@@ -129,46 +126,6 @@ class NotificationRealtimeManager(private val context: Context) {
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error updating unread count", e)
-        }
-    }
-
-    private suspend fun pollForNewNotifications(userId: Int) {
-        // Poll for the most recent notifications. On the first poll we only seed known IDs
-        // (no alerts), then emit only notifications we haven't seen before.
-        val latest = supabase.from("notifications")
-            .select(
-                columns = Columns.list(
-                    "id",
-                    "user_id",
-                    "type",
-                    "title",
-                    "message",
-                    "link",
-                    "is_read",
-                    "created_at"
-                )
-            ) {
-                filter {
-                    eq("user_id", userId)
-                }
-                order("created_at", order = Order.DESCENDING)
-                limit(fetchLimit.toLong())
-            }
-            .decodeList<SupabaseNotificationResponse>()
-
-        if (!hasInitialized) {
-            latest.forEach { knownNotificationIds.add(it.id) }
-            hasInitialized = true
-            return
-        }
-
-        val newOnes = latest.filter { !knownNotificationIds.contains(it.id) }
-        if (newOnes.isEmpty()) return
-
-        // Emit newest first; UI will re-sort by `created_at`.
-        newOnes.forEach { response ->
-            knownNotificationIds.add(response.id)
-            _newNotifications.emit(response.toNotification())
         }
     }
     
